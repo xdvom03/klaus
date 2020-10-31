@@ -1,12 +1,8 @@
 #|
-TBD: Make X close everything from any window.
-TBD: Add the ability to put more links as one file. Generalise files. Then add SpaceX WBW post.
-TBD: Control for page length bias?
-TBD: Put the comment in a separate frame, so that its height does not mess up formatting.
-BUG: If a comment file exists, but is empty (not even an empty string), an error is signalled.
-TBD: Prevent all errors coming from empty or invalid links in the link entry.
-TBD: Use structs instead of lists for multiple returns to prevent picking out the wrong return.
 TBD: Use a pair-fight system with weights by eventual strength to decide between 3+ folders.
+TBD: Display bottlenecks for precision (subfolder with fewest files).
+
+Proof against tends to be a stronger discriminator than proof for. Is that a problem? It helps distinguish, say, articles about copyright from legal boilerplate. But what about the general case?
 
 There's a problem that might require some single transferrable vote system or something like that.
 The starting threeway decision tends to go like this:
@@ -18,12 +14,15 @@ Check out if a system that weighs word occurrences by the scores of their corres
 
 What do we do with <noscript>? It caused c2wiki to class as boilerplate, but I think there's no good reason to exclude it. Made irrelevant by C2wiki depending on Javascript, and thus not being downloadable.
 Related TBD: Redownload button.
+TBD: Reword corpus rebuilding using hash tables.
 |#
 
 (defparameter *entries-per-page* 20)
 (defparameter *try-to-class?* t)
 (defparameter *explain?* t)
 (defparameter *evidence-length* 6)
+(defparameter *newline* "
+")
 
 (defun word-probability (target total subfolder-count)
   (/ (+ 1 target)
@@ -42,67 +41,77 @@ Related TBD: Redownload button.
 
 (defun evaluate (url folder &optional (on? t))
   ;; Has to return a list of conses (subfolder . score)
-  ;; In final folders, we don't want to do anything
+  ;; In folders without subfolders, we don't want to do anything
   (if (and on? (subfolders folder) *try-to-class?*)
-      (let* (;; (path file-count corpus score)
-             (subfolder-count (length (subfolders folder)))
-             (default-score (/ subfolder-count))
-             (subfolders-data (mapcar #'(lambda (path)
-                                          (list path (get-file-count path) (get-recursive-corpus path) default-score))
-                                      (subfolders folder)))
-             (smallest-subfolder (apply #'min (mapcar #'second subfolders-data)))
-             (total-corpus (get-subfolder-corpus folder))
+      (let* ((subfolder-count (length (subfolders folder)))
+             (subfolder-paths (subfolders folder))
+             (smallest-subfolder (apply #'min (mapcar #'get-file-count subfolder-paths)))
              ;; Remove totally unknown words (TBD: Check if this is actually needed)
              (vocab (remove-if #'(lambda (word) (= (occurrences word total-corpus) 0))
                                (gethash nil (wordlist (url-text url)))))
-             ;; (path corpus score)
-             (normalised-subfolders (mapcar #'(lambda (data)
-                                                (list (first data)
-                                                      (normalize-corpus (get-recursive-corpus (first data))
-                                                                        (/ smallest-subfolder (get-file-count (first data))) ; TBD: Warn if a folder is empty!
-                                                                        vocab)
-                                                      default-score))
-                                            subfolders-data))
-             (total-normalised-corpus (reduce #'add-hashtable-corpuses (mapcar #'second normalised-subfolders)))
-             (explainer-data nil))
+             (corpuses (let ((acc (make-hash-table :test #'equal)))
+                         (dolist (path subfolder-paths)
+                           (setf (gethash path acc)
+                                 (normalize-corpus (get-recursive-corpus path)
+                                                   (/ smallest-subfolder (get-file-count path)) ; TBD: Warn if a folder is empty!
+                                                   vocab)))
+                         acc))
+             (total-corpus (reduce #'add-hashtable-corpuses
+                                   (mapcar #'(lambda (path) (gethash path corpuses))
+                                           subfolder-paths)))
+             (scores (make-hash-table :test #'equal))
+             ;; path to score
+             (final-scores (make-hash-table :test #'equal))
+             (subfolder-chosen-words (make-hash-table :test #'equal)))
         
-        (dolist (subfolder normalised-subfolders)
+        (dolist (path subfolder-paths)
           ;; balance evidence for and against
-          (let ((scores (cons (simplified-path (first subfolder))
-                              (append (subseq (sort (copy-seq (mapcar #'(lambda (word) (list (coerce (word-probability (occurrences word (second subfolder))
-                                                                                                                       (occurrences word total-normalised-corpus)
-                                                                                                                       subfolder-count)
-                                                                                                     'single-float)
-                                                                                             word
-                                                                                             (coerce (occurrences word (second subfolder)) 'single-float)
-                                                                                             (coerce (occurrences word total-normalised-corpus) 'single-float)))
-                                                                      vocab))
-                                                    #'> :key #'car)
-                                              0
-                                              (min *evidence-length* (length vocab)))
-                                      (reverse (subseq (sort (copy-seq (mapcar #'(lambda (word) (list (coerce (word-probability (occurrences word (second subfolder))
-                                                                                                                                (occurrences word total-normalised-corpus)
-                                                                                                                                subfolder-count)
-                                                                                                              'single-float)
-                                                                                                      word
-                                                                                                      (coerce (occurrences word (second subfolder)) 'single-float)
-                                                                                                      (coerce (occurrences word total-normalised-corpus) 'single-float)))
-                                                                               vocab))
-                                                             #'< :key #'car)
-                                                       0
-                                                       (min *evidence-length* (length vocab))))))))
-            (setf (third subfolder) (apply #'* (mapcar #'car (cdr scores))))
-            (push scores explainer-data)))
-        (let ((prob-sum (apply #'+ (mapcar #'third normalised-subfolders))))
-          (dolist (subfolder normalised-subfolders)
-            (setf (third subfolder)
-                  (/ (third subfolder)
+          (let* ((corpus (gethash path corpuses))
+                 ;; we need a score for every word-path pair
+                 (word-scores (let ((acc (make-hash-table :test #'equal)))
+                                (dolist (word vocab)
+                                  (setf (gethash word acc) (word-probability (occurrences word corpus)
+                                                                             (occurrences word total-corpus)
+                                                                             subfolder-count)))
+                                acc))
+                 (ordered-words (sort (copy-seq vocab) #'< :key #'(lambda (word) (gethash word word-scores))))
+                 (chosen-words (append (subseq ordered-words 0 (min *evidence-length*
+                                                                    (length ordered-words)))
+                                       (subseq ordered-words (max 0
+                                                                  (- (length ordered-words) *evidence-length*)))))
+                 (score (apply #'* (mapcar #'(lambda (word) (word-probability (occurrences word corpus)
+                                                                              (occurrences word total-corpus)
+                                                                              subfolder-count))
+                                           ;; Need the best words here
+                                           chosen-words))))
+            (setf (gethash path scores) score)
+            (setf (gethash path subfolder-chosen-words) chosen-words)))
+        
+        (let ((prob-sum (apply #'+ (mapcar #'(lambda (path) (gethash path scores)) subfolder-paths))))
+          (dolist (path subfolder-paths)
+            (setf (gethash path final-scores)
+                  (/ (gethash path scores)
                      prob-sum))))
+        
+        ;; explainer-data needs a bunch of lists of (path . (STUFF)) with STUFF being displayed (so provide some useful data, as in all-scores)
         (if *explain?*
-            (scores-explainer (reverse explainer-data)))
-        (mapcar #'(lambda (a) (cons (first a)
-                                    (coerce (third a) 'single-float)))
-                normalised-subfolders))
+            (scores-explainer (mapcar #'(lambda (path) (cons path
+                                                             (mapcar #'(lambda (word)
+                                                                         (list (coerce (word-probability (occurrences word (gethash path corpuses))
+                                                                                                         (occurrences word total-corpus)
+                                                                                                         subfolder-count)
+                                                                                       'single-float)
+                                                                               word
+                                                                               (coerce (occurrences word (gethash path corpuses)) 'single-float)
+                                                                               (coerce (occurrences word total-corpus) 'single-float)))
+                                                                     (gethash path subfolder-chosen-words))))
+                                      subfolder-paths)))
+        
+        (mapcar #'(lambda (path)
+                    (cons path
+                          (coerce (gethash path final-scores) 'single-float)))
+                subfolder-paths))
+      ;; this is returned if evaluation is off
       (mapcar #'(lambda (path)
                   (cons path (/ (length (subfolders folder)))))
               (subfolders folder))))
@@ -117,7 +126,8 @@ Related TBD: Redownload button.
          (comment-frame (frame 0 1 W))
          (e (entry 2 2 f))
          (tex (text 0 0 comment-frame "")))
-    (labels ((redraw ()
+    (labels ((redraw-confirmed (new-path)
+               (setf current-folder new-path)
                (setf (ltk:text tex) (read-comment current-folder))
                (dolist (i widget-list)
                  (ltk:destroy i))
@@ -135,10 +145,20 @@ Related TBD: Redownload button.
                                    f
                                    (concat (file-name subfolder t) (write-to-string (cdr i)))
                                    #'(lambda ()
-                                       (setf current-folder subfolder)
-                                       (redraw)))
-                           widget-list))))))
-      (button 0 0 f "X" #'(lambda () (ltk:destroy W)))
+                                       (redraw subfolder)))
+                           widget-list)))))
+
+             (redraw (new-path)
+               ;; Reading from the text adds a newline. Unclear why.
+               (if (equal (concat (read-comment current-folder)
+                                  *newline*)
+                          (ltk:text tex))
+                   (redraw-confirmed new-path)
+                   (let ((warning-button nil))
+                     (setf warning-button (button 2 0 comment-frame "Change folder despite unsaved comment" #'(lambda ()
+                                                                                                                (redraw-confirmed new-path)
+                                                                                                                (ltk:destroy warning-button))))))))
+      (button 0 0 f "X" #'kill-all)
       (label 0 1 f "FOLDERS")
       (button 3 2 f "Create folder" #'(lambda () (let ((txt (ltk:text e))
                                                        (subfolders-folder (concat current-folder "subfolders/")))
@@ -148,10 +168,8 @@ Related TBD: Redownload button.
                                                    (ensure-directories-exist (concat subfolders-folder txt "/files/"))
                                                    (ensure-directories-exist (concat subfolders-folder txt "/subfolders/"))
                                                    (setf (ltk:text e) "")
-                                                   (setf current-folder (concat subfolders-folder txt "/"))
-                                                   (redraw))))
-      (button 1 1 f ".." #'(lambda () (setf current-folder (parent-folder (parent-folder current-folder)))
-                             (redraw)))
+                                                   (redraw (concat subfolders-folder txt "/")))))
+      (button 1 1 f ".." #'(lambda () (redraw (parent-folder (parent-folder current-folder)))))
       (label 1 2 f (concat "Current URL: " url))
       (button 4 2 f "Add link here" #'(lambda ()
                                         ;; Avoiding double insert
@@ -184,7 +202,7 @@ Related TBD: Redownload button.
       (button 1 0 comment-frame "Save comment" #'(lambda ()
                                                    (log-print "Saved comment in " (simplified-path current-folder))
                                                    (set-comment (ltk:text tex) current-folder)))
-      (redraw))))
+      (redraw-confirmed current-folder))))
 
 (defun folder-index (path)
   (let ((split-path (split path (char "/" 0))))
@@ -235,13 +253,16 @@ Related TBD: Redownload button.
            ch
            ch2)
       (defun log-print (&rest strings)
-        ;; BUG: Log entry seems to show with a lag.)
+        ;; BUG: Log entry seems to show with a lag.
         (let ((full-string (apply #'concat (mapcar #'(lambda (a) (if (stringp a)
                                                                      a
                                                                      (write-to-string a)))
                                                    strings))))
           (push (button (length log-list) 0 LW full-string #'pass) log-list)
           full-string))
+      (defun kill-all ()
+        (ltk:destroy W)
+        (ltk:destroy ltk:*tk*))
       (ltk:focus LW)
       (ltk:on-close W #'(lambda () (ltk:destroy ltk:*tk*)))
       (button 0 1 LW "Wipe log" #'(lambda ()
@@ -263,7 +284,7 @@ Related TBD: Redownload button.
                                         (database-window e1)))
       (button 1 2 W "Wipe entry" #'(lambda ()
                                      (setf (ltk:text e1) "")))
-      (button 0 0 W "X" #'(lambda () (ltk:destroy W) (ltk:destroy ltk:*tk*)))
+      (button 0 0 W "X" #'kill-all)
       (button 1 3 W "Rebuild corpus" #'rebuild-corpus)
 
       (setf ch (checkbox 2 3 w "Try to class?" #'(lambda (a)
