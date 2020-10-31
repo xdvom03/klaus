@@ -208,8 +208,7 @@
   "Returns a list of parts of the text denoted by the character. Removes the splitting character."
   (let ((word-acc nil)
         (text-acc nil))
-    (dotimes (i (length text) (mapcar #'(lambda (a) (concat a)) ;; TBD: WTF?
-                                      (reverse (cons (reverse text-acc) word-acc))))
+    (dotimes (i (length text) (reverse (cons (reverse text-acc) word-acc)))
       (if (equal (char text i) char)
           (progn
             (push (reverse text-acc) word-acc)
@@ -399,7 +398,7 @@
     acc))
 
 (defun rebuild-corpus (&optional (folder *home-folder*))
-  ;; Writes the cons list format of the corpuses into the respective files. Redownloads everything.
+  ;; Writes the cons list format of the corpuses into the respective files.
   (labels ((print-to-file (file-name &rest things)
              (with-open-file (stream (concat folder "analysis/" file-name) :direction :output :if-exists :supersede :if-does-not-exist :create)
                (dolist (i things)
@@ -560,8 +559,7 @@
                                                             (remove-from-history remove-link)
                                                             (redraw)))
                            buttons))))))
-      (button 0 0 W "X" #'(lambda ()
-                            (ltk:destroy W)))
+      (button 0 0 W "X" #'kill-all)
       (redraw)
       (button 1 1 W "Push to history" #'(lambda ()
                                           (add-to-history (ltk:text e)) (redraw))))))
