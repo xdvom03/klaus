@@ -1,6 +1,7 @@
 #|
 TBD: Use a pair-fight system with weights by eventual strength to decide between 3+ folders.
 TBD: Display bottlenecks for precision (subfolder with fewest files).
+Possible BUG: Numbers for the Google definition don't match the hand-calculated (ish) ones. Add proper explainer.
 
 Proof against tends to be a stronger discriminator than proof for. Is that a problem? It helps distinguish, say, articles about copyright from legal boilerplate. But what about the general case?
 
@@ -23,6 +24,7 @@ TBD: Reword corpus rebuilding using hash tables.
 (defparameter *evidence-length* 6)
 (defparameter *newline* "
 ")
+(defparameter *iterations* 20)
 
 (defun word-probability (target total subfolder-count)
   (/ (+ 1 target)
@@ -39,79 +41,108 @@ TBD: Reword corpus rebuilding using hash tables.
           (button (1+ j) (1+ i) W (nth j evidence) #'pass))))
     W))
 
+(defun pair-compare (vocab path1 path2)
+  ;; simplified evaluate for two options
+  ;; TBD: Clean up, maybe bring back the original evaluate
+  (let* ((smallest-subfolder (min (get-file-count path1)
+                                  (get-file-count path2)))
+         (raw-corpus1 (get-recursive-corpus path1))
+         (raw-corpus2 (get-recursive-corpus path2))
+         (total-corpus (add-hashtable-corpuses raw-corpus1
+                                               raw-corpus2))
+         (corpus1 (normalize-corpus raw-corpus1
+                                    (/ smallest-subfolder (get-file-count path1)) ; TBD: Warn if a folder is empty!
+                                    vocab))
+         (corpus2 (normalize-corpus raw-corpus2
+                                    (/ smallest-subfolder (get-file-count path2)) ; TBD: Warn if a folder is empty!
+                                    vocab))
+         (word-scores1 (let ((acc (make-hash-table :test #'equal)))
+                         (dolist (word vocab)
+                           (setf (gethash word acc) (word-probability (occurrences word corpus1)
+                                                                      (occurrences word total-corpus)
+                                                                      2)))
+                         acc))
+         (word-scores2 (let ((acc (make-hash-table :test #'equal)))
+                         (dolist (word vocab)
+                           (setf (gethash word acc) (word-probability (occurrences word corpus2)
+                                                                      (occurrences word total-corpus)
+                                                                      2)))
+                         acc))
+         (ordered-words1 (sort (copy-seq vocab) #'< :key #'(lambda (word) (gethash word word-scores1))))
+         (ordered-words2 (sort (copy-seq vocab) #'< :key #'(lambda (word) (gethash word word-scores2))))
+         (chosen-words1 (append (subseq ordered-words1 0 (min *evidence-length*
+                                                              (length ordered-words1)))
+                                (subseq ordered-words1 (max 0
+                                                            (- (length ordered-words1) *evidence-length*)))))
+         (chosen-words2 (append (subseq ordered-words2 0 (min *evidence-length*
+                                                              (length ordered-words2)))
+                                (subseq ordered-words2 (max 0
+                                                            (- (length ordered-words2) *evidence-length*)))))
+         (score1 (apply #'* (mapcar #'(lambda (word) (word-probability (occurrences word corpus1)
+                                                                       (occurrences word total-corpus)
+                                                                       2))
+                                    ;; Need the best words here
+                                    chosen-words1)))
+         (score2 (apply #'* (mapcar #'(lambda (word) (word-probability (occurrences word corpus2)
+                                                                       (occurrences word total-corpus)
+                                                                       2))
+                                    ;; Need the best words here
+                                    chosen-words2)))
+         (prob-sum (+ score1 score2))
+         (final-score1 (/ score1 prob-sum)))
+    ;; TBD: Rework explainer for pairs
+    ;; Only returns the score for the first folder
+    (coerce final-score1 'single-float)))
+
+(defun pagerank (options scores-table)
+  (let ((scores (make-hash-table :test #'equal))
+        (acc (make-hash-table :test #'equal)))
+    (dolist (option options)
+      (setf (gethash option scores) ;; TBD: Return to normalcy
+            (- (random 10) 5.01) ;;(/ (length options))
+            ))
+    (dotimes (i *iterations*)
+      (dolist (option options)
+        (setf (gethash option acc)
+              (/ (apply #'+
+                        (mapcar #'(lambda (option2)
+                                    (if (equal option option2)
+                                        0
+                                        (* (gethash option2 scores)
+                                           (gethash (cons option option2) scores-table))))
+                                options))
+                 (apply #'+ (mapcar #'(lambda (option2) (if (equal option2 option)
+                                                            0
+                                                            (gethash option2 scores)))
+                                    options)))))
+      (let ((probsum (apply #'+ (mapcar #'(lambda (opt) (gethash opt acc))
+                                        options))))
+        ;; TBD: Maybe somehow display the eventual probsum, because it is also a result of the calculation, it is unique, and seems to somehow reflect on the certainty of the result
+        ;; Probsum: Min 1, Max N/2 for N options
+        (dolist (option options)
+          (setf (gethash option scores)
+                (/ (gethash option acc)
+                   probsum)))))
+    scores))
+
 (defun evaluate (url folder &optional (on? t))
   ;; Has to return a list of conses (subfolder . score)
   ;; In folders without subfolders, we don't want to do anything
   (if (and on? (subfolders folder) *try-to-class?*)
-      (let* ((subfolder-count (length (subfolders folder)))
-             (subfolder-paths (subfolders folder))
-             (smallest-subfolder (apply #'min (mapcar #'get-file-count subfolder-paths)))
-             ;; Remove totally unknown words (TBD: Check if this is actually needed)
-             (vocab (remove-if #'(lambda (word) (= (occurrences word total-corpus) 0))
-                               (gethash nil (wordlist (url-text url)))))
-             (corpuses (let ((acc (make-hash-table :test #'equal)))
-                         (dolist (path subfolder-paths)
-                           (setf (gethash path acc)
-                                 (normalize-corpus (get-recursive-corpus path)
-                                                   (/ smallest-subfolder (get-file-count path)) ; TBD: Warn if a folder is empty!
-                                                   vocab)))
-                         acc))
-             (total-corpus (reduce #'add-hashtable-corpuses
-                                   (mapcar #'(lambda (path) (gethash path corpuses))
-                                           subfolder-paths)))
-             (scores (make-hash-table :test #'equal))
-             ;; path to score
-             (final-scores (make-hash-table :test #'equal))
-             (subfolder-chosen-words (make-hash-table :test #'equal)))
-        
-        (dolist (path subfolder-paths)
-          ;; balance evidence for and against
-          (let* ((corpus (gethash path corpuses))
-                 ;; we need a score for every word-path pair
-                 (word-scores (let ((acc (make-hash-table :test #'equal)))
-                                (dolist (word vocab)
-                                  (setf (gethash word acc) (word-probability (occurrences word corpus)
-                                                                             (occurrences word total-corpus)
-                                                                             subfolder-count)))
-                                acc))
-                 (ordered-words (sort (copy-seq vocab) #'< :key #'(lambda (word) (gethash word word-scores))))
-                 (chosen-words (append (subseq ordered-words 0 (min *evidence-length*
-                                                                    (length ordered-words)))
-                                       (subseq ordered-words (max 0
-                                                                  (- (length ordered-words) *evidence-length*)))))
-                 (score (apply #'* (mapcar #'(lambda (word) (word-probability (occurrences word corpus)
-                                                                              (occurrences word total-corpus)
-                                                                              subfolder-count))
-                                           ;; Need the best words here
-                                           chosen-words))))
-            (setf (gethash path scores) score)
-            (setf (gethash path subfolder-chosen-words) chosen-words)))
-        
-        (let ((prob-sum (apply #'+ (mapcar #'(lambda (path) (gethash path scores)) subfolder-paths))))
-          (dolist (path subfolder-paths)
-            (setf (gethash path final-scores)
-                  (/ (gethash path scores)
-                     prob-sum))))
-        
-        ;; explainer-data needs a bunch of lists of (path . (STUFF)) with STUFF being displayed (so provide some useful data, as in all-scores)
-        (if *explain?*
-            (scores-explainer (mapcar #'(lambda (path) (cons path
-                                                             (mapcar #'(lambda (word)
-                                                                         (list (coerce (word-probability (occurrences word (gethash path corpuses))
-                                                                                                         (occurrences word total-corpus)
-                                                                                                         subfolder-count)
-                                                                                       'single-float)
-                                                                               word
-                                                                               (coerce (occurrences word (gethash path corpuses)) 'single-float)
-                                                                               (coerce (occurrences word total-corpus) 'single-float)))
-                                                                     (gethash path subfolder-chosen-words))))
-                                      subfolder-paths)))
-        
+      (let* ((subfolders (subfolders folder))
+             (vocab (gethash nil (wordlist (url-text url))))
+             (scores-table (let ((acc (make-hash-table :test #'equal)))
+                             (dolist (folder1 subfolders)
+                               (dolist (folder2 subfolders)
+                                 (if (not (equal folder1 folder2))
+                                     (setf (gethash (cons folder1 folder2) acc)
+                                           (pair-compare vocab folder1 folder2)))))
+                             acc))
+             (tournament-results (pagerank subfolders scores-table)))
         (mapcar #'(lambda (path)
-                    (cons path
-                          (coerce (gethash path final-scores) 'single-float)))
-                subfolder-paths))
-      ;; this is returned if evaluation is off
+                    (cons path (gethash path tournament-results)))
+                (subfolders folder)))
+      ;; this is returned if evaluation is off (equal chances for everything)
       (mapcar #'(lambda (path)
                   (cons path (/ (length (subfolders folder)))))
               (subfolders folder))))
@@ -298,5 +329,3 @@ TBD: Reword corpus rebuilding using hash tables.
                                                         (setf (ltk:value ch2) *explain?*))))
       (setf (ltk:value ch2) *explain?*)
       (log-print "Launched main menu."))))
-
-;; this is git test

@@ -208,7 +208,8 @@
   "Returns a list of parts of the text denoted by the character. Removes the splitting character."
   (let ((word-acc nil)
         (text-acc nil))
-    (dotimes (i (length text) (reverse (cons (reverse text-acc) word-acc)))
+    (dotimes (i (length text) (mapcar #'(lambda (a) (concat a)) ; needed to turn character lists into words
+                                      (reverse (cons (reverse text-acc) word-acc))))
       (if (equal (char text i) char)
           (progn
             (push (reverse text-acc) word-acc)
