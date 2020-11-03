@@ -298,3 +298,5 @@ TBD: Reword corpus rebuilding using hash tables.
                                                         (setf (ltk:value ch2) *explain?*))))
       (setf (ltk:value ch2) *explain?*)
       (log-print "Launched main menu."))))
+
+;; this is git test
