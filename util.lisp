@@ -12,6 +12,14 @@
 (defparameter *history-temp-file* "../DATA/dewey2/history/history2")
 (defparameter *history-rename* "history")
 
+(defparameter *entries-per-page* 20)
+(defparameter *try-to-class?* t)
+(defparameter *explain?* t)
+(defparameter *evidence-length* 6)
+(defparameter *newline* "
+")
+(defparameter *iterations* 20)
+
 (defun pass ())
 
 (defun shuffle (lst)
@@ -564,3 +572,43 @@
       (redraw)
       (button 1 1 W "Push to history" #'(lambda ()
                                           (add-to-history (ltk:text e)) (redraw))))))
+
+;;; HISTORY
+;;;----------------------------------------------------------------------------------------------
+;;; SCORE MATH
+
+(defun pagerank (options scores-table)
+  (let ((scores (make-hash-table :test #'equal))
+        (acc (make-hash-table :test #'equal)))
+    (dolist (option options)
+      (setf (gethash option scores)
+            ;; BEWARE of ratios entering this calculation, for they explode in precision, size, and lag.
+            (coerce (/ (length options)) 'single-float)))
+    (dotimes (i *iterations*)
+      (dolist (option options)
+        (setf (gethash option acc)
+              (/ (apply #'+
+                        (mapcar #'(lambda (option2)
+                                    (if (equal option option2)
+                                        0
+                                        (* (gethash option2 scores)
+                                           (gethash (cons option option2) scores-table))))
+                                options))
+                 (apply #'+ (mapcar #'(lambda (option2) (if (equal option2 option)
+                                                            0
+                                                            (gethash option2 scores)))
+                                    options)))))
+      (let ((probsum (apply #'+ (mapcar #'(lambda (opt) (gethash opt acc))
+                                        options))))
+        ;; TBD: Maybe somehow display the eventual probsum, because it is also a result of the calculation, it is unique, and seems to somehow reflect on the certainty of the result
+        ;; Probsum: Min 1, Max N/2 for N options
+        (dolist (option options)
+          (setf (gethash option scores)
+                (/ (gethash option acc)
+                   probsum)))))
+    scores))
+
+;; Using Laplace smoothing for now
+(defun word-probability (target total subfolder-count)
+  (/ (+ 1 target)
+     (+ subfolder-count total)))

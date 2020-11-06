@@ -1,6 +1,6 @@
 # Temporary
 
-This will eventually become a proper PDF, less of a rambling mess, and also probably more serious in language. The same *caveat emptor* applies here as to the program, but even more. This is possibly outdated, incorrect, unrealised, unorganised or just un-.
+This will eventually become a proper PDF and less of a rambling mess. The same *caveat emptor* applies here as to the program, but even more. This is possibly outdated, incorrect, unrealised, unorganised or just un-.
 
 # Timeline
 
@@ -17,16 +17,38 @@ I originally wanted to class using an existing hierarchical system, such as the 
 
 So, there are two main tasks at hand. One, sensibly generalise Graham's idea. Two, design a useful hierarchy for articles on the Internet.
 
-Graham's design has crippling flaws, such as giving a fixed probability to words in only one corpus, not making it dependent on how many times it is there. The system I want to use is pitting categories against each other in pairs, getting probabilities in every combination, and then combining them.
+## Bayesian classification
 
-Getting the probabilities first requires normalising the corpuses. Each folder has an associated corpus generated from articles classed by hand. We scale the larger corpus down to the size of the smaller one. Then, we add one to all counts of words (Laplace smoothing, most affecting the words we don't know much). We divide the number of words in one corpus by the total number of instances of the word, getting the word's probability score for the corpus. We do this for all words and both corpuses. For both corpuses, we then pick the 6 words with highest probabilities and 6 with the lowest. This may need significant tuning. We multiply the probabilities together, then scale them up to sum to one (a proper explanation of why this is legit Bayes pending). This gives us scores for each pair.
+We can decide between two classes using a Naive Bayes algorithm. Each class has an associated corpus, showing how many documents each word was featured in. We scale the larger corpus down to the size of the smaller corpus by multiplying all occurrences by the ratio of total documents in both classes.
 
-Combining the evidence of the pairs is tough. A PageRank-like system will be implemented, where we want each folder to have the score determined by a weighted average of its paired scores, with the weights given by the scores of the respective other folders (clarifying illustration pending). This creattes a system of N equations, where N is the number of folders. These equations don't seem solvable, not even by hand for N=3 (the first nontrivial case). Just start with equal probabilities, then redistribute them by the weights, and hope it converges. It turns out not to, presumably needing some normalisation.
+For each word, we get the probability of it belonging to each category. To do so, we use Laplace smoothing. If a word if featured A times in the first category and B times in the second one, its score for the first category is (A + 1)/(A + B + 2). This has the benefit of probabilities summing to one, being close to just the ratio for well-known words and dealing gracefully with words that only occur in one corpus.
+
+Combining the evidence from all words amplifies random noise. Combining the X most distinctive means that a the primary important thing is the amount of evidence, not its strength. So I settled on always picking the X words with the best and the X words with the worts score. This ensures evidence is balanced. To calculate X, find the number of words with score less than 0.2 or more than 0.8, then halve. This ensures a result like picking all words over an importance threshold, but with a significant bias towards uncertainty. It also means that when there is a lot of evidence, it is all considered (as is the case with legal boilerplate, where the case is so clear that the words don't fit in the explainer - there should be a way to browse it by pages).
+
+We multiply the score of all the chosen words, then scale the results up to sum to one. This is displayed. (a proper Bayesian illustration is pending)
+
+## Tournament
+
+Once we get the resulting scores for all pairs of classes, we combine them into a score for each class. The whole point of doing it this way, as opposed to the traditional classing between multiple folders (as in most tutorials, by the obvious generalisation of the pair classing system), is to throw out useless classes. For example, there is a three-way decision between legal boilerplate and two other categories. The site is decidedly not boilerplate, with nearly 100% certainty. We then want the program to behave as if the boilerplate category hadn't even existed. If we're doing generalised Bayes, this is a problem, because each word is compared to the total corpus, disregarding its distribution. When picking the 6 best and worst words, this led to both the folders getting boilerplate-like words as evidence against them. But this evidence should not be admitted if it makes a dismissed case - that the site is boilerplate - and if it doesn't differentiate between the two categories.
+
+A PageRank-like algorithm is used. Each class initially gets equal probability. Then, in each iteration, each class gets a weighted average of its scores with all other classes, weighted by the scores of the respective opponent classes. The probabilities are scaled down to one. This converges reasonably quickly and predictably (starting with random scores led to the same results 200 times), though I'm not yet sure it always would. 
+
+## Hierarchy
+
+Classes are arranged as nested folders. For example, the boilerplate class contains classes "privacy-policy", "terms-of-use", and "cookies". Decisions are made within a folder between its subfolders, whose internal structure doesn't matter.
 
 # Language choice
 
+## Natural language
+
 I study articles in English because there are many of them. English is a terrible language for this purpose, because a word can often have different meanings depending on context, but the problem exists in English, so English it is.
+
+## Programming language
 
 I use Common Lisp, a functional language. There are three paradigms I understand the point of: object-oriented, which can define complex data structures, but has trouble doing complex things with them (methods are not the primary focus); functional, which can nest operations in complex ways, but isn't good for complex data structures (the many functions need standardised input); imperative, which is what the computer ends up doing, has few benefits for the programmer, but is the most efficient and thus used in situations of limited resources.
 
 This seems like a functional problem, for corpuses are just hash tables (dictionaries), sites are strings, and nothing much worse appears. CL is reasonably fast when optimised, at least compared to Python. There are also the necessary libraries available (not in the code yet) for HTML parsing.
+
+# Crawler
+
+It's not there yet. Not even started. Well, you can list links of a site. That's something.

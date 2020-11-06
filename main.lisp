@@ -1,11 +1,20 @@
+(defun list-hashes (hashtable)
+  (let ((acc nil))
+    (maphash #'(lambda (a b) (push (cons a b) acc))
+             hashtable)
+    acc))
 #|
-TBD: Use a pair-fight system with weights by eventual strength to decide between 3+ folders.
+PROBLEM: A few tiny folders can mess up the confidence for the whole superfolder. Add more data.
+TBD: Allow for moving between pages of words in evidence, provide more data. Boilerplate always creates an unreadable mountain of evidence.
+BUG: Turning off classing causes crashes.
+Convergence gets slow for very obvious choices, like boilerplace. We lose 30 orders of magnitude of certainty. Probably fine, for we are still sure.
 TBD: Display bottlenecks for precision (subfolder with fewest files).
-Possible BUG: Numbers for the Google definition don't match the hand-calculated (ish) ones. Add proper explainer.
+TBD: Toggle adding into history
+TBD: Speed up
 
 Proof against tends to be a stronger discriminator than proof for. Is that a problem? It helps distinguish, say, articles about copyright from legal boilerplate. But what about the general case?
 
-There's a problem that might require some single transferrable vote system or something like that.
+Possibly put into documentation:
 The starting threeway decision tends to go like this:
 We know it's not boilerplate because of a bunch of meaningful words.
 There are a couple trash-y words, but that might get fixed as I add more data. Mostly errors.
@@ -15,137 +24,159 @@ Check out if a system that weighs word occurrences by the scores of their corres
 
 What do we do with <noscript>? It caused c2wiki to class as boilerplate, but I think there's no good reason to exclude it. Made irrelevant by C2wiki depending on Javascript, and thus not being downloadable.
 Related TBD: Redownload button.
-TBD: Reword corpus rebuilding using hash tables.
 |#
 
-(defparameter *entries-per-page* 20)
-(defparameter *try-to-class?* t)
-(defparameter *explain?* t)
-(defparameter *evidence-length* 6)
-(defparameter *newline* "
-")
-(defparameter *iterations* 20)
-
-(defun word-probability (target total subfolder-count)
-  (/ (+ 1 target)
-     (+ subfolder-count total)))
-
-(defun scores-explainer (data)
-  ;; data is a list of lists. Each list is a subfolder path and a bunch of pieces of evidence. Each of these occupies a separate button. Also show where the score came from!
-  (let* ((W (window "explaining scores since 17-10-2020")))
-    (dotimes (i (length data))
-      (let ((path (car (nth i data)))
-            (evidence (cdr (nth i data))))
-        (button 0 (1+ i) W path #'pass)
-        (dotimes (j (length evidence))
-          (button (1+ j) (1+ i) W (nth j evidence) #'pass))))
+(defun words-explainer (words word-scores)
+  (let* ((W (window "explaining word scores or something since 17-10-2020 or sometime"))
+         (words-for (reverse (remove-if #'(lambda (word) (< (gethash word word-scores) 0.5))
+                                        words)))
+         (words-against (remove-if #'(lambda (word) (> (gethash word word-scores) 0.5))
+                                   words)))
+    (button 0 0 W "EVIDENCE FOR" #'pass)
+    (button 0 1 W "EVIDENCE AGAINST" #'pass)
+    (dotimes (i (length words-for))
+      (button (1+ i) 0 W (concat (nth i words-for) " " (write-to-string (coerce (gethash (nth i words-for) word-scores) 'single-float))) #'pass))
+    (dotimes (i (length words-against))
+      (button (1+ i) 1 W (concat (nth i words-against) " " (write-to-string (coerce (gethash (nth i words-against) word-scores) 'single-float))) #'pass))
     W))
 
-(defun pair-compare (vocab path1 path2)
-  ;; simplified evaluate for two options
-  ;; TBD: Clean up, maybe bring back the original evaluate
-  (let* ((smallest-subfolder (min (get-file-count path1)
-                                  (get-file-count path2)))
-         (raw-corpus1 (get-recursive-corpus path1))
-         (raw-corpus2 (get-recursive-corpus path2))
-         (total-corpus (add-hashtable-corpuses raw-corpus1
-                                               raw-corpus2))
-         (corpus1 (normalize-corpus raw-corpus1
-                                    (/ smallest-subfolder (get-file-count path1)) ; TBD: Warn if a folder is empty!
-                                    vocab))
-         (corpus2 (normalize-corpus raw-corpus2
-                                    (/ smallest-subfolder (get-file-count path2)) ; TBD: Warn if a folder is empty!
-                                    vocab))
-         (word-scores1 (let ((acc (make-hash-table :test #'equal)))
-                         (dolist (word vocab)
-                           (setf (gethash word acc) (word-probability (occurrences word corpus1)
-                                                                      (occurrences word total-corpus)
-                                                                      2)))
-                         acc))
-         (word-scores2 (let ((acc (make-hash-table :test #'equal)))
-                         (dolist (word vocab)
-                           (setf (gethash word acc) (word-probability (occurrences word corpus2)
-                                                                      (occurrences word total-corpus)
-                                                                      2)))
-                         acc))
-         (ordered-words1 (sort (copy-seq vocab) #'< :key #'(lambda (word) (gethash word word-scores1))))
-         (ordered-words2 (sort (copy-seq vocab) #'< :key #'(lambda (word) (gethash word word-scores2))))
-         (chosen-words1 (append (subseq ordered-words1 0 (min *evidence-length*
-                                                              (length ordered-words1)))
-                                (subseq ordered-words1 (max 0
-                                                            (- (length ordered-words1) *evidence-length*)))))
-         (chosen-words2 (append (subseq ordered-words2 0 (min *evidence-length*
-                                                              (length ordered-words2)))
-                                (subseq ordered-words2 (max 0
-                                                            (- (length ordered-words2) *evidence-length*)))))
-         (score1 (apply #'* (mapcar #'(lambda (word) (word-probability (occurrences word corpus1)
-                                                                       (occurrences word total-corpus)
-                                                                       2))
-                                    ;; Need the best words here
-                                    chosen-words1)))
-         (score2 (apply #'* (mapcar #'(lambda (word) (word-probability (occurrences word corpus2)
-                                                                       (occurrences word total-corpus)
-                                                                       2))
-                                    ;; Need the best words here
-                                    chosen-words2)))
-         (prob-sum (+ score1 score2))
-         (final-score1 (/ score1 prob-sum)))
-    ;; TBD: Rework explainer for pairs
-    ;; Only returns the score for the first folder
-    (coerce final-score1 'single-float)))
+(defun pair-scores-explainer (vocab folders pair-scores pair-chosen-words) ; TBD: Fix names
+  ;; The scores FOR a given folder are in its rows. TBD: Make that clear from the window
+  (let* ((W (window "explaining scores since 17-10-2020")))
+    (dotimes (i (length folders))
+      (let ((folder (nth i folders)))
+        (button 0 (1+ i) W (simplified-path folder) #'pass)
+        (button (1+ i) 0 W (simplified-path folder) #'pass)
+        (dotimes (j (length folders))
+          (let* ((opponent (nth j folders))
+                 (smaller-size (min (get-file-count folder)
+                                    (get-file-count opponent)))
+                 (folder-corpus (normalize-corpus (get-recursive-corpus folder)
+                                                  (/ smaller-size (get-file-count folder))
+                                                  vocab))
+                 (opponent-corpus (normalize-corpus (get-recursive-corpus opponent)
+                                                    (/ smaller-size (get-file-count opponent))
+                                                    vocab)) ;;BUG: These corpuses are NOT normalized!!! TBD: Rework code to make that more obvious next time. TBD: Don't request the full vocab.
+                 (pair (cons folder opponent))
+                 (chosen-words (gethash pair pair-chosen-words))
+                 (word-scores (let ((acc (make-hash-table :test #'equal)))
+                                (dolist (word chosen-words)
+                                  (setf (gethash word acc)
+                                        (word-probability (occurrences word folder-corpus)
+                                                          (+ (occurrences word folder-corpus)
+                                                             (occurrences word opponent-corpus))
+                                                          2)))
+                                acc))
+                 (score (gethash pair pair-scores)))
+            ;; rebinded i for button use
+            (button (1+ i)
+                    (1+ j)
+                    W
+                    (if (= i j)
+                        ""
+                        (write-to-string score))
+                    #'(lambda () (words-explainer chosen-words word-scores)))))))
+    W))
 
-(defun pagerank (options scores-table)
-  (let ((scores (make-hash-table :test #'equal))
-        (acc (make-hash-table :test #'equal)))
-    (dolist (option options)
-      (setf (gethash option scores) ;; TBD: Return to normalcy
-            (- (random 10) 5.01) ;;(/ (length options))
-            ))
-    (dotimes (i *iterations*)
-      (dolist (option options)
-        (setf (gethash option acc)
-              (/ (apply #'+
-                        (mapcar #'(lambda (option2)
-                                    (if (equal option option2)
-                                        0
-                                        (* (gethash option2 scores)
-                                           (gethash (cons option option2) scores-table))))
-                                options))
-                 (apply #'+ (mapcar #'(lambda (option2) (if (equal option2 option)
-                                                            0
-                                                            (gethash option2 scores)))
-                                    options)))))
-      (let ((probsum (apply #'+ (mapcar #'(lambda (opt) (gethash opt acc))
-                                        options))))
-        ;; TBD: Maybe somehow display the eventual probsum, because it is also a result of the calculation, it is unique, and seems to somehow reflect on the certainty of the result
-        ;; Probsum: Min 1, Max N/2 for N options
-        (dolist (option options)
-          (setf (gethash option scores)
-                (/ (gethash option acc)
-                   probsum)))))
-    scores))
+(defun chosen-words (vocab word-scores)
+  (let* ((ordered-words (sort (copy-seq vocab)
+                              #'<
+                              :key #'(lambda (word) (gethash word word-scores))))
+         (evidence-length (floor (/ (length (remove-if #'(lambda (word) (>= 4/5 (gethash word word-scores) 1/5))
+                                                       ordered-words))
+                                    2))))
+    (append (subseq ordered-words 0 (min evidence-length
+                                         (length ordered-words)))
+            (subseq ordered-words (max 0
+                                       (- (length ordered-words) evidence-length))))
 
-(defun evaluate (url folder &optional (on? t))
-  ;; Has to return a list of conses (subfolder . score)
+    #|(remove-if #'(lambda (word) (> 0.8 (gethash word word-scores) 0.2))
+    ordered-words)|#
+    ))
+
+(defun compare-folders (vocab folders)
+  ;; Returns a cons of two hash tables. A hash table of path -> score, and a hash table of path -> chosen words.
+  (let* ((folder-count (length folders))
+         (smallest-folder (apply #'min (mapcar #'get-file-count folders)))
+         (corpuses (let ((acc (make-hash-table :test #'equal)))
+                     (dolist (path folders)
+                       (setf (gethash path acc)
+                             (normalize-corpus (get-recursive-corpus path)
+                                               (/ smallest-folder (get-file-count path)) ; TBD: Warn if a folder is empty!
+                                               vocab)))
+                     acc))
+         (total-corpus (reduce #'add-hashtable-corpuses
+                               (mapcar #'(lambda (path) (gethash path corpuses))
+                                       folders)))
+         (scores (make-hash-table :test #'equal))
+         (evidence (make-hash-table :test #'equal)))
+    (dolist (path folders)
+      ;; balance evidence for and against
+      (let* ((corpus (gethash path corpuses))
+             ;; we need a score for every word-path pair
+             (word-scores (let ((acc (make-hash-table :test #'equal)))
+                            (dolist (word vocab)
+                              (setf (gethash word acc)
+                                    (word-probability (occurrences word corpus)
+                                                      (occurrences word total-corpus)
+                                                      folder-count)))
+                            acc))
+             (chosen-words (chosen-words vocab word-scores))
+             (score (apply #'* (mapcar #'(lambda (word) (gethash word word-scores))
+                                       ;; Need the best words here
+                                       chosen-words))))
+        (apply #'* (mapcar #'(lambda (word) (coerce (gethash word word-scores) 'double-float))
+                           ;; Need the best words here
+                           chosen-words))
+        (setf (gethash path scores) score)
+        (setf (gethash path evidence) chosen-words)))
+
+    ;; Potential BUG: Very long ratios
+    (let ((prob-sum (apply #'+ (mapcar #'(lambda (path) (gethash path scores)) folders))))
+      (dolist (path folders)
+        (setf (gethash path scores)
+              (coerce (/ (gethash path scores)
+                         prob-sum)
+                      'single-float))))
+    (cons scores evidence)))
+
+(defun scores (vocab folders)
   ;; In folders without subfolders, we don't want to do anything
-  (if (and on? (subfolders folder) *try-to-class?*)
-      (let* ((subfolders (subfolders folder))
-             (vocab (gethash nil (wordlist (url-text url))))
-             (scores-table (let ((acc (make-hash-table :test #'equal)))
-                             (dolist (folder1 subfolders)
-                               (dolist (folder2 subfolders)
-                                 (if (not (equal folder1 folder2))
-                                     (setf (gethash (cons folder1 folder2) acc)
-                                           (pair-compare vocab folder1 folder2)))))
-                             acc))
-             (tournament-results (pagerank subfolders scores-table)))
-        (mapcar #'(lambda (path)
-                    (cons path (gethash path tournament-results)))
-                (subfolders folder)))
-      ;; this is returned if evaluation is off (equal chances for everything)
-      (mapcar #'(lambda (path)
-                  (cons path (/ (length (subfolders folder)))))
-              (subfolders folder))))
+  (if (and folders *try-to-class?*)
+      (let ((pair-scores (make-hash-table :test #'equal))
+            (pair-chosen-words (make-hash-table :test #'equal)))
+        (dolist (folder folders)
+          (dolist (opponent folders)
+            (if (equal folder opponent)
+                (setf (gethash (cons folder opponent) pair-scores) 0) ; chosen words can remain empty
+                (let* ((data (compare-folders vocab (list folder opponent)))
+                       (scores (car data))
+                       (evidence (cdr data)))
+                  (setf (gethash (cons folder opponent) pair-scores)
+                        (gethash folder scores))
+                  (setf (gethash (cons folder opponent) pair-chosen-words)
+                        (gethash folder evidence))))))
+        (let ((scores (pagerank folders pair-scores)))
+          ;; the explainer should get two major word info tables, coded as hash tables for (folder . opponent), and containing either hash tables of word -> score or lists of decisive words.
+          (list-hashes pair-chosen-words)
+          (if *explain?*
+              (pair-scores-explainer vocab folders pair-scores pair-chosen-words))
+          scores))
+      (cons (make-hash-table :test #'equal)
+            (make-hash-table :test #'equal))))
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 (defun database-window (url-entry)
   (let* ((url (ltk:text url-entry))
@@ -167,17 +198,17 @@ TBD: Reword corpus rebuilding using hash tables.
                (push (label 0 2 f (concat "Current folder: " current-folder))
                      widget-list)
                ;; produces conses of (subfolder . score)
-               (let ((scores (evaluate url current-folder)))
-                 (dolist (i scores)
-                   (let ((subfolder (car i)))
-                     (incf counter)
-                     (push (button counter
-                                   1
-                                   f
-                                   (concat (file-name subfolder t) (write-to-string (cdr i)))
-                                   #'(lambda ()
-                                       (redraw subfolder)))
-                           widget-list)))))
+               (let* ((subfolders (subfolders current-folder))
+                      (scores (scores (gethash nil (wordlist (url-text url))) subfolders)))
+                 (dolist (i subfolders)
+                   (incf counter)
+                   (push (button counter
+                                 1
+                                 f
+                                 (concat (file-name i t) (write-to-string (gethash i scores)))
+                                 #'(lambda ()
+                                     (redraw i)))
+                         widget-list))))
 
              (redraw (new-path)
                ;; Reading from the text adds a newline. Unclear why.
@@ -211,14 +242,12 @@ TBD: Reword corpus rebuilding using hash tables.
                                                      (file-count (length (directory* files-folder)))
                                                      (new-file-folder (concat files-folder (write-to-string (1+ file-count)) "/")))
                                                 (ensure-directories-exist new-file-folder)
-                                                (log-print (concat "Downloading URL: " url))
                                                 (with-open-file (stream (concat new-file-folder "url") :direction :output :if-exists :append :if-does-not-exist :create)
                                                   (print url stream))
                                                 (with-open-file (stream (concat new-file-folder "html") :direction :output :if-exists :append :if-does-not-exist :create)
                                                   (print (safe-fetch-html url) stream))
                                                 (with-open-file (stream (concat new-file-folder "text") :direction :output :if-exists :append :if-does-not-exist :create)
-                                                  (print (url-text url) stream))
-                                                (log-print "Download complete."))
+                                                  (print (url-text url) stream)))
                                               (setf (ltk:text url-entry) "")
                                               (ltk:destroy W))
                                             (log-print "File already in folder."))))
