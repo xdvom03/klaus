@@ -57,3 +57,4 @@ It's not there yet. Not even started. Well, you can list links of a site. That's
 
 Dexador (https://github.com/fukamachi/dexador) for downloading page data.
 LTK (http://www.peter-herth.de/ltk/index.html) for the window GUI (its current awfulness is my responsibility, not LTK's).
+QURI (https://github.com/fukamachi/quri) for dealing with URL character issues (example.com/B%C3%A1g%C5%99i -> example.com/Bágři)
