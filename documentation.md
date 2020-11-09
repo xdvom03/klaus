@@ -52,3 +52,8 @@ This seems like a functional problem, for corpuses are just hash tables (diction
 # Crawler
 
 It's not there yet. Not even started. Well, you can list links of a site. That's something.
+
+# Used libraries
+
+Dexador (https://github.com/fukamachi/dexador) for downloading page data.
+LTK (http://www.peter-herth.de/ltk/index.html) for the window GUI (its current awfulness is my responsibility, not LTK's).
