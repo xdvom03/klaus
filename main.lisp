@@ -11,6 +11,10 @@ Convergence gets slow for very obvious choices, like boilerplace. We lose 30 ord
 TBD: Display bottlenecks for precision (subfolder with fewest files).
 TBD: Toggle adding into history
 TBD: Speed up
+TBD: macro-fy the list window or rework the whole damn thing
+TBD: Load title for links
+BUG: The method with the 0.8 threshold causes some sites to be classed based on just one word. Shucks, should take flimsier evidence?
+BUG: Fails to recognize URLs as identical given minor alterations (such as www, http/s, etc.). Perhaps something like a "purge duplicates" button would be useful, looking at page contents, and thus recognising reposts.
 
 Proof against tends to be a stronger discriminator than proof for. Is that a problem? It helps distinguish, say, articles about copyright from legal boilerplate. But what about the general case?
 
@@ -82,9 +86,10 @@ Related TBD: Redownload button.
   (let* ((ordered-words (sort (copy-seq vocab)
                               #'<
                               :key #'(lambda (word) (gethash word word-scores))))
-         (evidence-length (floor (/ (length (remove-if #'(lambda (word) (>= 4/5 (gethash word word-scores) 1/5))
-                                                       ordered-words))
-                                    2))))
+         (evidence-length (max *evidence-length*
+                               (floor (/ (length (remove-if #'(lambda (word) (>= 4/5 (gethash word word-scores) 1/5))
+                                                            ordered-words))
+                                         2)))))
     (append (subseq ordered-words 0 (min evidence-length
                                          (length ordered-words)))
             (subseq ordered-words (max 0
@@ -162,21 +167,7 @@ Related TBD: Redownload button.
           (if *explain?*
               (pair-scores-explainer vocab folders pair-scores pair-chosen-words))
           scores))
-      (cons (make-hash-table :test #'equal)
-            (make-hash-table :test #'equal))))
-
-
-
-
-
-
-
-
-
-
-
-
-
+      (make-hash-table :test #'equal)))
 
 (defun database-window (url-entry)
   (let* ((url (ltk:text url-entry))
@@ -205,7 +196,7 @@ Related TBD: Redownload button.
                    (push (button counter
                                  1
                                  f
-                                 (concat (file-name i t) (write-to-string (gethash i scores)))
+                                 (concat (file-name i t) " score: " (write-to-string (gethash i scores)) ", " (write-to-string (get-file-count i)) " files.")
                                  #'(lambda ()
                                      (redraw i)))
                          widget-list))))
@@ -278,7 +269,7 @@ Related TBD: Redownload button.
 (defun link-options-window (link index folder url-entry)
   (let* ((W (window link))
          (link-folder (concat folder (write-to-string index) "/"))
-         (url (file-url folder)))
+         (url (file-url link-folder)))
     (button 0 0 W "REMOVE" #'(lambda ()
                                ;; For safety reasons, no recursive deletion is used.
                                (delete-file (concat link-folder "url"))
@@ -329,7 +320,7 @@ Related TBD: Redownload button.
                                     (dolist (button log-list)
                                       (ltk:destroy button))
                                     (setf log-list nil)))
-      (button 0 2 W "Open & edit history" #'(lambda () (history-window e1)))
+      (button 0 2 W "Open & edit history" #'(lambda () (history-window e1 *entries-per-page*)))
       (button 1 1 W "List links" #'(lambda ()
                                      (link-window e1)))
       (button 2 1 W "Random link" #'(lambda ()

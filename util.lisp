@@ -1,4 +1,4 @@
-(ql:quickload (list "ltk" "dexador" "trivial-utf-8"))
+(ql:quickload (list "ltk" "dexador" "quri"))
 
 ;; TBD: Unite the "data retrieval from file" process
 
@@ -14,11 +14,14 @@
 
 (defparameter *entries-per-page* 20)
 (defparameter *try-to-class?* t)
-(defparameter *explain?* t)
+(defparameter *explain?* nil)
 (defparameter *evidence-length* 6)
 (defparameter *newline* "
 ")
 (defparameter *iterations* 20)
+(defparameter *crawler-name* "botelaire")
+
+(defparameter *forbidden-extensions* (list "css" "png" "mp4" "ico" "svg" "webmanifest"))
 
 (defun pass ())
 
@@ -257,8 +260,10 @@
 
 (defun safe-fetch-html (url)
   "Gets HTML data from a URL, but if it 404's, it returns nothing found."
-  (let ((unsafe (ignore-errors (dex:get url))))
-    (if (null unsafe)
+  ;; TBD: Figure out how to dynamically insert the bot name into the headers
+  (let ((unsafe (ignore-errors (dex:get url :headers '(("User-Agent" . "Botelaire, crawler for https://github.com/xdvom03/klaus (reads robots.txt for botelaire). In case of any trouble, contact xdvom03 [at] gjk [dot] cz."))))))
+    ;; an image link, or anything that isn't a string, is considered a 404
+    (if (or (null unsafe) (not (stringp unsafe)))
         "nothingfound"
         unsafe)))
 
@@ -289,6 +294,15 @@
        (if (slash? (char url (1- i)))
            (subseq url 0 (1- i))
            (subseq url 0 i)))))
+
+(defun remove-domain (url)
+  (do ((i 0 (1+ i))
+       (slashes 2 (- slashes (if (slash? (char url i)) 1 0))))
+      ((or (< slashes 0)
+           (>= i (length url)))
+       (if (slash? (char url (1- i)))
+           (subseq url (1- i))
+           (subseq url i)))))
 
 (defun remove-enclosed (text delim1 delim2)
   "Removes all text enclosed between delim1 and delim2, including the tags. Returns remaining text. Nondestructive."
@@ -428,11 +442,10 @@
 
       (print-to-file "file-count" url-count)
       (print-to-file "corpus" (corpus-list corpus))
-      (log-print "Rebuilt corpus: "
-                 (simplified-path folder)
-                 ". Time taken: "
-                 ;; internal-time-units-per-second is a LISP built-in constant
-                 (write-to-string (coerce (/ (- (get-internal-real-time) timer) internal-time-units-per-second) 'single-float)))
+      (if (equal folder *home-folder*)
+          (log-print "Rebuilt the corpus. Time taken: "
+                     ;; internal-time-units-per-second is a LISP built-in constant
+                     (write-to-string (coerce (/ (- (get-internal-real-time) timer) internal-time-units-per-second) 'single-float))))
       (cons url-count corpus))))
 
 (defun add-hashtable-corpuses (corp1 corp2)
@@ -544,7 +557,7 @@
   (mapcar #'read-from-string (file-lines *history-file*)))
 
 (defun remove-from-history (index)
-  (log-print "Removing " (write-to-string index) " from history.")
+  (log-print "Removing " (nth index (history)) " from history.")
   (let ((hst (history)))
     (with-open-file (stream *history-temp-file* :direction :output :if-exists :supersede :if-does-not-exist :create)
       (dolist (i (remove-nth index hst))
@@ -552,25 +565,69 @@
     (delete-file *history-file*)
     (rename-file *history-temp-file* *history-rename*)))
 
-(defun history-window (url-entry)
+(defun history-window (url-entry page-length)
   (let* ((W (window "History"))
-         (e (entry 0 1 W))
-         (buttons nil))
+         (e (entry 0 3 W))
+         (f (frame page-length 1 W))
+         (l (label (1+ page-length) 1 W ""))
+         (buttons (let ((acc nil))
+                    (dotimes (i page-length)
+                      (push (button i 1 W "" #'pass) acc))
+                    (reverse acc)))
+         (buttons2 (let ((acc nil))
+                     (dotimes (i page-length)
+                       (push (button i 2 W "" #'pass) acc))
+                     (reverse acc)))
+         (start 0)
+         left
+         right)
     (labels ((redraw ()
-               (let ((counter 0))
-                 (dolist (button buttons)
-                   (ltk:destroy button))
-                 (dolist (i (history))
-                   (incf counter)
+               (let ((hst (history)))
+                 (dotimes (i page-length)
+                   (let ((open-link (+ start i)) ;rebind
+                         (b (nth i buttons)))
+                     (if (> (length hst) (+ start i) -1)
+                         (progn
+                           (setf (ltk:text b) (nth (+ start i) hst))
+                           (setf (ltk:command b) #'(lambda () (setf (ltk:text url-entry) (nth open-link hst)))))
+                         (progn
+                           (setf (ltk:text b) "")
+                           (setf (ltk:command b) #'pass)))))
+                 (dotimes (i page-length)
+                   (let ((remove-link (+ start i)) ; rebind
+                         (b (nth i buttons2)))
+                     (if (> (length hst) (+ start i) -1)
+                         (progn
+                           (setf (ltk:text b) "REMOVE")
+                           (setf (ltk:command b) #'(lambda ()
+                                                     (remove-from-history remove-link)
+                                                     (redraw))))
+                         (progn
+                           (setf (ltk:text b) "")
+                           (setf (ltk:command b) #'pass)))))
+                 (setf (ltk:text l) (concat (write-to-string start) "/" (write-to-string (length hst))))
+                 (if (>= start page-length)
+                     (ltk:configure left :state :normal)
+                     (ltk:configure left :state :disabled))
+                 (if (<= start (- (length hst) page-length))
+                     (ltk:configure right :state :normal)
+                     (ltk:configure right :state :disabled))
+                 #|(dolist (i (history))
                    (let ((remove-link (1- counter))) ; Counter must be rebinded to be different for all numbers. remove-link is NOT a redundant variable.
                      (push (button counter 2 W i #'(lambda () (setf (ltk:text url-entry) i))) buttons)
                      (push (button counter 3 W "REMOVE" #'(lambda ()
                                                             (remove-from-history remove-link)
                                                             (redraw)))
-                           buttons))))))
+                           buttons)))|#)))
       (button 0 0 W "X" #'kill-all)
+      (setf left (button 0 0 f "←" #'(lambda ()
+                                       (decf start page-length)
+                                       (redraw))))
+      (setf right (button 0 1 f "→" #'(lambda ()
+                                        (incf start page-length)
+                                        (redraw))))
       (redraw)
-      (button 1 1 W "Push to history" #'(lambda ()
+      (button 1 3 W "Push to history" #'(lambda ()
                                           (add-to-history (ltk:text e)) (redraw))))))
 
 ;;; HISTORY
@@ -578,35 +635,41 @@
 ;;; SCORE MATH
 
 (defun pagerank (options scores-table)
-  (let ((scores (make-hash-table :test #'equal))
-        (acc (make-hash-table :test #'equal)))
-    (dolist (option options)
-      (setf (gethash option scores)
-            ;; BEWARE of ratios entering this calculation, for they explode in precision, size, and lag.
-            (coerce (/ (length options)) 'single-float)))
-    (dotimes (i *iterations*)
-      (dolist (option options)
-        (setf (gethash option acc)
-              (/ (apply #'+
-                        (mapcar #'(lambda (option2)
-                                    (if (equal option option2)
-                                        0
-                                        (* (gethash option2 scores)
-                                           (gethash (cons option option2) scores-table))))
-                                options))
-                 (apply #'+ (mapcar #'(lambda (option2) (if (equal option2 option)
-                                                            0
-                                                            (gethash option2 scores)))
-                                    options)))))
-      (let ((probsum (apply #'+ (mapcar #'(lambda (opt) (gethash opt acc))
-                                        options))))
-        ;; TBD: Maybe somehow display the eventual probsum, because it is also a result of the calculation, it is unique, and seems to somehow reflect on the certainty of the result
-        ;; Probsum: Min 1, Max N/2 for N options
+  ;; Pageranking one or zero folders results in division 0/0
+  (if (< (length options) 2)
+      (let ((scores (make-hash-table :test #'equal)))
+        (dolist (option options)
+          (setf (gethash option scores) 1))
+        scores)
+      (let ((scores (make-hash-table :test #'equal))
+            (acc (make-hash-table :test #'equal)))
         (dolist (option options)
           (setf (gethash option scores)
-                (/ (gethash option acc)
-                   probsum)))))
-    scores))
+                ;; BEWARE of ratios entering this calculation, for they explode in precision, size, and lag.
+                (coerce (/ (length options)) 'single-float)))
+        (dotimes (i *iterations*)
+          (dolist (option options)
+            (setf (gethash option acc)
+                  (/ (apply #'+
+                            (mapcar #'(lambda (option2)
+                                        (if (equal option option2)
+                                            0
+                                            (* (gethash option2 scores)
+                                               (gethash (cons option option2) scores-table))))
+                                    options))
+                     (apply #'+ (mapcar #'(lambda (option2) (if (equal option2 option)
+                                                                0
+                                                                (gethash option2 scores)))
+                                        options)))))
+          (let ((probsum (apply #'+ (mapcar #'(lambda (opt) (gethash opt acc))
+                                            options))))
+            ;; TBD: Maybe somehow display the eventual probsum, because it is also a result of the calculation, it is unique, and seems to somehow reflect on the certainty of the result
+            ;; Probsum: Min 1, Max N/2 for N options
+            (dolist (option options)
+              (setf (gethash option scores)
+                    (/ (gethash option acc)
+                       probsum)))))
+        scores)))
 
 ;; Using Laplace smoothing for now
 (defun word-probability (target total subfolder-count)
