@@ -7,6 +7,17 @@ This will eventually become a proper PDF and less of a rambling mess. The same *
 For a full documentation, wait until February or March.
 Pro úplnou dokumentaci v češtině počkejte do února až března. Český překlad se asi objeví spíš později.
 
+# State of the features
+
+The program has three pillars, developed in parallel and influencing each other:
+* Classing system
+  * Most of the thing works, there is a page length bias investigation pending
+* Categories
+  * Work reasonably well, but cannot be published yet because of file system issues
+* Crawler
+  * Is reasonably polite (respects robots.txt and classing is slow enough not to overload a page, though it should cache robots.txt)
+  * Is just directed away from legal boilerplate and truly useless articles, so it tends to wander somewhat aimlessly
+
 # Evolution (and explanation) of the mechanics
 
 The original idea comes from Paul Graham's spam filter (www.paulgraham.com/spam.html). It's a very basic text classification problem, simplified by there being just two categories and by the many distinctive features of spam. Graham came up with an idea that was revolutionary in 2002, that is, classification by Bayesian combination of probabilities of each word being spam.
@@ -51,7 +62,7 @@ This seems like a functional problem, for corpuses are just hash tables (diction
 
 # Crawler
 
-It's not there yet. Not even started. Well, you can list links of a site. That's something.
+The crawl function checks all (allowed) links (that contain text), puts them in a queue based on score in the "valuable" folder, then seeks high scores. It seems to achieve them, if it is possible, by leaving trash sites as fast as it can, usually by a Wikipedia link (they are everywhere!), where it can find eternal refuge. Needs better direction.
 
 # Used libraries
 
