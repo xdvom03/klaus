@@ -6,10 +6,13 @@
 ;;;----------------------------------------------------------------------------------------------
 ;;; UTILS
 
-(defparameter *home-folder* "../DATA/dewey2/webdewey/")
+(defparameter *classes-folder* "../DATA/klaus/classes/")
+(defparameter *files-folder* "../DATA/klaus/files/")
+(defparameter *aliases-file* "../DATA/klaus/file-aliases")
 ;; BEWARE: Do not change without knowing what you are doing! Can mess up history!
-(defparameter *history-file* "../DATA/dewey2/history/history")
-(defparameter *history-temp-file* "../DATA/dewey2/history/history2")
+;; TBD: Turn this into another folder
+(defparameter *history-file* "../DATA/klaus/history/history")
+(defparameter *history-temp-file* "../DATA/klaus/history/history2")
 (defparameter *history-rename* "history")
 
 (defparameter *entries-per-page* 20)
@@ -24,6 +27,9 @@
 (defparameter *forbidden-extensions* (list "css" "png" "mp4" "ico" "svg" "webmanifest"))
 
 (defun pass ())
+
+(defun append1 (lst elem)
+  (append lst (list elem)))
 
 (defun shuffle (lst)
   (let ((acc1 nil)
@@ -47,14 +53,26 @@
   (slash? (char (namestring path) (1- (length (namestring path))))))
 
 (defun countup (num)
+  ;; TBD: Check that this is used legitimately, perhaps a mapa->b like function is what we're really after.
   ;; Returns a list of length num with integers incrementing from zero
   (let ((acc nil))
     (dotimes (i num)
       (push i acc))
     (reverse acc)))
 
+(defun convert-to-str (list)
+  (concatenate 'string list))
+
 (defun concat (&rest strings)
-  (apply #'concatenate 'string strings))
+  ;; Writes numbers out, but leaves the rest be to signal errors if something VERY wrong is supplied
+  ;; Not allowing lists for now because it seems like more trouble than it's worth
+  (apply #'concatenate 'string (mapcar #'(lambda (a)
+                                           (if (null a) (error "Trying to concat with NIL")) ; specific case, signal first
+                                           (if (listp a) (error "Trying to concat a list, use convert-to-str instead!"))
+                                           (if (numberp a)
+                                               (write-to-string a)
+                                               a))
+                                       strings)))
 
 ;;; UTILS
 ;;;----------------------------------------------------------------------------------------------
@@ -90,35 +108,28 @@
   (with-open-file (stream (concat folder "comment") :direction :output :if-exists :supersede :if-does-not-exist :create)
     (print text stream)))
 
-;;; TBD: rename! "file" is actually a folder...
-
+;; TBD: All we need to fix for rebuild-corpus to work again should be the plural functions here
 (defun subfolders (folder)
-  (directory* (concat folder "subfolders/")))
+  (remove-if-not #'folder? (directory* folder)))
 
-(defun file-url (file)
+(defun file-url (file) ;; Beware, this is required for link window! Change that!
   (read-from-file (concat (namestring file) "url")))
 
-(defun file-urls (folder)
-  (mapcar #'file-url (directory* (concat folder "files/"))))
+(defun file-urls (class) ;; TBD: Obviously a bit pointless
+  (class-links class))
 
-(defun file-text (file)
-  (read-from-file (concat (namestring file) "text")))
+(defun file-text (file-name)
+  (extract-text (file-content file-name)))
 
 (defun file-texts (folder)
-  (mapcar #'file-text (directory* (concat folder "files/"))))
-
-(defun file-html (file)
-  (read-from-file (concat (namestring file) "html")))
-
-(defun file-htmls (folder)
-  (mapcar #'file-html (directory* (concat folder "files/"))))
+  (mapcar #'file-text (class-links folder)))
 
 (defun simplified-path (path)
   (let* ((path-parts (split path (char "/" 0)))
-         (varying-part (member "subfolders" path-parts :test #'equal)))
+         (varying-part (cdr (member "classes" path-parts :test #'equal))))
     (reduce #'(lambda (a b) (concat a "/" b))
             ;; Prepend an empty string in case of the home folder - reducing NIL it has no idea what the base state is.
-            (cons "" (remove-if #'(lambda (word) (equal word "subfolders")) varying-part)))))
+            (cons "" varying-part))))
 
 ;;; FOLDER NAVIGATION
 ;;;----------------------------------------------------------------------------------------------
@@ -136,6 +147,12 @@
     (setf (ltk:text b) txt)
     (setf (ltk:command b) command)
     b))
+
+(defun button-column (window column page-length &optional (starting-row 0))
+  (let ((acc nil))
+    (dotimes (i page-length)
+      (push (button (+ i starting-row) column window "" #'pass) acc))
+    (reverse acc)))
 
 (defun text (r c master txt)
   (let ((tex (widget r c 'ltk:text master)))
@@ -173,10 +190,7 @@
          (W (window title))
          (f (frame (length lst) 0 W))
          (l (label (1+ (length lst)) 0 W ""))
-         (buttonlist (let ((acc nil))
-                       (dotimes (i page-length)
-                         (push (button i 0 W "" #'pass) acc))
-                       (reverse acc)))
+         (buttonlist (button-column W 0 page-length))
          left
          right
          (redraw #'(lambda ()
@@ -190,7 +204,7 @@
                              (progn
                                (setf (ltk:text b) "")
                                (setf (ltk:command b) #'pass)))))
-                     (setf (ltk:text l) (concat (write-to-string start) "/" (write-to-string (length lst))))
+                     (setf (ltk:text l) (concat start "/" (length lst)))
                      (if (>= start page-length)
                          (ltk:configure left :state :normal)
                          (ltk:configure left :state :disabled))
@@ -219,13 +233,14 @@
   "Returns a list of parts of the text denoted by the character. Removes the splitting character."
   (let ((word-acc nil)
         (text-acc nil))
-    (dotimes (i (length text) (mapcar #'(lambda (a) (concat a)) ; needed to turn character lists into words
-                                      (reverse (cons (reverse text-acc) word-acc))))
+    (dotimes (i (length text))
       (if (equal (char text i) char)
           (progn
             (push (reverse text-acc) word-acc)
             (setf text-acc nil))
-          (push (char text i) text-acc)))))
+          (push (char text i) text-acc)))
+    (mapcar #'(lambda (a) (convert-to-str a)) ; needed to turn character lists into words
+            (reverse (cons (reverse text-acc) word-acc)))))
 
 (defun find-enclosed-text (text delim1 delim2 &optional (space nil))
   "Lists things between delim1 and delim2 found in text. Does not include the delimiters. Only returns the first word according to an optional parameter. If it's nil, it returns the whole delimited part. Ignores case." 
@@ -246,8 +261,8 @@
               (push (char text (+ i j)) unit))
             (if (not (equal unit 0))
                 (let ((unit-str (if space
-                                    (first (split (concat (reverse unit)) #\ ))
-                                    (concat (reverse unit)))))
+                                    (first (split (convert-to-str (reverse unit)) #\ ))
+                                    (convert-to-str (reverse unit)))))
                   (if (not (member unit-str acc :test #'equal :key #'string-downcase))
                       (push unit-str acc))))
             (setf unit nil))))
@@ -305,16 +320,18 @@
            (subseq url i)))))
 
 (defun remove-enclosed (text delim1 delim2)
+  ;; TBD: Verify
   "Removes all text enclosed between delim1 and delim2, including the tags. Returns remaining text. Nondestructive."
   (let ((acc nil)
         (enclosed-p nil))
-    (dotimes (i (length text) (concat (reverse acc)))
+    (dotimes (i (length text))
       (cond ((equal (subseq text i (min (+ i (length delim1)) (length text))) delim1) (setf enclosed-p t))
             ((equal (subseq text i (min (+ i (length delim2)) (length text))) delim2) (progn
                                                                                         (setf enclosed-p nil)
                                                                                         (setf i (+ i (length delim2) -1))))
             (t (if (not enclosed-p)
-                   (push (char text i) acc)))))))
+                   (push (char text i) acc)))))
+    (convert-to-str (reverse acc))))
 
 (defun remove-tags (text)
   (remove-enclosed text "<" ">"))
@@ -332,28 +349,31 @@
                                   #\* #\G #\A #\9 #\4 #\5 #\3 #\I #\v #\0 #\b #\S #\: #\{ #\f #\] #\[ #\Q #\L #\R #\w #\; #\2 #\1 #\, #\$ #\) #\\ #\| #\^ #\( #\N #\. #\u #\p #\k #\W #\/ #\8 #\F #\U #\r #\d #\g #\j #\o #\- #\n #\e #\i
                                   #\" #\= #\s #\a #\c #\> #\l #\m #\t #\h #\E #\P #\Y #\T #\C #\O #\D #\! #\< #\  #\Newline))
           (push (char text i) acc)
-          (push (char "*" 0) acc)))))
+          (push (char "*" 0) acc)))
+    (convert-to-str (reverse acc))))
 
 (defun remove-punctuation (text)
   ;; Replaces commas, parentheses, periods, etc. by spaces
   (let ((acc nil))
-    (dotimes (i (length text) (concat (reverse acc)))
+    (dotimes (i (length text))
       (if (member (char text i) '(#\EM_DASH #\LEFTWARDS_ARROW #\EN_DASH #\PLUS-MINUS_SIGN #\THIN_SPACE #\MINUS_SIGN #\DEGREE_SIGN #\# #\& #\? #\+ #\}
                                   #\* #\: #\{ #\] #\[ #\; #\, #\) #\\ #\| #\^ #\( #\. #\/ #\-
                                   #\" #\= #\> #\! #\<))
           (push (char " " 0) acc)
-          (push (char text i) acc)))))
+          (push (char text i) acc)))
+    (convert-to-str (reverse acc))))
 
 (defun remove-whitespace (text)
   ;;Keeps spaces but removes tabs, newlines, etc.
   ;;Replaces them by spaces
   (let ((acc nil))
-    (dotimes (i (length text) (concat (reverse acc)))
+    (dotimes (i (length text))
       (if (member (char text i) '(#\  #\EM_DASH #\LEFTWARDS_ARROW #\EN_DASH #\PLUS-MINUS_SIGN #\THIN_SPACE #\MINUS_SIGN #\' #\DEGREE_SIGN #\# #\6  #\_ #\7 #\% #\& #\? #\+ #\@ #\} #\Z #\X #\M #\z #\H #\q #\V #\K #\J #\y #\x #\B
                                   #\* #\G #\A #\9 #\4 #\5 #\3 #\I #\v #\0 #\b #\S #\: #\{ #\f #\] #\[ #\Q #\L #\R #\w #\; #\2 #\1 #\, #\$ #\) #\\ #\| #\^ #\( #\N #\. #\u #\p #\k #\W #\/ #\8 #\F #\U #\r #\d #\g #\j #\o #\- #\n #\e #\i
                                   #\" #\= #\s #\a #\c #\> #\l #\m #\t #\h #\E #\P #\Y #\T #\C #\O #\D #\! #\< #\ ))
           (push (char text i) acc)
-          (push (char " " 0) acc)))))
+          (push (char " " 0) acc)))
+    (convert-to-str (reverse acc))))
 
 (defun remove-diacritics (str)
   (map 'string
@@ -404,6 +424,7 @@
         0)))
 
 (defun wordlist (text)
+  ;; TBD: Fix name (hashtable!)
   ;; Produces a "corpus" (with each word in there once) out of a text. Hash table format,
   (let ((lst (remove-duplicates (split text (char " " 0)) :test #'equal))
         (corpus (make-hash-table :test #'equal)))
@@ -420,12 +441,13 @@
     (setf (gethash nil acc) words)
     acc))
 
-(defun rebuild-corpus (&optional (folder *home-folder*))
+(defun rebuild-corpus (&optional (folder *classes-folder*))
   ;; Writes the cons list format of the corpuses into the respective files.
   (labels ((print-to-file (file-name &rest things)
-             (with-open-file (stream (concat folder "analysis/" file-name) :direction :output :if-exists :supersede :if-does-not-exist :create)
+             (with-open-file (stream (concat folder file-name) :direction :output :if-exists :supersede :if-does-not-exist :create)
                (dolist (i things)
                  (print i stream)))))
+    
     (let ((subfolders (subfolders folder))
           (url-count 0)
           (corpus (make-hash-table :test #'equal))
@@ -442,10 +464,10 @@
 
       (print-to-file "file-count" url-count)
       (print-to-file "corpus" (corpus-list corpus))
-      (if (equal folder *home-folder*)
+      (if (equal folder *classes-folder*)
           (log-print "Rebuilt the corpus. Time taken: "
                      ;; internal-time-units-per-second is a LISP built-in constant
-                     (write-to-string (coerce (/ (- (get-internal-real-time) timer) internal-time-units-per-second) 'single-float))))
+                     (coerce (/ (- (get-internal-real-time) timer) internal-time-units-per-second) 'single-float)))
       (cons url-count corpus))))
 
 (defun add-hashtable-corpuses (corp1 corp2)
@@ -468,15 +490,14 @@
 
 (defun get-corpus (folder)
   ;; Returns cons of url count & corpus
-  (let ((urls (file-urls folder)))
-    (cons (length urls)
-          (let ((vocab-lists (mapcar #'wordlist
-                                     (file-texts folder))))
-            (if vocab-lists
-                (reduce #'add-hashtable-corpuses
-                        vocab-lists)
-                ;; Create an empty hash table
-                (make-hash-table :test #'equal))))))
+  (let ((vocab-lists (mapcar #'wordlist
+                             (file-texts folder))))
+    (cons (length vocab-lists)
+          (if vocab-lists
+              (reduce #'add-hashtable-corpuses
+                      vocab-lists)
+              ;; Create an empty hash table
+              (make-hash-table :test #'equal)))))
 
 (defun corpus-hashtable (list)
   ;; Converts from the list format to the hash table format
@@ -496,7 +517,7 @@
 
 (defun get-recursive-corpus (folder)
   ;; Looks into the corpus file and converts to the hash-table formulation
-  (with-open-file (stream (concat folder "analysis/corpus"))
+  (with-open-file (stream (concat folder "corpus"))
     (corpus-hashtable (read stream))))
 
 (defun get-subfolder-corpus (folder)
@@ -518,7 +539,7 @@
 
 (defun get-file-count (folder)
   ;; Just looks into the file-count file
-  (with-open-file (stream (concat folder "analysis/file-count"))
+  (with-open-file (stream (concat folder "file-count"))
     (read stream)))
 
 ;;; CORPUS
@@ -538,10 +559,8 @@
       ((slash? (char path i))
        (subseq path (1+ i)))))
 
-(defun url-text (url)
-  ;; Fetches text of an url
-  (let* ((raw (safe-fetch-html url))
-         (safe (concat (make-safe (remove-diacritics (string-downcase raw)))))
+(defun extract-text (html)
+  (let* ((safe (make-safe (remove-diacritics (string-downcase html))))
          (content (remove-whitespace (remove-tags (remove-enclosed (remove-enclosed safe "<style" "</style>") "<script" "</script>")))))
     content))
 
@@ -570,14 +589,8 @@
          (e (entry 0 3 W))
          (f (frame page-length 1 W))
          (l (label (1+ page-length) 1 W ""))
-         (buttons (let ((acc nil))
-                    (dotimes (i page-length)
-                      (push (button i 1 W "" #'pass) acc))
-                    (reverse acc)))
-         (buttons2 (let ((acc nil))
-                     (dotimes (i page-length)
-                       (push (button i 2 W "" #'pass) acc))
-                     (reverse acc)))
+         (buttons (button-column W 1 page-length))
+         (buttons2 (button-column W 2 page-length))
          (start 0)
          left
          right)
@@ -605,20 +618,13 @@
                          (progn
                            (setf (ltk:text b) "")
                            (setf (ltk:command b) #'pass)))))
-                 (setf (ltk:text l) (concat (write-to-string start) "/" (write-to-string (length hst))))
+                 (setf (ltk:text l) (concat start "/" (length hst)))
                  (if (>= start page-length)
                      (ltk:configure left :state :normal)
                      (ltk:configure left :state :disabled))
                  (if (<= start (- (length hst) page-length))
                      (ltk:configure right :state :normal)
-                     (ltk:configure right :state :disabled))
-                 #|(dolist (i (history))
-                   (let ((remove-link (1- counter))) ; Counter must be rebinded to be different for all numbers. remove-link is NOT a redundant variable.
-                     (push (button counter 2 W i #'(lambda () (setf (ltk:text url-entry) i))) buttons)
-                     (push (button counter 3 W "REMOVE" #'(lambda ()
-                                                            (remove-from-history remove-link)
-                                                            (redraw)))
-                           buttons)))|#)))
+                     (ltk:configure right :state :disabled)))))
       (button 0 0 W "X" #'kill-all)
       (setf left (button 0 0 f "←" #'(lambda ()
                                        (decf start page-length)
@@ -649,6 +655,7 @@
                 (coerce (/ (length options)) 'single-float)))
         (dotimes (i *iterations*)
           (dolist (option options)
+            ;; BUG: Possible division by 0. Limit probabilities to double float range.
             (setf (gethash option acc)
                   (/ (apply #'+
                             (mapcar #'(lambda (option2)
@@ -658,7 +665,7 @@
                                                (gethash (cons option option2) scores-table))))
                                     options))
                      (apply #'+ (mapcar #'(lambda (option2) (if (equal option2 option)
-                                                                0
+                                                                1d-15 ; prevents division by zero if it is certain the document belongs in a given category
                                                                 (gethash option2 scores)))
                                         options)))))
           (let ((probsum (apply #'+ (mapcar #'(lambda (opt) (gethash opt acc))

@@ -6,7 +6,7 @@ This is a project for the "maturita" exam from IT at Gymnázium Jana Keplera.
 
 # How to use?
 
-Download files. I use Portacle on Linux Ubuntu to run the program. I put a compressed version of the entire system (minus data, see below) in the repository as "system.zip". Install Portacle (https://portacle.github.io/) into the "portacle" folder inside.
+Download files. I use Portacle on Linux Ubuntu to run the program. I put a compressed version of the entire system (minus data, see below) in the repository as "system.zip". Install Portacle (https://portacle.github.io/) into the "portacle" folder inside. Load and compile all files. Run in the REPL by typing in (run).
 
 # Caveat emptor
 

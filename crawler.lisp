@@ -12,10 +12,12 @@ BUG: Can get stuck on: "Open too many files" or scoring "http://lightspeed.sourc
 TBD: Choose randomly from the queue weighted by the scores
 TBD: CACHE ROBOTS.TXT
 
+Sometimes gets stuck on a random URL for seemingly no reason. TBD: Do time requests, screw it after half a minute.
+
 Crawl 40 from:
 
 "https://www.waitbutwhy.com"
-"https://en.wikipedia.org"
+"https://en.wikipedia.org" (got stuck)
 "https://www.lifehack.org/891214/happiness-book"
 "https://www.jscc.edu/academics/programs/writing-center/writing-resources/five-paragraph-essay.html"
 |#
@@ -108,12 +110,23 @@ Crawl 40 from:
              (remove-duplicates (mapcar #'remove-fragment
                                         raw-links))))
 
+(defun pick-from-queue (queue)
+  (let* ((scoresum (apply #'+ (mapcar #'cdr queue)))
+         (choice (random (ceiling (* scoresum 1000000))))
+         (acc nil))
+    (dolist (option queue)
+      (decf choice (* (cdr option) 1000000))
+      (if (and (null acc)
+               (< choice 0))
+          (setf acc (car option))))
+    acc))
+
 (defun crawl (seed queue-size page-count)
   (let ((queue (list (cons seed 1)))
         (acc nil))
     (dotimes (i page-count)
       (print (concat "QUEUE: " (write-to-string queue)))
-      (let* ((best-url (car (first (sort (copy-seq queue) #'> :key #'cdr))))
+      (let* ((best-url (pick-from-queue queue))
              (raw-links (filter-links (vetted-links best-url
                                                     (find-domain best-url))))
              (message (print (concat "found " (write-to-string (length raw-links)) " links. Checking:")))
