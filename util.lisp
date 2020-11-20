@@ -28,8 +28,17 @@
 
 (defun pass ())
 
+(defun fallback (obj if-nil)
+  "Identity unless obj is NIL. In that case, returns if-nil."
+  (if obj
+      obj
+      if-nil))
+
 (defun append1 (lst elem)
   (append lst (list elem)))
+
+(defun last1 (lst)
+  (car (last lst)))
 
 (defun shuffle (lst)
   (let ((acc1 nil)
@@ -46,19 +55,20 @@
 (defun remove-last (lst)
   (reverse (cdr (reverse lst))))
 
+(defun replace-last (lst elem)
+  ;; If list is NIL, returns NIL
+  (if (null lst)
+      nil
+      (if (null (cdr lst))
+          (list elem)
+          (cons (car lst)
+                (replace-last (cdr lst) elem)))))
+
 (defun slash? (char)
   (equal char (char "/" 0)))
 
 (defun folder? (path)
   (slash? (char (namestring path) (1- (length (namestring path))))))
-
-(defun countup (num)
-  ;; TBD: Check that this is used legitimately, perhaps a mapa->b like function is what we're really after.
-  ;; Returns a list of length num with integers incrementing from zero
-  (let ((acc nil))
-    (dotimes (i num)
-      (push i acc))
-    (reverse acc)))
 
 (defun convert-to-str (list)
   (concatenate 'string list))
@@ -74,9 +84,20 @@
                                                a))
                                        strings)))
 
+(defun count-between (a b)
+  (let ((acc nil))
+    (dotimes (i (- (1+ b) a))
+      (push (+ a i) acc))
+    (reverse acc)))
+
 ;;; UTILS
 ;;;----------------------------------------------------------------------------------------------
 ;;; FILE READING
+
+(defun overwrite-file (path &rest things)
+  (with-open-file (stream path :direction :output :if-exists :supersede :if-does-not-exist :create)
+    (dolist (thing things)
+      (print thing stream))))
 
 (defun file-lines (file)
   ;; UIOP for some reason always reads a blank first line
@@ -87,10 +108,6 @@
   (with-open-file (stream path :direction :input)
     (read stream)))
 
-(defun create-file (path content)
-  (with-open-file (stream path :direction :output :if-does-not-exist :create)
-    (print content stream)))
-
 ;;; FILE READING
 ;;;----------------------------------------------------------------------------------------------
 ;;; FOLDER NAVIGATION
@@ -100,15 +117,12 @@
 
 (defun read-comment (folder)
   (if (directory (concat folder "comment"))
-      (with-open-file (stream (concat folder "comment") :direction :input)
-        (read stream))
+      (read-from-file (concat folder "comment"))
       (set-comment "" folder)))
 
 (defun set-comment (text folder)
-  (with-open-file (stream (concat folder "comment") :direction :output :if-exists :supersede :if-does-not-exist :create)
-    (print text stream)))
+  (overwrite-file (concat folder "comment") text))
 
-;; TBD: All we need to fix for rebuild-corpus to work again should be the plural functions here
 (defun subfolders (folder)
   (remove-if-not #'folder? (directory* folder)))
 
@@ -185,22 +199,25 @@
 (defun window (title)
   (make-instance 'ltk:toplevel :title title))
 
-(defun list-window (lst function-lst page-length title)
-  (let* ((start 0)
-         (W (window title))
-         (f (frame (length lst) 0 W))
-         (l (label (1+ (length lst)) 0 W ""))
-         (buttonlist (button-column W 0 page-length))
+(defun scrollable-list (r c master page-length lst &optional function-lst)
+  ;; No function list will assume no button functions.
+  ;; Returns the frame within which it exists
+  (let* ((acc (frame r c master))
+         (start 0)
+         (f (frame (length lst) 0 acc))
+         (l (label (1+ (length lst)) 0 acc ""))
+         (buttonlist (button-column acc 0 page-length))
          left
          right
          (redraw #'(lambda ()
                      (dotimes (i page-length)
                        (let ((b (nth i buttonlist)))
+                         ;; TBD: This still looks ugly
                          (if (> (length lst) (+ start i) -1)
-                             (let ((txt (nth (+ start i) lst))
-                                   (command (nth (+ start i) function-lst)))
-                               (setf (ltk:text b) txt)
-                               (setf (ltk:command b) command))
+                             (progn
+                               (setf (ltk:text b) (nth (+ start i) lst))
+                               (setf (ltk:command b) (if function-lst
+                                                         (nth (+ start i) function-lst))))
                              (progn
                                (setf (ltk:text b) "")
                                (setf (ltk:command b) #'pass)))))
@@ -218,7 +235,7 @@
                                       (incf start page-length)
                                       (funcall redraw))))
     (funcall redraw)
-    W))
+    acc))
 
 ;;; WIDGET UTILS
 ;;;----------------------------------------------------------------------------------------------
@@ -296,10 +313,11 @@
               link)
       link))
 
-(defun vetted-links (url domain)
-  (remove-if-not #'(lambda (str) (and (> (length str) 0)
-                                      (equal (char str 0) (char "h" 0))))
-                 (mapcar #'(lambda (tag) (extract-link tag domain)) (url-links url))))
+(defun vetted-links (url)
+  (let ((domain (find-domain url)))
+    (remove-if-not #'(lambda (str) (and (> (length str) 0)
+                                        (equal (char str 0) (char "h" 0))))
+                   (mapcar #'(lambda (tag) (extract-link tag domain)) (url-links url)))))
 
 (defun find-domain (url)
   (do ((i 0 (1+ i))
@@ -340,40 +358,29 @@
 ;;;----------------------------------------------------------------------------------------------
 ;;; DATA DOWNLOAD
 
-(defun make-safe (text)
-  ;;Removes characters that cause trouble when printing
-  ;;Replaces them with stars
+(defun filter (text allow-rule censor-by)
   (let ((acc nil))
     (dotimes (i (length text) (reverse acc))
-      (if (member (char text i) '(#\  #\EM_DASH #\LEFTWARDS_ARROW #\EN_DASH #\PLUS-MINUS_SIGN #\THIN_SPACE #\MINUS_SIGN #\' #\DEGREE_SIGN #\# #\6 #\Tab #\_ #\7 #\% #\& #\? #\+ #\@ #\} #\Z #\X #\M #\z #\H #\q #\V #\K #\J #\y #\x #\B
-                                  #\* #\G #\A #\9 #\4 #\5 #\3 #\I #\v #\0 #\b #\S #\: #\{ #\f #\] #\[ #\Q #\L #\R #\w #\; #\2 #\1 #\, #\$ #\) #\\ #\| #\^ #\( #\N #\. #\u #\p #\k #\W #\/ #\8 #\F #\U #\r #\d #\g #\j #\o #\- #\n #\e #\i
-                                  #\" #\= #\s #\a #\c #\> #\l #\m #\t #\h #\E #\P #\Y #\T #\C #\O #\D #\! #\< #\  #\Newline))
+      (if (funcall allow-rule (char text i))
           (push (char text i) acc)
-          (push (char "*" 0) acc)))
+          (push censor-by acc)))
     (convert-to-str (reverse acc))))
+
+(defun make-safe (text)
+  ;; Only keeps well-known characters to prevent printing trouble
+  (filter text #'(lambda (a) (member a '(#\  #\EM_DASH #\LEFTWARDS_ARROW #\EN_DASH #\PLUS-MINUS_SIGN #\THIN_SPACE #\MINUS_SIGN #\' #\DEGREE_SIGN #\# #\6 #\Tab #\_ #\7 #\% #\& #\? #\+ #\@ #\} #\Z #\X #\M #\z #\H #\q #\V #\K #\J #\y
+                                         #\x #\B #\* #\G #\A #\9 #\4 #\5 #\3 #\I #\v #\0 #\b #\S #\: #\{ #\f #\] #\[ #\Q #\L #\R #\w #\; #\2 #\1 #\, #\$ #\) #\\ #\| #\^ #\( #\N #\. #\u #\p #\k #\W #\/ #\8 #\F #\U #\r #\d #\g #\j
+                                         #\o #\- #\n #\e #\i #\" #\= #\s #\a #\c #\> #\l #\m #\t #\h #\E #\P #\Y #\T #\C #\O #\D #\! #\< #\  #\Newline)))
+          (char "*" 0)))
 
 (defun remove-punctuation (text)
   ;; Replaces commas, parentheses, periods, etc. by spaces
-  (let ((acc nil))
-    (dotimes (i (length text))
-      (if (member (char text i) '(#\EM_DASH #\LEFTWARDS_ARROW #\EN_DASH #\PLUS-MINUS_SIGN #\THIN_SPACE #\MINUS_SIGN #\DEGREE_SIGN #\# #\& #\? #\+ #\}
-                                  #\* #\: #\{ #\] #\[ #\; #\, #\) #\\ #\| #\^ #\( #\. #\/ #\-
-                                  #\" #\= #\> #\! #\<))
-          (push (char " " 0) acc)
-          (push (char text i) acc)))
-    (convert-to-str (reverse acc))))
-
-(defun remove-whitespace (text)
-  ;;Keeps spaces but removes tabs, newlines, etc.
-  ;;Replaces them by spaces
-  (let ((acc nil))
-    (dotimes (i (length text))
-      (if (member (char text i) '(#\  #\EM_DASH #\LEFTWARDS_ARROW #\EN_DASH #\PLUS-MINUS_SIGN #\THIN_SPACE #\MINUS_SIGN #\' #\DEGREE_SIGN #\# #\6  #\_ #\7 #\% #\& #\? #\+ #\@ #\} #\Z #\X #\M #\z #\H #\q #\V #\K #\J #\y #\x #\B
-                                  #\* #\G #\A #\9 #\4 #\5 #\3 #\I #\v #\0 #\b #\S #\: #\{ #\f #\] #\[ #\Q #\L #\R #\w #\; #\2 #\1 #\, #\$ #\) #\\ #\| #\^ #\( #\N #\. #\u #\p #\k #\W #\/ #\8 #\F #\U #\r #\d #\g #\j #\o #\- #\n #\e #\i
-                                  #\" #\= #\s #\a #\c #\> #\l #\m #\t #\h #\E #\P #\Y #\T #\C #\O #\D #\! #\< #\ ))
-          (push (char text i) acc)
-          (push (char " " 0) acc)))
-    (convert-to-str (reverse acc))))
+  ;; Also replaces whitespace
+  ;; TBD: Remove double and multiple spaces
+  (filter text #'(lambda (a) (not (member a '(#\EM_DASH #\LEFTWARDS_ARROW #\EN_DASH #\PLUS-MINUS_SIGN #\THIN_SPACE #\MINUS_SIGN #\DEGREE_SIGN #\# #\& #\? #\+ #\}
+                                              #\* #\: #\{ #\] #\[ #\; #\, #\) #\\ #\| #\^ #\( #\. #\/ #\-
+                                              #\" #\= #\> #\! #\<))))
+          (char " " 0)))
 
 (defun remove-diacritics (str)
   (map 'string
@@ -381,6 +388,7 @@
        str))
 
 (defun basic-letter (ltr)
+  ;; TBD: General
   (let ((char-pairs (list (list "á" "a")
                           (list "é" "e")
                           (list "ě" "e")
@@ -400,11 +408,10 @@
     (dolist (pair char-pairs)
       (if (equal ltr (char (first pair) 0))
           (setf acc (char (second pair) 0))))
-    (if acc
-        acc
-        ltr)))
+    (fallback acc ltr)))
 
 (defun links (file-name)
+  ;; TBD: Why is the file read differently here?
   (with-open-file (stream file-name :direction :input)
     (let ((str (make-string (file-length stream))))
       (read-sequence str stream)
@@ -419,9 +426,7 @@
 
 (defun occurrences (word corpus)
   (let ((corpus-entry (gethash word corpus)))
-    (if corpus-entry
-        corpus-entry
-        0)))
+    (fallback corpus-entry 0)))
 
 (defun wordlist (text)
   ;; TBD: Fix name (hashtable!)
@@ -444,9 +449,7 @@
 (defun rebuild-corpus (&optional (folder *classes-folder*))
   ;; Writes the cons list format of the corpuses into the respective files.
   (labels ((print-to-file (file-name &rest things)
-             (with-open-file (stream (concat folder file-name) :direction :output :if-exists :supersede :if-does-not-exist :create)
-               (dolist (i things)
-                 (print i stream)))))
+             (apply #'overwrite-file (concat folder file-name) things)))
     
     (let ((subfolders (subfolders folder))
           (url-count 0)
@@ -517,8 +520,7 @@
 
 (defun get-recursive-corpus (folder)
   ;; Looks into the corpus file and converts to the hash-table formulation
-  (with-open-file (stream (concat folder "corpus"))
-    (corpus-hashtable (read stream))))
+  (corpus-hashtable (read-from-file (concat folder "corpus"))))
 
 (defun get-subfolder-corpus (folder)
   ;; Like get-recursive-corpus, but without the files in the folder itself.
@@ -539,8 +541,7 @@
 
 (defun get-file-count (folder)
   ;; Just looks into the file-count file
-  (with-open-file (stream (concat folder "file-count"))
-    (read stream)))
+  (read-from-file (concat folder "file-count")))
 
 ;;; CORPUS
 ;;;----------------------------------------------------------------------------------------------
@@ -561,7 +562,7 @@
 
 (defun extract-text (html)
   (let* ((safe (make-safe (remove-diacritics (string-downcase html))))
-         (content (remove-whitespace (remove-tags (remove-enclosed (remove-enclosed safe "<style" "</style>") "<script" "</script>")))))
+         (content (remove-punctuation (remove-tags (remove-enclosed (remove-enclosed safe "<style" "</style>") "<script" "</script>")))))
     content))
 
 ;;; DATABASE
@@ -569,6 +570,7 @@
 ;;; HISTORY
 
 (defun add-to-history (url)
+  ;; TBD: Generalise in case we need more appendable files.
   (with-open-file (stream *history-file* :direction :output :if-exists :append :if-does-not-exist :create)
     (print url stream)))
 
@@ -578,9 +580,7 @@
 (defun remove-from-history (index)
   (log-print "Removing " (nth index (history)) " from history.")
   (let ((hst (history)))
-    (with-open-file (stream *history-temp-file* :direction :output :if-exists :supersede :if-does-not-exist :create)
-      (dolist (i (remove-nth index hst))
-        (print i stream)))
+    (apply #'overwrite-file *history-temp-file* (remove-nth index hst))
     (delete-file *history-file*)
     (rename-file *history-temp-file* *history-rename*)))
 

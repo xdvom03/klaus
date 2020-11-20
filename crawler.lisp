@@ -1,16 +1,10 @@
 #|
-TBD: Make concat write to string.
-BUG: Queue fills up with essentially copies of the same page.
-TBD: Properly cut off ttrailing section hashtags and other useless link fluff
+TBD: Properly cut off trailing section hashtags and other useless link fluff
 TBD: Properly cache link scores, profile
-TBD: Obey robots.txt (it's probably best for both sides)
-Not using a robots.txt library for two reasons: One, no license, two, want to take everything disallowed for everybody. ACTUALLY, don'T do that, some sites block specific bots using robots.txt completely.
+Not using a robots.txt library because is has no license.
 BUG: Unsaved comment message
 TBD: Cache robots.txt (or a sensible format thereof)
-BUG: Not escaped quotes, so nothing is found?
 BUG: Can get stuck on: "Open too many files" or scoring "http://lightspeed.sourceforge.net/". Make it fail gracefully in these cases, releasing the queue AND acc with each major visited file (not just scored, but actually taken).
-TBD: Choose randomly from the queue weighted by the scores
-TBD: CACHE ROBOTS.TXT
 
 Sometimes gets stuck on a random URL for seemingly no reason. TBD: Do time requests, screw it after half a minute.
 
@@ -35,25 +29,24 @@ Crawl 40 from:
 (defun matching-rule? (rule url)
   (safe-check-substr (quri:url-decode (remove-domain url)) rule))
 
+(defun rules (robots-txt agent-predicate)
+  ;; agent-predicate is a function which determines if an agent string is considered relevant
+  (apply #'append
+         (mapcar #'(lambda (lst) (remove-nth 0 lst))
+                 (remove-if-not #'(lambda (agents)
+                                    (some #'(lambda (agent)
+                                              (funcall agent-predicate agent))
+                                          agents))
+                                robots-txt :key #'car))))
+
 (defun url-allowed? (bot-name url)
   (let* ((robots-txt (robots-txt url))
-         (specific-rules (apply #'append
-                                (mapcar #'(lambda (lst) (remove-nth 0 lst))
-                                        (remove-if-not #'(lambda (agents)
-                                                           (some #'(lambda (agent)
-                                                                     (search (string-downcase bot-name)
-                                                                             (string-downcase agent)))
-                                                                 agents))
-                                                       robots-txt :key #'car))))
-         (rules (if specific-rules
-                    specific-rules
-                    (apply #'append
-                           (mapcar #'(lambda (lst) (remove-nth 0 lst))
-                                   (remove-if-not #'(lambda (agents)
-                                                      (some #'(lambda (agent)
-                                                                (equal "*" agent))
-                                                            agents))
-                                                  robots-txt :key #'car)))))
+         (specific-rules (rules robots-txt #'(lambda (agent) (search (string-downcase bot-name)
+                                                                     (string-downcase agent)))))
+         (rules (fallback specific-rules (rules robots-txt #'(lambda (agents)
+                                                               (some #'(lambda (agent)
+                                                                         (equal "*" agent))
+                                                                     agents)))))
          ;; Default to allowed
          (result t))
     ;; The first rule takes precedence
@@ -100,7 +93,7 @@ Crawl 40 from:
     (reverse acc)))
 
 (defun extension (url)
-  (car (last (split url (char "." 0)))))
+  (last1 (split url (char "." 0))))
 
 (defun filter-links (raw-links)
   (remove-if #'(lambda (url)
@@ -127,9 +120,7 @@ Crawl 40 from:
     (dotimes (i page-count)
       (print (concat "QUEUE: " (write-to-string queue)))
       (let* ((best-url (pick-from-queue queue))
-             (raw-links (filter-links (vetted-links best-url
-                                                    (find-domain best-url))))
-             (message (print (concat "found " (write-to-string (length raw-links)) " links. Checking:")))
+             (raw-links (filter-links (vetted-links best-url)))
              (links (remove-if-not #'(lambda (url) (url-allowed? *crawler-name* (print url)))
                                    (filter-links raw-links))))
         (push best-url acc)
@@ -144,7 +135,7 @@ Crawl 40 from:
                        (member link queue :key #'car :test #'equal)))
               (let* ((sorted-queue (sort (copy-seq queue) #'> :key #'cdr))
                      (vocab (remove-duplicates (split (url-text link) (char " " 0)) :test #'equal))
-                     (worst-score (cdr (car (last sorted-queue))))
+                     (worst-score (cdr (last1 sorted-queue)))
                      (score (gethash "../DATA/dewey2/webdewey/subfolders/valuable/" (scores vocab (list "../DATA/dewey2/webdewey/subfolders/valuable/"
                                                                                                         "../DATA/dewey2/webdewey/subfolders/trash/"
                                                                                                         "../DATA/dewey2/webdewey/subfolders/boilerplate/")))))
@@ -155,9 +146,6 @@ Crawl 40 from:
                       (if (> queue-size (length queue))
                           (push (cons link score) queue)
                           (if (> score worst-score)
-                              (setf queue (let ((acc sorted-queue))
-                                            (setf (car (last acc))
-                                                  (cons link score))
-                                            acc)))))
+                              (setf queue (replace-last queue (cons link score))))))
                     (print "whoops, nothing here.")))))))
     (reverse acc)))

@@ -7,81 +7,32 @@
 State of the union: New backend kinda sorta works, but a lot of things are fragile, scoring is untested and the explainer has display problems. Conduct a code review, refactor.
 
 PROBLEM: A few tiny folders can mess up the confidence for the whole superfolder. Add more data.
-TBD: Allow for moving between pages of words in evidence, provide more data. Boilerplate always creates an unreadable mountain of evidence.
-BUG: Turning off classing causes crashes.
-Convergence gets slow for very obvious choices, like boilerplace. We lose 30 orders of magnitude of certainty. Probably fine, for we are still sure.
-TBD: Display bottlenecks for precision (subfolder with fewest files).
+Convergence gets slow for very obvious choices, like boilerplace. We lose 30 orders of magnitude of certainty. Probably fine, for we are still sure. TBD: Make the algorithm wait for having converged.
 TBD: Toggle adding into history
 TBD: Speed up
-TBD: macro-fy the list window or rework the whole damn thing
 TBD: Load title for links
-BUG: The method with the 0.8 threshold causes some sites to be classed based on just one word. Shucks, should take flimsier evidence?
-BUG: Fails to recognize URLs as identical given minor alterations (such as www, http/s, etc.). Perhaps something like a "purge duplicates" button would be useful, looking at page contents, and thus recognising reposts.
-TBD: Generalise the list window so that it is not made separately for history, explainers, 
 TBD: Autoclose explainers when a thing is classed.
 TBD: Consider a category an average of its subcategories, not files. This would help protect against availability bias (say, Lifehack taking over trash) and make the system more semantic. 
 BUG: Some apostrophes are ', some are &rsquo;, they class very differently and should not matter almost at all.
-TBD: Class OHYOS.
+TBD: Display where word scores came from (target/total normalised occurrences)
 
 Proof against tends to be a stronger discriminator than proof for. Is that a problem? It helps distinguish, say, articles about copyright from legal boilerplate. But what about the general case?
-
-Possibly put into documentation:
-The starting threeway decision tends to go like this:
-We know it's not boilerplate because of a bunch of meaningful words.
-There are a couple trash-y words, but that might get fixed as I add more data. Mostly errors.
-It seems not to be valuable because I can find a couple boilerplate-y words. These tend to (maybe?) class more in trash than valuable.
-We get tied trash and valuable, but the boilerplate-y words should not be considered at all because they can only be admitted as evidence for the boilerplate theory.
-Check out if a system that weighs word occurrences by the scores of their corresponding categories converges to a solution.
+This seems fixed by symmetry in the simpler two-class case: proof for IS proof against of the other folder.
 
 What do we do with <noscript>? It caused c2wiki to class as boilerplate, but I think there's no good reason to exclude it. Made irrelevant by C2wiki depending on Javascript, and thus not being downloadable.
 Related TBD: Redownload button.
 |#
 
 (defun words-explainer (words word-scores page-length)
+  ;; TBD: This is suboptimal, the two lists are considered separate when they are really supposed to balance each other.
   (let* ((W (window "explaining word scores or something since 17-10-2020 or sometime"))
-         (f (frame 0 0 W))
-         (bottom-frame (frame 1 0 W))
-         (l (label 2 0 W ""))
          ;; BUG: We cannot rely on words for being actually for (kde nic neni, ani smrt nebere, treba Lifehack hodnotny)
          (words-for (reverse (remove-if #'(lambda (word) (< (gethash word word-scores) 0.5))
                                         words)))
          (words-against (remove-if #'(lambda (word) (> (gethash word word-scores) 0.5))
-                                   words))
-         (buttons (button-column f 0 page-length 1))
-         (buttons2 (button-column f 1 page-length 1))
-         (maximum (max (length words-for)
-                       (length words-against)))
-         (start 0)
-         left
-         right)
-    (labels ((redraw ()
-               (dotimes (i page-length)
-                 (let ((word-num (+ start i)) ;rebind
-                       (b (nth i buttons))
-                       (b2 (nth i buttons2)))
-                   (setf (ltk:text b) (if (> (length words-for) word-num)
-                                          (concat (nth word-num words-for) " " (write-to-string (coerce (gethash (nth word-num words-for) word-scores) 'single-float)))
-                                          ""))
-                   (setf (ltk:text b2) (if (> (length words-against) word-num)
-                                           (concat (nth word-num words-against) " " (write-to-string (coerce (gethash (nth word-num words-against) word-scores) 'single-float)))
-                                           ""))))
-               (setf (ltk:text l) (concat (write-to-string start) "/" (write-to-string maximum)))
-               (if (>= start page-length)
-                   (ltk:configure left :state :normal)
-                   (ltk:configure left :state :disabled))
-               (if (<= start (- maximum page-length))
-                   (ltk:configure right :state :normal)
-                   (ltk:configure right :state :disabled))))
-      (setf left (button 0 0 bottom-frame "←" #'(lambda ()
-                                                  (decf start page-length)
-                                                  (redraw))))
-      (setf right (button 0 1 bottom-frame "→" #'(lambda ()
-                                                   (incf start page-length)
-                                                   (redraw))))
-      (redraw)
-      (button 0 0 f "EVIDENCE FOR" #'pass)
-      (button 0 1 f "EVIDENCE AGAINST" #'pass)
-      W)))
+                                   words)))
+    (scrollable-list 0 0 W page-length words-for)
+    (scrollable-list 0 1 W page-length words-against)))
 
 (defun pair-scores-explainer (vocab folders pair-scores pair-chosen-words) ; TBD: Fix names
   ;; The scores FOR a given folder are in its rows. TBD: Make that clear from the window
@@ -234,14 +185,7 @@ Related TBD: Redownload button.
                    (push (button counter
                                  1
                                  f
-                                 (concat (file-name i t)
-                                         " score: "
-                                         (if (gethash i scores)
-                                             (gethash i scores)
-                                             "unknown")
-                                         ", "
-                                         (get-file-count i)
-                                         " files.")
+                                 (concat (file-name i t) " score: " (fallback (gethash i scores) "unknown") ", " (get-file-count i) " files.")
                                  #'(lambda ()
                                      (redraw i)))
                          widget-list))))
@@ -260,9 +204,9 @@ Related TBD: Redownload button.
       (label 0 1 f "FOLDERS")
       (button 3 2 f "Create folder" #'(lambda () (let ((txt (ltk:text e)))
                                                    (ensure-directories-exist (concat current-folder txt "/"))
-                                                   (create-file (concat current-folder txt "/corpus") nil)
-                                                   (create-file (concat current-folder txt "/file-count") 0)
-                                                   (create-file (concat current-folder txt "/links") nil)
+                                                   (overwrite-file (concat current-folder txt "/corpus") nil)
+                                                   (overwrite-file (concat current-folder txt "/file-count") 0)
+                                                   (overwrite-file (concat current-folder txt "/links") nil)
                                                    (setf (ltk:text e) "")
                                                    (redraw (concat current-folder txt "/")))))
       (button 1 1 f ".." #'(lambda () (redraw (parent-folder current-folder))))
@@ -273,22 +217,19 @@ Related TBD: Redownload button.
                                             (progn
                                               (log-print (concat "Adding URL " url " to folder " (simplified-path current-folder)))
                                               (let* ((links-file (concat current-folder "links"))
-                                                     (existing-links (with-open-file (stream links-file)
-                                                                       (read stream))))
+                                                     (existing-links (read-from-file links-file)))
                                                 (redownload-file url)
-                                                (with-open-file (stream links-file :direction :output :if-exists :supersede :if-does-not-exist :create)
-                                                  (print (append1 existing-links url) stream)))
+                                                (overwrite-file links-file (append1 existing-links url)))
                                               (setf (ltk:text url-entry) "")
                                               (ltk:destroy W))
                                             (log-print "File already in folder."))))
       (button 5 2 f "List links in this folder" #'(lambda ()
-                                                    (list-window (file-urls current-folder)
-                                                                 (mapcar #'(lambda (link) #'(lambda () (link-options-window (car link) (cdr link) (concat current-folder "files/") url-entry)))
-                                                                         (mapcar #'cons
-                                                                                 (file-urls current-folder)
-                                                                                 (mapcar #'1+ (countup (length (file-urls current-folder))))))
-                                                                 *entries-per-page*
-                                                                 "Links")))
+                                                    (let ((links (file-urls current-folder)))
+                                                      (scrollable-list 0 0 (window "Links") *entries-per-page* links
+                                                                       (mapcar #'(lambda (link num)
+                                                                                   #'(lambda () (link-options-window link num (concat current-folder "files/") url-entry)))
+                                                                               (file-urls current-folder)
+                                                                               (count-between 1 (length (file-urls current-folder))))))))
       (button 1 0 comment-frame "Save comment" #'(lambda ()
                                                    (log-print "Saved comment in " (simplified-path current-folder))
                                                    (set-comment (ltk:text tex) current-folder)))
@@ -306,6 +247,7 @@ Related TBD: Redownload button.
     (reduce #'(lambda (a b) (concat a "/" b)) split-link)))
 
 (defun link-options-window (link index folder url-entry)
+  ;; BUG: Still the old file system!
   (let* ((W (window link))
          (link-folder (concat folder (write-to-string index) "/"))
          (url (file-url link-folder)))
@@ -325,13 +267,10 @@ Related TBD: Redownload button.
     (button 1 0 W "LOAD" #'(lambda () (setf (ltk:text url-entry) link) (ltk:destroy W)))))
 
 (defun link-window (entry)
-  (let ((links (vetted-links (ltk:text entry)
-                             (find-domain (ltk:text entry)))))
-    (list-window links
-                 (mapcar #'(lambda (link) (setf (ltk:text entry) link))
-                         links)
-                 *entries-per-page*
-                 "Linkz")))
+  (let ((links (vetted-links (ltk:text entry))))
+    (scrollable-list 0 0 (window "Linkz") *entries-per-page* links
+                     (mapcar #'(lambda (link) (setf (ltk:text entry) link))
+                             links))))
 
 (defun run ()
   (ltk:with-ltk ()
@@ -361,7 +300,7 @@ Related TBD: Redownload button.
                                      (link-window e1)))
       (button 2 1 W "Random link" #'(lambda ()
                                       (let* ((url (ltk:text e1))
-                                             (links (vetted-links url (find-domain url)))
+                                             (links (vetted-links url))
                                              (new-link (nth (random (length links)) links)))
                                         (setf (ltk:text e1) new-link))))
       (button 3 1 W "Open in Firefox" #'(lambda ()
