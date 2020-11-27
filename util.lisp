@@ -1,6 +1,6 @@
-(ql:quickload (list "ltk" "dexador" "quri"))
+;; TBD: Clean and divide
 
-;; TBD: Unite the "data retrieval from file" process
+(ql:quickload (list "ltk" "dexador" "quri" "plump"))
 
 ;;; IMPORTS
 ;;;----------------------------------------------------------------------------------------------
@@ -25,6 +25,11 @@
 (defparameter *crawler-name* "botelaire")
 
 (defparameter *forbidden-extensions* (list "css" "png" "mp4" "ico" "svg" "webmanifest"))
+
+(defparameter *bg-col* "#1c2a39")
+(defparameter *act-bg-col* "#5c6a79")
+(defparameter *fg-col* "#ffffff")
+(defparameter *act-fg-col* "#ffffff")
 
 (defun pass ())
 
@@ -84,11 +89,18 @@
                                                a))
                                        strings)))
 
-(defun count-between (a b)
+(defun list-hashes (hashtable)
   (let ((acc nil))
-    (dotimes (i (- (1+ b) a))
-      (push (+ a i) acc))
-    (reverse acc)))
+    (maphash #'(lambda (a b) (push (cons a b) acc))
+             hashtable)
+    acc))
+
+(defun multi-equal (&rest things)
+  (if (cdr things)
+      (if (equal (car things)
+                 (second things))
+          (apply #'multi-equal (cdr things)))
+      (car things)))
 
 ;;; UTILS
 ;;;----------------------------------------------------------------------------------------------
@@ -126,17 +138,8 @@
 (defun subfolders (folder)
   (remove-if-not #'folder? (directory* folder)))
 
-(defun file-url (file) ;; Beware, this is required for link window! Change that!
-  (read-from-file (concat (namestring file) "url")))
-
-(defun file-urls (class) ;; TBD: Obviously a bit pointless
-  (class-links class))
-
-(defun file-text (file-name)
-  (extract-text (file-content file-name)))
-
-(defun file-texts (folder)
-  (mapcar #'file-text (class-links folder)))
+(defun class-links (class)
+  (read-from-file (concat class "links")))
 
 (defun simplified-path (path)
   (let* ((path-parts (split path (char "/" 0)))
@@ -152,14 +155,16 @@
 (defun widget (r c type master)
   (let ((w (make-instance type :master master)))
     (ltk:grid w r c :sticky "nesw")
-    (ltk:grid-rowconfigure master r :weight 1)
-    (ltk:grid-columnconfigure master c :weight 1)
     w))
 
 (defun button (r c master txt command)
   (let ((b (widget r c 'ltk:button master)))
     (setf (ltk:text b) txt)
     (setf (ltk:command b) command)
+    (ltk:configure b :background *bg-col*)
+    (ltk:configure b :foreground *fg-col*)
+    (ltk:configure b :activebackground *act-bg-col*)
+    (ltk:configure b :activeforeground *act-fg-col*)
     b))
 
 (defun button-column (window column page-length &optional (starting-row 0))
@@ -191,13 +196,20 @@
   (let ((l (widget r c 'ltk:label master)))
     (setf (ltk:text l) txt)
     (ltk:configure l :anchor :center)
+    (ltk:configure l :background *bg-col*)
+    (ltk:configure l :foreground *fg-col*)
     l))
 
 (defun frame (r c master)
-  (widget r c 'ltk:frame master))
+  ;; Ugly hack: LTK does not support backround colours of frames, but it works for canvases, and they seem to work serviceably as frames. 
+  (let ((f (widget r c 'ltk:canvas master)))
+    (ltk:configure f :background *fg-col*)
+    f))
 
 (defun window (title)
-  (make-instance 'ltk:toplevel :title title))
+  (let ((W (make-instance 'ltk:toplevel :title title)))
+    (ltk:configure W :background *fg-col*)
+    W))
 
 (defun scrollable-list (r c master page-length lst &optional function-lst)
   ;; No function list will assume no button functions.
@@ -366,6 +378,16 @@
           (push censor-by acc)))
     (convert-to-str (reverse acc))))
 
+(defun remove-multiple-spaces (text)
+  (let ((acc nil))
+    (dotimes (i (length text))
+      (let ((char (char text i))
+            (previous-char (if (> i 0)
+                               (char text (1- i)))))
+        (if (not (multi-equal char previous-char (char " " 0)))
+            (push char acc))))
+    (reverse (convert-to-str acc))))
+
 (defun make-safe (text)
   ;; Only keeps well-known characters to prevent printing trouble
   (filter text #'(lambda (a) (member a '(#\  #\EM_DASH #\LEFTWARDS_ARROW #\EN_DASH #\PLUS-MINUS_SIGN #\THIN_SPACE #\MINUS_SIGN #\' #\DEGREE_SIGN #\# #\6 #\Tab #\_ #\7 #\% #\& #\? #\+ #\@ #\} #\Z #\X #\M #\z #\H #\q #\V #\K #\J #\y
@@ -379,7 +401,7 @@
   ;; TBD: Remove double and multiple spaces
   (filter text #'(lambda (a) (not (member a '(#\EM_DASH #\LEFTWARDS_ARROW #\EN_DASH #\PLUS-MINUS_SIGN #\THIN_SPACE #\MINUS_SIGN #\DEGREE_SIGN #\# #\& #\? #\+ #\}
                                               #\* #\: #\{ #\] #\[ #\; #\, #\) #\\ #\| #\^ #\( #\. #\/ #\-
-                                              #\" #\= #\> #\! #\<))))
+                                              #\" #\= #\> #\! #\< #\Newline))))
           (char " " 0)))
 
 (defun remove-diacritics (str)
@@ -403,7 +425,8 @@
                           (list "ř" "r")
                           (list "š" "s")
                           (list "ť" "t")
-                          (list "ž" "z")))
+                          (list "ž" "z")
+                          (list "’" "'")))
         (acc nil))
     (dolist (pair char-pairs)
       (if (equal ltr (char (first pair) 0))
@@ -494,7 +517,8 @@
 (defun get-corpus (folder)
   ;; Returns cons of url count & corpus
   (let ((vocab-lists (mapcar #'wordlist
-                             (file-texts folder))))
+                             (mapcar #'(lambda (file-name) (extract-text (file-content file-name)))
+                                     (class-links folder)))))
     (cons (length vocab-lists)
           (if vocab-lists
               (reduce #'add-hashtable-corpuses
@@ -565,6 +589,15 @@
          (content (remove-punctuation (remove-tags (remove-enclosed (remove-enclosed safe "<style" "</style>") "<script" "</script>")))))
     content))
 
+(defun url-text (url)
+  ;; Fetches text of an url
+  ;; Placeholder for now until the MAJOR REFACTORING
+  ;; Duplicate-ish of extract-text
+  (let* ((raw (safe-fetch-html url))
+         (safe (make-safe (remove-diacritics (string-downcase (plump:decode-entities raw)))))
+         (content (remove-multiple-spaces (remove-punctuation (remove-tags (remove-enclosed (remove-enclosed safe "<style" "</style>") "<script" "</script>"))))))
+    content))
+
 ;;; DATABASE
 ;;;----------------------------------------------------------------------------------------------
 ;;; HISTORY
@@ -575,66 +608,14 @@
     (print url stream)))
 
 (defun history ()
-  (mapcar #'read-from-string (file-lines *history-file*)))
+  (reverse (mapcar #'read-from-string (file-lines *history-file*))))
 
 (defun remove-from-history (index)
   (log-print "Removing " (nth index (history)) " from history.")
   (let ((hst (history)))
-    (apply #'overwrite-file *history-temp-file* (remove-nth index hst))
+    (apply #'overwrite-file *history-temp-file* (reverse (remove-nth index hst)))
     (delete-file *history-file*)
     (rename-file *history-temp-file* *history-rename*)))
-
-(defun history-window (url-entry page-length)
-  (let* ((W (window "History"))
-         (e (entry 0 3 W))
-         (f (frame page-length 1 W))
-         (l (label (1+ page-length) 1 W ""))
-         (buttons (button-column W 1 page-length))
-         (buttons2 (button-column W 2 page-length))
-         (start 0)
-         left
-         right)
-    (labels ((redraw ()
-               (let ((hst (history)))
-                 (dotimes (i page-length)
-                   (let ((open-link (+ start i)) ;rebind
-                         (b (nth i buttons)))
-                     (if (> (length hst) (+ start i) -1)
-                         (progn
-                           (setf (ltk:text b) (nth (+ start i) hst))
-                           (setf (ltk:command b) #'(lambda () (setf (ltk:text url-entry) (nth open-link hst)))))
-                         (progn
-                           (setf (ltk:text b) "")
-                           (setf (ltk:command b) #'pass)))))
-                 (dotimes (i page-length)
-                   (let ((remove-link (+ start i)) ; rebind
-                         (b (nth i buttons2)))
-                     (if (> (length hst) (+ start i) -1)
-                         (progn
-                           (setf (ltk:text b) "REMOVE")
-                           (setf (ltk:command b) #'(lambda ()
-                                                     (remove-from-history remove-link)
-                                                     (redraw))))
-                         (progn
-                           (setf (ltk:text b) "")
-                           (setf (ltk:command b) #'pass)))))
-                 (setf (ltk:text l) (concat start "/" (length hst)))
-                 (if (>= start page-length)
-                     (ltk:configure left :state :normal)
-                     (ltk:configure left :state :disabled))
-                 (if (<= start (- (length hst) page-length))
-                     (ltk:configure right :state :normal)
-                     (ltk:configure right :state :disabled)))))
-      (button 0 0 W "X" #'kill-all)
-      (setf left (button 0 0 f "←" #'(lambda ()
-                                       (decf start page-length)
-                                       (redraw))))
-      (setf right (button 0 1 f "→" #'(lambda ()
-                                        (incf start page-length)
-                                        (redraw))))
-      (redraw)
-      (button 1 3 W "Push to history" #'(lambda ()
-                                          (add-to-history (ltk:text e)) (redraw))))))
 
 ;;; HISTORY
 ;;;----------------------------------------------------------------------------------------------
@@ -682,3 +663,39 @@
 (defun word-probability (target total subfolder-count)
   (/ (+ 1 target)
      (+ subfolder-count total)))
+
+;;; SCORE MATH
+;;;----------------------------------------------------------------------------------------------
+;;; NEW FILE SYSTEM
+
+(defun redownload (folder)
+  (let ((files (class-links folder)))
+    (dolist (file files)
+      (redownload-file file))
+    (dolist (subfolder (subfolders folder))
+      (redownload subfolder)))
+  (print (concat "redownloaded " folder)))
+
+(defun redownload-file (file-name)
+  (if (not (file-alias file-name))
+      (add-alias file-name (1+ (apply #'max (append1 (used-aliases) 0))))
+      ;; TBD: maybe check for newer version?
+      )
+  (file-alias file-name))
+
+(defun add-alias (name alias)
+  (let ((aliases (aliases)))
+    (overwrite-file *aliases-file* (append1 aliases (cons name alias)))
+    (overwrite-file (concat *files-folder* alias) (safe-fetch-html name))))
+
+(defun file-alias (file-name)
+  (gethash file-name (corpus-hashtable (aliases))))
+
+(defun aliases ()
+  (read-from-file *aliases-file*))
+
+(defun used-aliases ()
+  (mapcar #'cdr (aliases)))
+
+(defun file-content (file-name)
+  (read-from-file (concat *files-folder* (file-alias file-name))))

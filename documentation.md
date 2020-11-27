@@ -23,7 +23,7 @@ We can decide between two classes using a Naive Bayes algorithm. Each class has 
 
 For each word, we get the probability of it belonging to each category. To do so, we use Laplace smoothing. If a word if featured A times in the first category and B times in the second one, its score for the first category is (A + 1)/(A + B + 2). This has the benefit of probabilities summing to one, being close to just the ratio for well-known words and dealing gracefully with words that only occur in one corpus.
 
-Combining the evidence from all words amplifies random noise. Combining the X most distinctive means that a the primary important thing is the amount of evidence, not its strength. So I settled on always picking the X words with the best and the X words with the worts score. This ensures evidence is balanced. To calculate X, find the number of words with score less than 0.2 or more than 0.8, then halve. This ensures a result like picking all words over an importance threshold, but with a significant bias towards uncertainty. It also means that when there is a lot of evidence, it is all considered (as is the case with legal boilerplate, where the case is so clear that the words don't fit in the explainer - there should be a way to browse it by pages).
+Combining the evidence from all words amplifies random noise. Combining the X most distinctive means that a the primary important thing is the amount of evidence, not its strength. So I settled on always picking the X words with the best and the X words with the worts score. This ensures evidence is balanced. To calculate X, find the number of words with score less than 0.2 or more than 0.8, then halve. This ensures a result like picking all words over an importance threshold, but with a significant bias towards uncertainty. It also means that when there is a lot of evidence, it is all considered (as is the case with legal boilerplate, where the case is so clear that the words don't fit in the explainer - there should be a way to browse it by pages). At least 6 words for/against are always taken, so the program will always at least try.
 
 We multiply the score of all the chosen words, then scale the results up to sum to one. This is displayed. (a proper Bayesian illustration is pending)
 
@@ -51,10 +51,14 @@ This seems like a functional problem, for corpuses are just hash tables (diction
 
 # Crawler
 
-It's not there yet. Not even started. Well, you can list links of a site. That's something.
+The crawler inside is extremely poor. It is not configurable and presumably broken with the new backend.
 
 # Used libraries
 
 Dexador (https://github.com/fukamachi/dexador) for downloading page data.
-LTK (http://www.peter-herth.de/ltk/index.html) for the window GUI (its current awfulness is my responsibility, not LTK's).
+
+LTK (http://www.peter-herth.de/ltk/index.html) for the window GUI.
+
 QURI (https://github.com/fukamachi/quri) for dealing with URL character issues (example.com/B%C3%A1g%C5%99i -> example.com/Bágři)
+
+Plump (https://github.com/Shinmera/plump) for something similar inside the HTML (XML escape: \&rsquo; -> ' (with a little help))
