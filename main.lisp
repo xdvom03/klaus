@@ -1,4 +1,5 @@
 #|
+BUG: (?) Pagerank seems to produce really weird results: http://www.spacenewsmag.com/feature/would-allan-mcdonald-be-heard-today/ gets massive scores for space, but only 36%.
 State of the union: New backend kinda sorta works, but a lot of things are fragile, scoring is untested and the explainer has display problems. Conduct a code review, refactor.
 
 PROBLEM: A few tiny folders can mess up the confidence for the whole superfolder. Add more data.
@@ -61,7 +62,8 @@ Links
                               (setf (gethash word acc)
                                     (word-probability (occurrences word corpus)
                                                       (occurrences word total-corpus)
-                                                      folder-count)))
+                                                      folder-count
+                                                      *smoothing-factor*)))
                             acc))
              (chosen-words (chosen-words vocab word-scores))
              (score (apply #'* (mapcar #'(lambda (word) (gethash word word-scores))
@@ -79,7 +81,7 @@ Links
         (setf (gethash path scores)
               (coerce (/ (gethash path scores)
                          prob-sum)
-                      'single-float))))
+                      'double-float))))
     (cons scores evidence)))
 
 (defun scores (vocab folders)
@@ -91,6 +93,7 @@ Links
           (dolist (opponent folders)
             (if (equal folder opponent)
                 (setf (gethash (cons folder opponent) pair-scores) 0) ; chosen words can remain empty
+                ;; TBD: multiple-value-bind?
                 (let* ((data (compare-folders vocab (list folder opponent)))
                        (scores (car data))
                        (evidence (cdr data)))
@@ -99,16 +102,19 @@ Links
                   (setf (gethash (cons folder opponent) pair-chosen-words)
                         (gethash folder evidence))))))
         ;; the actual scores and some data for the explainer
-        (values (pagerank folders pair-scores) 
-                pair-scores
-                pair-chosen-words))
+        (multiple-value-bind (scores probsum) (pagerank folders pair-scores)
+          (print (list scores probsum))
+          (values scores
+                  probsum
+                  pair-scores
+                  pair-chosen-words)))
       (make-hash-table :test #'equal)))
 
 ;;; NORMAL STUFFS
 ;;;----------------------------------------------------------------------------------------------
 ;;; GUI
 
-(defun words-explainer (r c master words word-scores page-length)
+(defun words-explainer (r c master words word-scores folder-corpus opponent-corpus page-length)
   ;; TBD: This is suboptimal, the two lists are considered separate when they are really supposed to balance each other.
   (let* ((f (frame r c master))
          ;; BUG: We cannot rely on words for being actually for (kde nic neni, ani smrt nebere, treba Lifehack hodnotny)
@@ -116,16 +122,27 @@ Links
                                         words)))
          (words-against (remove-if #'(lambda (word) (> (gethash word word-scores) 0.5))
                                    words)))
-    (scrollable-list 0 0 f page-length words-for)
-    (scrollable-list 0 1 f page-length words-against)))
+    (button 0 0 f "words for" #'pass)
+    (button 0 1 f "words against" #'pass)
+    (scrollable-list 1 0 f page-length (mapcar #'list words-for
+                                               (mapcar #'(lambda (word) (coerce (gethash word word-scores) 'single-float)) words-for)
+                                               (mapcar #'(lambda (word) (coerce (occurrences word folder-corpus) 'single-float)) words-for)
+                                               (mapcar #'(lambda (word) (coerce (occurrences word opponent-corpus) 'single-float)) words-for)))
+    (scrollable-list 1 1 f page-length (mapcar #'list words-against
+                                               (mapcar #'(lambda (word) (coerce (gethash word word-scores) 'single-float)) words-against)
+                                               (mapcar #'(lambda (word) (coerce (occurrences word folder-corpus) 'single-float)) words-against)
+                                               (mapcar #'(lambda (word) (coerce (occurrences word opponent-corpus) 'single-float)) words-against)))))
+
+(defun folder-name (path)
+  (second (reverse (split path #\/))))
 
 (defun pair-scores-explainer (r c master vocab folders pair-scores pair-chosen-words) ; TBD: Fix names
   ;; The scores FOR a given folder are in its rows. TBD: Make that clear from the window
   (let* ((f (frame r c master)))
     (dotimes (i (length folders))
       (let ((folder (nth i folders)))
-        (button 0 (1+ i) f (simplified-path folder) #'pass)
-        (button (1+ i) 0 f (simplified-path folder) #'pass)
+        (button 0 (1+ i) f (folder-name folder) #'pass)
+        (button (1+ i) 0 f (folder-name folder) #'pass)
         (dotimes (j (length folders))
           (let* ((opponent (nth j folders))
                  (smaller-size (min (get-file-count folder)
@@ -144,7 +161,8 @@ Links
                                         (word-probability (occurrences word folder-corpus)
                                                           (+ (occurrences word folder-corpus)
                                                              (occurrences word opponent-corpus))
-                                                          2)))
+                                                          2
+                                                          *smoothing-factor*)))
                                 acc))
                  (score (gethash pair pair-scores)))
             (button (1+ i)
@@ -152,9 +170,12 @@ Links
                     f
                     (if (= i j)
                         ""
-                        (write-to-string score))
-                    #'(lambda () (words-explainer 10 10 f chosen-words word-scores *entries-per-page*)))))))
+                        (write-to-string (my-round score)))
+                    #'(lambda () (words-explainer 100 100 (window "hujaja") chosen-words word-scores folder-corpus opponent-corpus *entries-per-page*)))))))
     f))
+
+(defun vocabulary (text)
+  (remove-duplicates (split text (char " " 0)) :test #'equal))
 
 (defun run ()
   #|
@@ -202,6 +223,8 @@ Links
                                                      (setf current-url (ltk:text e1))
                                                      (add-to-history current-url)
                                                      (change-screen (database-window 0 1 master current-url))))
+                   (button 5 1 W "Find word counts" #'(lambda ()
+                                                        (change-screen (word-explainer 0 1 master (ltk:text e1)))))
                    (button 1 2 W "Wipe entry" #'(lambda ()
                                                   (setf (ltk:text e1) "")))
                    (button 1 3 W "Rebuild corpus" #'rebuild-corpus)
@@ -216,7 +239,6 @@ Links
                                                                      (setf *explain?* (ltk:value ch2))
                                                                      (setf (ltk:value ch2) *explain?*))))
                    (setf (ltk:value ch2) *explain?*)
-                   (log-print "Launched main menu.")
                    W))
                
                (database-window (r c master url)
@@ -227,7 +249,8 @@ Links
                         (f (frame 0 0 fr)) ; frame for everything except the comment
                         (comment-frame (frame 0 1 fr))
                         (e (entry 2 2 f))
-                        (tex (text 0 0 comment-frame "")))
+                        (tex (text 0 0 comment-frame ""))
+                        (l (label 15 2 f "hujaja")))
                    (labels ((redraw-confirmed (new-path)
                               (setf current-folder new-path)
                               (setf (ltk:text tex) (read-comment current-folder))
@@ -239,16 +262,17 @@ Links
                                     widget-list)
                               ;; produces conses of (subfolder . score)
                               (let* ((subfolders (subfolders current-folder))
-                                     (vocab (gethash nil (wordlist (url-text url)))))
-                                (multiple-value-bind (scores pair-scores pair-chosen-words) (scores vocab subfolders)
+                                     (vocab (if *try-to-class?* (vocabulary (url-text url)))))
+                                (multiple-value-bind (scores probsum pair-scores pair-chosen-words) (scores vocab subfolders)
+                                  (setf (ltk:text l) (concat "Maximum possible probability: " (my-round (/ (fallback probsum 1)))))
                                   (if *explain?*
-                                      (pair-scores-explainer 0 0 fr vocab subfolders pair-scores pair-chosen-words))
+                                      (pair-scores-explainer 20 0 (window "HUJAJA") vocab subfolders pair-scores pair-chosen-words))
                                   (dolist (i subfolders)
                                     (incf counter)
                                     (push (button counter
                                                   1
                                                   f
-                                                  (concat (file-name i t) " score: " (fallback (gethash i scores) "unknown") ", " (get-file-count i) " files.")
+                                                  (concat (file-name i t) " score: " (my-round (fallback (gethash i scores) (/ (length subfolders)))) ", " (get-file-count i) " words.")
                                                   #'(lambda ()
                                                       (redraw i)))
                                           widget-list)))))
@@ -282,7 +306,7 @@ Links
                                                              (redownload-file url)
                                                              (overwrite-file links-file (append1 existing-links url))
                                                              (setf current-url "")
-                                                             (ltk:destroy fr))
+                                                             (back-to-main))
                                                            (log-print "File already in folder."))))
                      (button 5 2 f "List links in this folder" #'(lambda ()
                                                                    (let ((links (class-links current-folder)))
@@ -294,6 +318,49 @@ Links
                                                                   (log-print "Saved comment in " (simplified-path current-folder))
                                                                   (set-comment (ltk:text tex) current-folder)))
                      (redraw-confirmed current-folder)
+                     fr)))
+
+               ;; TBD: This is mostly duplicate and TEMP.
+               (word-explainer (r c master word)
+                 (let* ((fr (frame r c master))
+                        (current-folder *classes-folder*)
+                        (counter 0)
+                        (widget-list nil)
+                        (f (frame 0 0 fr)) ; frame for everything except the comment
+                        (comment-frame (frame 0 1 fr))
+                        (tex (text 0 0 comment-frame "")))
+                   (labels ((redraw (new-path)
+                              (setf current-folder new-path)
+                              (setf (ltk:text tex) (read-comment current-folder))
+                              (dolist (i widget-list)
+                                (ltk:destroy i))
+                              (setf widget-list nil)
+                              (setf counter 1)
+                              (push (label 0 2 f (concat "Current folder: " current-folder))
+                                    widget-list)
+                              ;; produces conses of (subfolder . score)
+                              (let* ((subfolders (subfolders current-folder)))
+                                (dolist (i subfolders)
+                                  (incf counter)
+                                  (push (button counter
+                                                1
+                                                f
+                                                (concat (file-name i t)
+                                                        " word count: "
+                                                        (occurrences word (get-recursive-corpus i))
+                                                        ", out of "
+                                                        (get-file-count i)
+                                                        " words in total. Portion: "
+                                                        (my-round (* 10000 (/ (occurrences word (get-recursive-corpus i))
+                                                                             (get-file-count i))))
+                                                        "‱")
+                                                #'(lambda ()
+                                                    (redraw i)))
+                                        widget-list)))))
+                     (label 0 1 f "FOLDERS")
+                     (button 1 1 f ".." #'(lambda () (redraw (parent-folder current-folder))))
+                     (label 1 2 f (concat "Current word: " word))
+                     (redraw current-folder)
                      fr)))
                
                (link-options-window (url file)
@@ -365,16 +432,17 @@ Links
                
                (back-to-main ()
                  (change-screen (main-menu 0 1 W))))
-        (let ((log (frame 0 1000 W))
+        (let ((log (frame 1 1 W))
               (log-list nil))
-          (button 0 1 log "Wipe log" #'(lambda ()
+          (button 0 0 log "Wipe log" #'(lambda ()
                                          (dolist (button log-list)
                                            (ltk:destroy button))
                                          (setf log-list nil)))
           (defun log-print (&rest strings)
             ;; BUG: Log entry seems to show with a lag.
             (let ((full-string (apply #'concat strings)))
-              (push (button (length log-list) 0 log full-string #'pass) log-list)
+              (push (button (1+ (length log-list)) 0 log full-string #'pass) log-list)
               full-string)))
-        (button 0 0 W "X" #'back-to-main)
+        (let ((X (frame 2 1 W)))
+          (button 0 0 X "X" #'back-to-main))
         (back-to-main)))))

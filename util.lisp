@@ -21,15 +21,17 @@
 (defparameter *evidence-length* 6)
 (defparameter *newline* "
 ")
-(defparameter *iterations* 20)
+(defparameter *iterations* 200)
+(defparameter *decimals* 3)
+(defparameter *smoothing-factor* 5)
 (defparameter *crawler-name* "botelaire")
 
 (defparameter *forbidden-extensions* (list "css" "png" "mp4" "ico" "svg" "webmanifest"))
 
-(defparameter *bg-col* "#1c2a39")
-(defparameter *act-bg-col* "#5c6a79")
-(defparameter *fg-col* "#ffffff")
-(defparameter *act-fg-col* "#ffffff")
+(defparameter *bg-col* "#f0f0f0")
+(defparameter *button-col* "#e0e0e0")
+(defparameter *active-col* "#a0a0a0")
+(defparameter *text-col* "#000000")
 
 (defun pass ())
 
@@ -155,16 +157,16 @@
 (defun widget (r c type master)
   (let ((w (make-instance type :master master)))
     (ltk:grid w r c :sticky "nesw")
+    (ltk:after 0 #'(lambda () (ltk:mainloop))) ;; TBD: This is ugly. How exactly does LTK deal with showing things?
     w))
 
 (defun button (r c master txt command)
   (let ((b (widget r c 'ltk:button master)))
     (setf (ltk:text b) txt)
     (setf (ltk:command b) command)
-    (ltk:configure b :background *bg-col*)
-    (ltk:configure b :foreground *fg-col*)
-    (ltk:configure b :activebackground *act-bg-col*)
-    (ltk:configure b :activeforeground *act-fg-col*)
+    (ltk:configure b :background *button-col*)
+    (ltk:configure b :foreground *text-col*)
+    (ltk:configure b :activebackground *active-col*)
     b))
 
 (defun button-column (window column page-length &optional (starting-row 0))
@@ -197,18 +199,18 @@
     (setf (ltk:text l) txt)
     (ltk:configure l :anchor :center)
     (ltk:configure l :background *bg-col*)
-    (ltk:configure l :foreground *fg-col*)
+    (ltk:configure l :foreground *text-col*)
     l))
 
 (defun frame (r c master)
   ;; Ugly hack: LTK does not support backround colours of frames, but it works for canvases, and they seem to work serviceably as frames. 
   (let ((f (widget r c 'ltk:canvas master)))
-    (ltk:configure f :background *fg-col*)
+    (ltk:configure f :background *bg-col*)
     f))
 
 (defun window (title)
   (let ((W (make-instance 'ltk:toplevel :title title)))
-    (ltk:configure W :background *fg-col*)
+    (ltk:configure W :background *bg-col*)
     W))
 
 (defun scrollable-list (r c master page-length lst &optional function-lst)
@@ -349,16 +351,28 @@
            (subseq url (1- i))
            (subseq url i)))))
 
+(defun bagr (txt)
+  ;; for profiler only
+  (length txt))
+
+(defun fast-substr-check (text key start)
+  (let ((key-len (length key))
+        (text-len (length text)))
+    (and (< (+ start key-len) text-len)
+         (equal (char text start) (char key 0)) ; simple optimisation - look first for a single matching character, eliminating most wrong guesses
+         (equal (subseq text start (+ start key-len)) key))))
+
 (defun remove-enclosed (text delim1 delim2)
   ;; TBD: Verify
   "Removes all text enclosed between delim1 and delim2, including the tags. Returns remaining text. Nondestructive."
   (let ((acc nil)
         (enclosed-p nil))
     (dotimes (i (length text))
-      (cond ((equal (subseq text i (min (+ i (length delim1)) (length text))) delim1) (setf enclosed-p t))
-            ((equal (subseq text i (min (+ i (length delim2)) (length text))) delim2) (progn
-                                                                                        (setf enclosed-p nil)
-                                                                                        (setf i (+ i (length delim2) -1))))
+      (cond ((fast-substr-check text delim1 i)
+             (setf enclosed-p t))
+            ((fast-substr-check text delim2 i)
+             (setf enclosed-p nil)
+             (setf i (+ i (length delim2) -1)))
             (t (if (not enclosed-p)
                    (push (char text i) acc)))))
     (convert-to-str (reverse acc))))
@@ -372,7 +386,7 @@
 
 (defun filter (text allow-rule censor-by)
   (let ((acc nil))
-    (dotimes (i (length text) (reverse acc))
+    (dotimes (i (length text))
       (if (funcall allow-rule (char text i))
           (push (char text i) acc)
           (push censor-by acc)))
@@ -401,7 +415,7 @@
   ;; TBD: Remove double and multiple spaces
   (filter text #'(lambda (a) (not (member a '(#\EM_DASH #\LEFTWARDS_ARROW #\EN_DASH #\PLUS-MINUS_SIGN #\THIN_SPACE #\MINUS_SIGN #\DEGREE_SIGN #\# #\& #\? #\+ #\}
                                               #\* #\: #\{ #\] #\[ #\; #\, #\) #\\ #\| #\^ #\( #\. #\/ #\-
-                                              #\" #\= #\> #\! #\< #\Newline))))
+                                              #\" #\= #\> #\! #\< #\Newline #\Tab))))
           (char " " 0)))
 
 (defun remove-diacritics (str)
@@ -410,28 +424,24 @@
        str))
 
 (defun basic-letter (ltr)
-  ;; TBD: General
-  (let ((char-pairs (list (list "á" "a")
-                          (list "é" "e")
-                          (list "ě" "e")
-                          (list "í" "i")
-                          (list "ó" "o")
-                          (list "ú" "u")
-                          (list "ů" "u")
-                          (list "ý" "y")
-                          (list "č" "c")
-                          (list "ď" "d")
-                          (list "ň" "n")
-                          (list "ř" "r")
-                          (list "š" "s")
-                          (list "ť" "t")
-                          (list "ž" "z")
-                          (list "’" "'")))
-        (acc nil))
-    (dolist (pair char-pairs)
-      (if (equal ltr (char (first pair) 0))
-          (setf acc (char (second pair) 0))))
-    (fallback acc ltr)))
+  (case ltr
+    (#\á #\a)
+    (#\é #\e)
+    (#\ě #\e)
+    (#\í #\i)
+    (#\ó #\o)
+    (#\ú #\u)
+    (#\ů #\u)
+    (#\ý #\y)
+    (#\č #\c)
+    (#\ď #\d)
+    (#\ň #\n)
+    (#\ř #\r)
+    (#\š #\s)
+    (#\ť #\t)
+    (#\ž #\z)
+    (#\RIGHT_SINGLE_QUOTATION_MARK #\')
+    (otherwise ltr)))
 
 (defun links (file-name)
   ;; TBD: Why is the file read differently here?
@@ -453,13 +463,23 @@
 
 (defun wordlist (text)
   ;; TBD: Fix name (hashtable!)
-  ;; Produces a "corpus" (with each word in there once) out of a text. Hash table format,
-  (let ((lst (remove-duplicates (split text (char " " 0)) :test #'equal))
+  ;; Produces a corpus (word counts in a hash table) out of a text. Hash table format,  
+  (let ((lst (remove-if #'(lambda (word) (equal word ""))
+                        (split text #\ )))
         (corpus (make-hash-table :test #'equal)))
-    (setf (gethash nil corpus) lst)
+    (setf (gethash nil corpus) (remove-duplicates lst :test #'equal))
     (dolist (word lst)
-      (setf (gethash word corpus) 1))
+      (if (gethash word corpus)
+          (incf (gethash word corpus) 1)
+          (setf (gethash word corpus) 1)))
     corpus))
+
+(defun word-count (corpus)
+  (let ((vocab (gethash nil corpus))
+        (acc 0))
+    (dolist (word vocab)
+      (incf acc (occurrences word corpus)))
+    acc))
 
 (defun normalize-corpus (corp num words)
   ;; Scales the hash table format by a factor of num. Only carries over "words", not the full corpus.
@@ -487,13 +507,14 @@
       (let* ((data (get-corpus folder)))
         (incf url-count (car data))
         (setf corpus (add-hashtable-corpuses corpus (cdr data))))
-
-      (print-to-file "file-count" url-count)
+      ;; TEMP: Changed for word, not document count.
+      (print-to-file "file-count" ;; url-count
+                     (word-count corpus))
       (print-to-file "corpus" (corpus-list corpus))
       (if (equal folder *classes-folder*)
           (log-print "Rebuilt the corpus. Time taken: "
                      ;; internal-time-units-per-second is a LISP built-in constant
-                     (coerce (/ (- (get-internal-real-time) timer) internal-time-units-per-second) 'single-float)))
+                     (my-round (/ (- (get-internal-real-time) timer) internal-time-units-per-second))))
       (cons url-count corpus))))
 
 (defun add-hashtable-corpuses (corp1 corp2)
@@ -510,7 +531,6 @@
     acc))
 
 (defun sort-corpus (corp)
-  ;; TBD: Flagged for possible deletion.
   ;; Only applicable for the list format of corpuses.
   (sort (copy-seq corp) #'< :key #'cdr))
 
@@ -540,7 +560,7 @@
   (let ((corpus nil))
     (dolist (word (gethash nil hashtable))
       (push (cons word (occurrences word hashtable)) corpus))
-    corpus))
+    (sort-corpus corpus)))
 
 (defun get-recursive-corpus (folder)
   ;; Looks into the corpus file and converts to the hash-table formulation
@@ -621,6 +641,12 @@
 ;;;----------------------------------------------------------------------------------------------
 ;;; SCORE MATH
 
+(defun my-round (num &optional (decimals *decimals*))
+  (let ((divisor (expt 10 (- decimals))))
+    (coerce (* (round num divisor)
+               divisor)
+            'single-float)))
+
 (defun pagerank (options scores-table)
   ;; Pageranking one or zero folders results in division 0/0
   (if (< (length options) 2)
@@ -629,14 +655,15 @@
           (setf (gethash option scores) 1))
         scores)
       (let ((scores (make-hash-table :test #'equal))
-            (acc (make-hash-table :test #'equal)))
+            (acc (make-hash-table :test #'equal))
+            (final-probsum nil))
         (dolist (option options)
           (setf (gethash option scores)
                 ;; BEWARE of ratios entering this calculation, for they explode in precision, size, and lag.
-                (coerce (/ (length options)) 'single-float)))
+                (coerce (/ (length options)) 'double-float)))
         (dotimes (i *iterations*)
           (dolist (option options)
-            ;; BUG: Possible division by 0. Limit probabilities to double float range.
+            ;; BUG: Possible division by 0. Limit probabilities to double float range. Fix properly with logarithm formulation.
             (setf (gethash option acc)
                   (/ (apply #'+
                             (mapcar #'(lambda (option2)
@@ -646,23 +673,25 @@
                                                (gethash (cons option option2) scores-table))))
                                     options))
                      (apply #'+ (mapcar #'(lambda (option2) (if (equal option2 option)
-                                                                1d-15 ; prevents division by zero if it is certain the document belongs in a given category
+                                                                (/ 10000000000000000) ; prevents division by zero if it is certain the document belongs in a given category. TBD: Fix properly with logarithms.
                                                                 (gethash option2 scores)))
                                         options)))))
           (let ((probsum (apply #'+ (mapcar #'(lambda (opt) (gethash opt acc))
                                             options))))
+            ;; BUG: Float precision can fail, causing a 0/0 to appear here. I put it off with double floats, but it needs addressing eventually.
             ;; TBD: Maybe somehow display the eventual probsum, because it is also a result of the calculation, it is unique, and seems to somehow reflect on the certainty of the result
             ;; Probsum: Min 1, Max N/2 for N options
             (dolist (option options)
               (setf (gethash option scores)
                     (/ (gethash option acc)
-                       probsum)))))
-        scores)))
+                       probsum)))
+            (setf final-probsum probsum)))
+        (values scores
+                final-probsum))))
 
-;; Using Laplace smoothing for now
-(defun word-probability (target total subfolder-count)
-  (/ (+ 1 target)
-     (+ subfolder-count total)))
+(defun word-probability (target total subfolder-count smoothing-factor)
+  (/ (+ smoothing-factor target)
+     (+ (* smoothing-factor subfolder-count) total)))
 
 ;;; SCORE MATH
 ;;;----------------------------------------------------------------------------------------------
