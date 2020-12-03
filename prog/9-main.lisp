@@ -24,92 +24,6 @@ Links
 
 |#
 
-(defun chosen-words (vocab word-scores)
-  (let* ((ordered-words (sort (copy-seq vocab)
-                              #'<
-                              :key #'(lambda (word) (gethash word word-scores))))
-         (evidence-length (max *evidence-length*
-                               (floor (/ (length (remove-if #'(lambda (word) (>= 4/5 (gethash word word-scores) 1/5))
-                                                            ordered-words))
-                                         2)))))
-    (append (subseq ordered-words 0 (min evidence-length
-                                         (length ordered-words)))
-            (subseq ordered-words (max 0
-                                       (- (length ordered-words) evidence-length))))))
-
-(defun compare-folders (vocab folders)
-  ;; Returns a cons of two hash tables. A hash table of path -> score, and a hash table of path -> chosen words.
-  (let* ((folder-count (length folders))
-         (smallest-folder (apply #'min (mapcar #'get-file-count folders)))
-         (corpuses (let ((acc (make-hash-table :test #'equal)))
-                     (dolist (path folders)
-                       (setf (gethash path acc)
-                             (normalize-corpus (get-recursive-corpus path)
-                                               (/ smallest-folder (get-file-count path)) ; TBD: Warn if a folder is empty!
-                                               vocab)))
-                     acc))
-         (total-corpus (reduce #'add-hashtable-corpuses
-                               (mapcar #'(lambda (path) (gethash path corpuses))
-                                       folders)))
-         (scores (make-hash-table :test #'equal))
-         (evidence (make-hash-table :test #'equal)))
-    (dolist (path folders)
-      ;; balance evidence for and against
-      (let* ((corpus (gethash path corpuses))
-             ;; we need a score for every word-path pair
-             (word-scores (let ((acc (make-hash-table :test #'equal)))
-                            (dolist (word vocab)
-                              (setf (gethash word acc)
-                                    (word-probability (occurrences word corpus)
-                                                      (occurrences word total-corpus)
-                                                      folder-count
-                                                      *smoothing-factor*)))
-                            acc))
-             (chosen-words (chosen-words vocab word-scores))
-             (score (apply #'* (mapcar #'(lambda (word) (gethash word word-scores))
-                                       ;; Need the best words here
-                                       chosen-words))))
-        (apply #'* (mapcar #'(lambda (word) (coerce (gethash word word-scores) 'double-float))
-                           ;; Need the best words here
-                           chosen-words))
-        (setf (gethash path scores) score)
-        (setf (gethash path evidence) chosen-words)))
-
-    ;; Potential BUG: Very long ratios
-    (let ((prob-sum (apply #'+ (mapcar #'(lambda (path) (gethash path scores)) folders))))
-      (dolist (path folders)
-        (setf (gethash path scores)
-              (coerce (/ (gethash path scores)
-                         prob-sum)
-                      'double-float))))
-    (cons scores evidence)))
-
-(defun scores (vocab folders)
-  ;; In folders without subfolders, we don't want to do anything
-  (if (and folders *try-to-class?*)
-      (let ((pair-scores (make-hash-table :test #'equal))
-            (pair-chosen-words (make-hash-table :test #'equal)))
-        (dolist (folder folders)
-          (dolist (opponent folders)
-            (if (equal folder opponent)
-                (setf (gethash (cons folder opponent) pair-scores) 0) ; chosen words can remain empty
-                ;; TBD: multiple-value-bind?
-                (let* ((data (compare-folders vocab (list folder opponent)))
-                       (scores (car data))
-                       (evidence (cdr data)))
-                  (setf (gethash (cons folder opponent) pair-scores)
-                        (gethash folder scores))
-                  (setf (gethash (cons folder opponent) pair-chosen-words)
-                        (gethash folder evidence))))))
-        ;; the actual scores and some data for the explainer
-        (multiple-value-bind (scores probsum) (pagerank folders pair-scores)
-          (print (list scores probsum))
-          (values scores
-                  probsum
-                  pair-scores
-                  pair-chosen-words)))
-      (make-hash-table :test #'equal)))
-
 ;;; NORMAL STUFFS
 ;;;----------------------------------------------------------------------------------------------
 ;;; GUI
@@ -181,7 +95,7 @@ Links
   #|
   TBD: Hide all the state and windows here, then rename
   TBD (marked): The total window is redundantly organised. The new screen should always grid it itself, at (0 1), but all the subwindows already grid everything themselves.
-                Thus, the (0 1) is awkwardly present through all the subwindows.
+  Thus, the (0 1) is awkwardly present through all the subwindows.
   TBD: Make it impossible to leave the parent class
   TBD: This is a mess. Read up on C2 Wiki GUI design, see if this can be done more functionally.
   BUG: The explainers are not properly placed. Related to marked TBD.
@@ -352,7 +266,7 @@ Links
                                                         (get-file-count i)
                                                         " words in total. Portion: "
                                                         (my-round (* 10000 (/ (occurrences word (get-recursive-corpus i))
-                                                                             (get-file-count i))))
+                                                                              (get-file-count i))))
                                                         "‱")
                                                 #'(lambda ()
                                                     (redraw i)))
