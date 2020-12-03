@@ -53,6 +53,10 @@ This seems like a functional problem, for corpuses are just hash tables (diction
 
 The crawler inside is extremely poor. It is not configurable and presumably broken with the new backend.
 
+# Current corpora
+
+There is a *trash* folder, meaning content not intended to be found by this system. It consists of stuff found way too easily using regular search engines and of questionable quality (content mill SEO-reliant writing, dictionaries, unhelpful guides, etc.). For license reasons, only links to websites are provided, so you have to redownload data yourself with (redownload \*classes-folder\*).
+
 # Used libraries
 
 Dexador (https://github.com/fukamachi/dexador) for downloading page data.
