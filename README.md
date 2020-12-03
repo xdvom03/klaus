@@ -10,4 +10,6 @@ Download files. I use Portacle on Linux Ubuntu to run the program. I put a compr
 
 # Caveat emptor
 
-Not only is there no warranty or guarantee of a working state, there isn't even the expectation of a working state yet. There are known bugs and missing features in the code. I provide no data yet because the data isn't open-source. There is a dependency on wish (tcl/tk window system). The system isn't tested on any other computers than my own.
+Not only is there no warranty or guarantee of a working state, there isn't even the expectation of a working state yet. There are known bugs and missing features in the code. There is a dependency on wish (tcl/tk window system). The system isn't tested on any other computers than my own.
+
+Data provided may not be sufficient for well-defined classes. Comments are mostly placeholders.
