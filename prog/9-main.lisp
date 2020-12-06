@@ -16,11 +16,12 @@ This seems fixed by symmetry in the simpler two-class case: proof for IS proof a
 
 What do we do with <noscript>? It caused c2wiki to class as boilerplate, but I think there's no good reason to exclude it. Made irrelevant by C2wiki depending on Javascript, and thus not being downloadable.
 
+Some sites use scripts to deliver boilerplate. While this is not a problem for classification (just ignore them or input manually), it might mess up the crawler.
+
 Possible windows:
 Main menu
 Database (classes)
 History
-Links
 
 |#
 
