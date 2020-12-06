@@ -23,7 +23,7 @@
 ")
 (defparameter *iterations* 200)
 (defparameter *decimals* 3)
-(defparameter *smoothing-factor* 5)
+(defparameter *smoothing-factor* 1)
 (defparameter *crawler-name* "botelaire")
 
 (defparameter *forbidden-extensions* (list "css" "png" "mp4" "ico" "svg" "webmanifest"))

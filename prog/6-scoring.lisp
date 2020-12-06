@@ -124,7 +124,6 @@
                         (gethash folder evidence))))))
         ;; the actual scores and some data for the explainer
         (multiple-value-bind (scores probsum) (pagerank folders pair-scores)
-          (print (list scores probsum))
           (values scores
                   probsum
                   pair-scores

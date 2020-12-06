@@ -88,9 +88,10 @@
   ;; Replaces commas, parentheses, periods, etc. by spaces
   ;; Also replaces whitespace
   ;; TBD: Remove double and multiple spaces
-  (filter text #'(lambda (a) (not (member a '(#\EM_DASH #\LEFTWARDS_ARROW #\EN_DASH #\PLUS-MINUS_SIGN #\THIN_SPACE #\MINUS_SIGN #\DEGREE_SIGN #\# #\& #\? #\+ #\}
-                                              #\* #\: #\{ #\] #\[ #\; #\, #\) #\\ #\| #\^ #\( #\. #\/ #\-
-                                              #\" #\= #\> #\! #\< #\Newline #\Tab))))
+  (filter text #'(lambda (a)
+                   (not (member a '(#\EM_DASH #\LEFTWARDS_ARROW #\EN_DASH #\PLUS-MINUS_SIGN #\THIN_SPACE #\MINUS_SIGN #\DEGREE_SIGN #\# #\& #\+ #\}
+                                    #\* #\: #\{ #\] #\[ #\; #\, #\) #\\ #\| #\^ #\( #\. #\/ #\-
+                                    #\" #\= #\> #\< #\Newline #\Tab))))
           (char " " 0)))
 
 (defun remove-diacritics (str)
@@ -117,3 +118,32 @@
     (#\ž #\z)
     (#\RIGHT_SINGLE_QUOTATION_MARK #\')
     (otherwise ltr)))
+
+(defun tokens (text)
+  ;; TEMP: Really imperative and possibly misplaced
+  (let* ((?s 0)
+         (!s 0)
+         (words (remove-if #'(lambda (word) (equal word ""))
+                           (split text #\ )))
+         (normal-words (mapcar #'(lambda (word)
+                                   (if (equal (last-char word) #\!)
+                                       (progn
+                                         (incf !s)
+                                         (cut-word word))
+                                       (if (equal (last-char word) #\?)
+                                           (progn
+                                             (incf ?s)
+                                             (cut-word word))
+                                           word)))
+                               words)))
+    ;; TEMP: Spammed words are the worst
+    (remove-duplicates (append normal-words
+                               (make-list ?s :initial-element "?")
+                               (make-list !s :initial-element "!"))
+                       :test #'equal)))
+
+(defun last-char (str)
+  (char str (1- (length str))))
+
+(defun cut-word (word)
+  (subseq word 0 (1- (length word))))

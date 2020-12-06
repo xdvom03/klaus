@@ -88,9 +88,6 @@ Links
                     #'(lambda () (words-explainer 100 100 (window "hujaja") chosen-words word-scores folder-corpus opponent-corpus *entries-per-page*)))))))
     f))
 
-(defun vocabulary (text)
-  (remove-duplicates (split text (char " " 0)) :test #'equal))
-
 (defun run ()
   #|
   TBD: Hide all the state and windows here, then rename
@@ -176,7 +173,7 @@ Links
                                     widget-list)
                               ;; produces conses of (subfolder . score)
                               (let* ((subfolders (subfolders current-folder))
-                                     (vocab (if *try-to-class?* (vocabulary (url-text url)))))
+                                     (vocab (if *try-to-class?* (remove-duplicates (tokens (url-text url)) :test #'equal))))
                                 (multiple-value-bind (scores probsum pair-scores pair-chosen-words) (scores vocab subfolders)
                                   (setf (ltk:text l) (concat "Maximum possible probability: " (my-round (/ (fallback probsum 1)))))
                                   (if *explain?*
@@ -202,6 +199,8 @@ Links
                                                                                                                                (redraw-confirmed new-path)
                                                                                                                                (ltk:destroy warning-button))))))))
                      (label 0 1 f "FOLDERS")
+                     (button 1 1 f ".." #'(lambda () (redraw (parent-folder current-folder))))
+                     
                      (button 3 2 f "Create folder" #'(lambda () (let ((txt (ltk:text e)))
                                                                   (ensure-directories-exist (concat current-folder txt "/"))
                                                                   (overwrite-file (concat current-folder txt "/corpus") nil)
@@ -209,7 +208,6 @@ Links
                                                                   (overwrite-file (concat current-folder txt "/links") nil)
                                                                   (setf (ltk:text e) "")
                                                                   (redraw (concat current-folder txt "/")))))
-                     (button 1 1 f ".." #'(lambda () (redraw (parent-folder current-folder))))
                      (label 1 2 f (concat "Current URL: " url))
                      (button 4 2 f "Add link here" #'(lambda ()
                                                        ;; Avoiding double insert

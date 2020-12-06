@@ -2,17 +2,15 @@
   (let ((corpus-entry (gethash word corpus)))
     (fallback corpus-entry 0)))
 
-(defun wordlist (text)
-  ;; TBD: Fix name (hashtable!)
+(defun text-corpus (text)
   ;; Produces a corpus (word counts in a hash table) out of a text. Hash table format,  
-  (let ((lst (remove-if #'(lambda (word) (equal word ""))
-                        (split text #\ )))
+  (let ((tokens (tokens text))
         (corpus (make-hash-table :test #'equal)))
-    (setf (gethash nil corpus) (remove-duplicates lst :test #'equal))
-    (dolist (word lst)
-      (if (gethash word corpus)
-          (incf (gethash word corpus) 1)
-          (setf (gethash word corpus) 1)))
+    (setf (gethash nil corpus) tokens)
+    (dolist (token tokens)
+      (if (gethash token corpus)
+          (incf (gethash token corpus) 1)
+          (setf (gethash token corpus) 1)))
     corpus))
 
 (defun word-count (corpus)
@@ -48,8 +46,7 @@
       (let* ((data (get-corpus folder)))
         (incf url-count (car data))
         (setf corpus (add-hashtable-corpuses corpus (cdr data))))
-      ;; TEMP: Changed for word, not document count.
-      (print-to-file "file-count" ;; url-count
+      (print-to-file "file-count" ;; really word count!
                      (word-count corpus))
       (print-to-file "corpus" (corpus-list corpus))
       (if (equal folder *classes-folder*)
@@ -77,7 +74,7 @@
 
 (defun get-corpus (folder)
   ;; Returns cons of url count & corpus
-  (let ((vocab-lists (mapcar #'wordlist
+  (let ((vocab-lists (mapcar #'text-corpus
                              (mapcar #'(lambda (file-name) (extract-text (file-content file-name)))
                                      (class-links folder)))))
     (cons (length vocab-lists)
