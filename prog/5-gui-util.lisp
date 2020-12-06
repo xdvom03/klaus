@@ -73,10 +73,12 @@
                          ;; TBD: This still looks ugly
                          (if (> (length lst) (+ start i) -1)
                              (progn
+                               (ltk:grid b i 0 :sticky "nesw")
                                (setf (ltk:text b) (nth (+ start i) lst))
                                (setf (ltk:command b) (if function-lst
                                                          (nth (+ start i) function-lst))))
                              (progn
+                               (ltk:grid-forget b)
                                (setf (ltk:text b) "")
                                (setf (ltk:command b) #'pass)))))
                      (setf (ltk:text l) (concat start "/" (length lst)))

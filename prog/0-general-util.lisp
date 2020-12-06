@@ -15,7 +15,7 @@
 (defparameter *history-temp-file* "../DATA/klaus/history/history2")
 (defparameter *history-rename* "history")
 
-(defparameter *entries-per-page* 20)
+(defparameter *entries-per-page* 10)
 (defparameter *try-to-class?* t)
 (defparameter *explain?* nil)
 (defparameter *evidence-length* 6)
