@@ -2,3 +2,4 @@ portacle/
 DATA/klaus/files/*
 DATA/klaus/file-aliases
 DATA/klaus/history/history
+*.fasl
