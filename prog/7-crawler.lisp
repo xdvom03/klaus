@@ -16,93 +16,6 @@ Crawl 40 from:
 "https://www.jscc.edu/academics/programs/writing-center/writing-resources/five-paragraph-essay.html"
 |#
 
-(defun remove-fragment (url)
-  (do ((i 0 (1+ i)))
-      ((or (>= i (length url))
-           (equal (char "#" 0) (char url i))
-           (equal (char "?" 0) (char url i)))
-       (if (>= i (length url))
-           url
-           (subseq url 0 i)))))
-
-;; TBD: Add dollar signs, crawl delay, and asterisk wildcards.
-(defun matching-rule? (rule url)
-  (safe-check-substr (quri:url-decode (remove-domain url)) rule))
-
-(defun rules (robots-txt agent-predicate)
-  ;; agent-predicate is a function which determines if an agent string is considered relevant
-  (apply #'append
-         (mapcar #'(lambda (lst) (remove-nth 0 lst))
-                 (remove-if-not #'(lambda (agents)
-                                    (some #'(lambda (agent)
-                                              (funcall agent-predicate agent))
-                                          agents))
-                                robots-txt :key #'car))))
-
-(defun url-allowed? (bot-name url)
-  (let* ((robots-txt (robots-txt url))
-         (specific-rules (rules robots-txt #'(lambda (agent) (search (string-downcase bot-name)
-                                                                     (string-downcase agent)))))
-         (rules (fallback specific-rules (rules robots-txt #'(lambda (agents)
-                                                               (some #'(lambda (agent)
-                                                                         (equal "*" agent))
-                                                                     agents)))))
-         ;; Default to allowed
-         (result t))
-    ;; The first rule takes precedence
-    (dolist (rule (reverse rules))
-      (if (matching-rule? (cdr rule) url)
-          (setf result (equal (car rule) "Allow"))))
-    result))
-
-(defun safe-check-substr (str key &optional (start 0))
-  "Returns T if the string contains the key starting at start. If it is too short or doesn't contain the key, returns NIL."
-  (let ((key-len (length key)))
-    (and (>= (length str)
-             (+ start key-len))
-         (equal key (subseq str start (+ start key-len))))))
-
-(defun robots-txt (site)
-  (let* ((file (safe-fetch-html (concat (find-domain site) "/robots.txt")))
-         (user-agents nil)
-         (rules nil)
-         (accepting-new-agents? t)
-         (acc nil))
-    (dolist (line (split file (char *newline* 0)))
-      (let* ((agent? (safe-check-substr line "User-agent: "))
-             (allow? (safe-check-substr line "Allow: "))
-             (disallow? (safe-check-substr line "Disallow: "))
-             (line-body (subseq line (length (cond (agent? "User-agent: ")
-                                                   (allow? "Allow: ")
-                                                   (disallow? "Disallow: ")
-                                                   (t ""))))))
-        (cond (agent?
-               (if accepting-new-agents?
-                   (push line-body user-agents)
-                   (progn
-                     (if user-agents
-                         (push (cons user-agents rules) acc))
-                     (setf user-agents (list line-body))
-                     (setf rules nil))))
-              (allow?
-               (push (cons "Allow" line-body) rules))
-              (disallow?
-               (push (cons "Disallow" line-body) rules)))
-        (setf accepting-new-agents? agent?)))
-    (push (cons user-agents rules) acc)
-    (reverse acc)))
-
-(defun extension (url)
-  (last1 (split url (char "." 0))))
-
-(defun filter-links (raw-links)
-  (remove-if #'(lambda (url)
-                 (member (extension url)
-                         *forbidden-extensions*
-                         :test #'equal))
-             (remove-duplicates (mapcar #'remove-fragment
-                                        raw-links))))
-
 (defun pick-from-queue (queue)
   (let* ((scoresum (apply #'+ (mapcar #'cdr queue)))
          (choice (random (ceiling (* scoresum 1000000))))
@@ -149,3 +62,41 @@ Crawl 40 from:
                               (setf queue (replace-last queue (cons link score))))))
                     (print "whoops, nothing here.")))))))
     (reverse acc)))
+
+(defun random-pick (lst)
+  (nth (random (length lst)) lst))
+
+
+
+
+(defun wanderbot (seed page-count)
+  #|
+  RSS feeds might be trouble. Check how they work, or finally make the downloader give up after a while.
+  Perhaps just screw Facebook & Twitter & Instagram completely.
+  (safe-fetch-html "http://www.costco.com/robots.txt")
+  (SAFE-FETCH-HTML "https://www.mouser.com/robots.txt")
+  |#
+  (let ((hst (list seed))
+        (forbidden (list "https://waitbutwhy.com/feed/")))
+    (dotimes (i page-count)
+      (let* ((current-url (car hst))
+             (raw-links (filter-links (vetted-links current-url)))
+             (links (remove-if-not #'(lambda (url) (and (not (equal url current-url))
+                                                        (not (member url forbidden :test #'equal))
+                                                        (not (member url hst :test #'equal))
+                                                        (not (search "twitter" url))
+                                                        (not (search "facebook" url))
+                                                        (url-allowed? *crawler-name* url)))
+                                   raw-links)))
+        (if (zerop (print (length links)))
+            (progn
+              (print ":(") ;not enough if a site sends you into a loop
+              (push current-url forbidden)
+              (setf hst (remove-if #'(lambda (url) (or (member url forbidden :test #'equal)))
+                                   (cdr hst))))
+            (progn
+              (with-open-file (stream (concat *wanderbot-file* "2")
+                                      :direction :output :if-exists :append :if-does-not-exist :create)
+                (print current-url stream))
+              (push (print (random-pick links)) hst)))))
+    (reverse hst)))

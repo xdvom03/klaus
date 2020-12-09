@@ -15,6 +15,8 @@
 (defparameter *history-temp-file* "../DATA/klaus/history/history2")
 (defparameter *history-rename* "history")
 
+(defparameter *wanderbot-file* "../DATA/klaus/wanderbot")
+
 (defparameter *entries-per-page* 10)
 (defparameter *try-to-class?* t)
 (defparameter *explain?* nil)
@@ -26,7 +28,7 @@
 (defparameter *smoothing-factor* 1)
 (defparameter *crawler-name* "botelaire")
 
-(defparameter *forbidden-extensions* (list "css" "png" "mp4" "ico" "svg" "webmanifest"))
+(defparameter *forbidden-extensions* (list "css" "png" "mp4" "ico" "svg" "webmanifest" "js" "json"))
 
 (defparameter *bg-col* "#f0f0f0")
 (defparameter *button-col* "#e0e0e0")
@@ -34,6 +36,15 @@
 (defparameter *text-col* "#000000")
 
 (defun pass ())
+
+(defmacro fallback-no-eval (obj if-nil)
+  ;; avoiding multiple evaluation
+  (let ((name (gensym)))
+    `(let ((,name ,obj))
+       (if ,name
+           ,name
+           (progn
+             ,if-nil)))))
 
 (defun fallback (obj if-nil)
   "Identity unless obj is NIL. In that case, returns if-nil."

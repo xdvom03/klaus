@@ -11,7 +11,8 @@
 (defun safe-fetch-html (url)
   "Gets HTML data from a URL, but if it 404's, it returns nothing found."
   ;; TBD: Figure out how to dynamically insert the bot name into the headers
-  (let ((unsafe (ignore-errors (dex:get url :headers '(("User-Agent" . "Botelaire, crawler for https://github.com/xdvom03/klaus (reads robots.txt for botelaire). In case of any trouble, contact xdvom03 [at] gjk [dot] cz."))))))
+  (let ((unsafe (ignore-errors (dex:get url :headers '(("User-Agent" . "Botelaire, crawler for https://github.com/xdvom03/klaus (reads robots.txt for botelaire). In case of any trouble, contact xdvom03 [at] gjk [dot] cz."))
+                                        :timeout 2))))
     ;; an image link, or anything that isn't a string, is considered a 404
     (if (or (null unsafe) (not (stringp unsafe)))
         "nothingfound"
