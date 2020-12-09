@@ -46,7 +46,9 @@
       (let* ((data (get-corpus folder)))
         (incf url-count (car data))
         (setf corpus (add-hashtable-corpuses corpus (cdr data))))
-      (print-to-file "file-count" ;; really word count!
+      (print-to-file "file-count"
+                     url-count)
+      (print-to-file "word-count"
                      (word-count corpus))
       (print-to-file "corpus" (corpus-list corpus))
       (if (equal folder *classes-folder*)
@@ -124,3 +126,7 @@
 (defun get-file-count (folder)
   ;; Just looks into the file-count file
   (read-from-file (concat folder "file-count")))
+
+(defun get-word-count (folder)
+  ;; Just looks into the word-count file
+  (read-from-file (concat folder "word-count")))

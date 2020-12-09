@@ -136,7 +136,9 @@ History
                                                      (add-to-history current-url)
                                                      (change-screen (database-window 0 1 master current-url))))
                    (button 5 1 W "Find word counts" #'(lambda ()
-                                                        (change-screen (word-explainer 0 1 master (ltk:text e1)))))
+                                                        (if (gethash (ltk:text e1) (get-recursive-corpus *classes-folder*))
+                                                            (change-screen (word-explainer 0 1 master (ltk:text e1)))
+                                                            (log-print "Not a word."))))
                    (button 1 2 W "Wipe entry" #'(lambda ()
                                                   (setf (ltk:text e1) "")))
                    (button 1 3 W "Rebuild corpus" #'rebuild-corpus)
@@ -183,13 +185,14 @@ History
                                   (setf (ltk:text probsum-label) (concat "Maximum possible probability: " (my-round (/ (fallback probsum 1)))))
                                   (if *explain?*
                                       (pair-scores-explainer 0 0 (window "HUJAJA") vocab subfolders pair-scores pair-chosen-words))
-                                  (let ((counter 1))
-                                    (dolist (i subfolders)
+                                  (let ((counter 1)
+                                        (sorted-subfolders (sort (copy-seq subfolders) #'> :key #'(lambda (folder) (fallback (gethash folder scores) (/ (length subfolders)))))))
+                                    (dolist (i sorted-subfolders)
                                      (incf counter)
                                      (push (button counter
                                                    0
                                                    folder-frame
-                                                   (concat (file-name i t) " score: " (my-round (fallback (gethash i scores) (/ (length subfolders)))) ", " (get-file-count i) " words.")
+                                                   (concat (file-name i t) " score: " (my-round (fallback (gethash i scores) (/ (length subfolders)))) ", " (get-word-count i) " words, " (get-file-count i) " files.")
                                                    #'(lambda ()
                                                        (redraw i)))
                                            widget-list)))))
