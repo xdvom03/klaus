@@ -37,7 +37,8 @@
 
 (defun pass ())
 
-(defmacro fallback-no-eval (obj if-nil)
+(defmacro fallback (obj if-nil)
+  "Identity unless obj is NIL. In that case, returns if-nil."
   ;; avoiding multiple evaluation
   (let ((name (gensym)))
     `(let ((,name ,obj))
@@ -45,12 +46,6 @@
            ,name
            (progn
              ,if-nil)))))
-
-(defun fallback (obj if-nil)
-  "Identity unless obj is NIL. In that case, returns if-nil."
-  (if obj
-      obj
-      if-nil))
 
 (defun append1 (lst elem)
   (append lst (list elem)))
