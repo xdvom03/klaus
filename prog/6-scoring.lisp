@@ -64,12 +64,12 @@
 (defun compare-folders (vocab folders)
   ;; Returns a cons of two hash tables. A hash table of path -> score, and a hash table of path -> chosen words.
   (let* ((folder-count (length folders))
-         (smallest-folder (apply #'min (mapcar #'get-file-count folders)))
+         (smallest-folder (apply #'min (mapcar #'get-word-count folders)))
          (corpuses (let ((acc (make-hash-table :test #'equal)))
                      (dolist (path folders)
                        (setf (gethash path acc)
                              (normalize-corpus (get-recursive-corpus path)
-                                               (/ smallest-folder (get-file-count path)) ; TBD: Warn if a folder is empty!
+                                               (/ smallest-folder (get-word-count path)) ; TBD: Warn if a folder is empty!
                                                vocab)))
                      acc))
          (total-corpus (reduce #'add-hashtable-corpuses

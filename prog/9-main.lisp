@@ -30,7 +30,6 @@ History
 ;;; GUI
 
 (defun words-explainer (r c master words word-scores folder-corpus opponent-corpus page-length)
-  ;; TBD: This is suboptimal, the two lists are considered separate when they are really supposed to balance each other.
   (let* ((f (frame r c master))
          ;; BUG: We cannot rely on words for being actually for (kde nic neni, ani smrt nebere, treba Lifehack hodnotny)
          (words-for (reverse (remove-if #'(lambda (word) (< (gethash word word-scores) 0.5))
@@ -162,8 +161,8 @@ History
                         
                         (folder-frame (frame 0 0 fr))
                         (file-frame (frame 0 1 fr))
-                        (options-frame (frame 0 2 fr))
-                        (comment-frame (frame 0 3 fr))
+                        (options-frame (frame 1 0 fr))
+                        (comment-frame (frame 1 1 fr))
 
                         ;; variable stuff
                         (e (entry 2 0 options-frame))
@@ -177,10 +176,10 @@ History
                               (dolist (i widget-list)
                                 (ltk:destroy i))
                               (setf widget-list nil)
-                              (setf (ltk:text folder-label) (concat "Current folder: " current-folder))
+                              (setf (ltk:text folder-label) (concat "Current folder: " (simplified-path current-folder)))
                               ;; produces conses of (subfolder . score)
                               (let* ((subfolders (subfolders current-folder))
-                                     (vocab (if *try-to-class?* (remove-duplicates (tokens (url-text url)) :test #'equal))))
+                                     (vocab (if *try-to-class?* (tokens (url-text url)))))
                                 (multiple-value-bind (scores probsum pair-scores pair-chosen-words) (scores vocab subfolders)
                                   (setf (ltk:text probsum-label) (concat "Maximum possible probability: " (my-round (/ (fallback probsum 1)))))
                                   (if *explain?*

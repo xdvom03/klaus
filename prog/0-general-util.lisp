@@ -119,4 +119,4 @@
   (let ((divisor (expt 10 (- decimals))))
     (coerce (* (round num divisor)
                divisor)
-            'single-float)))
+            'double-float)))

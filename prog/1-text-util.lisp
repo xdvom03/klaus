@@ -140,7 +140,12 @@
     (remove-duplicates (append normal-words
                                (make-list ?s :initial-element "?")
                                (make-list !s :initial-element "!"))
-                       :test #'equal)))
+                       :test #'equal)
+    ;; TEMP: Trying the bag of words again
+    #|(append normal-words
+            (make-list ?s :initial-element "?")
+            (make-list !s :initial-element "!"))|#
+    ))
 
 (defun last-char (str)
   (char str (1- (length str))))
