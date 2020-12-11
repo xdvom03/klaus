@@ -22,30 +22,31 @@
   "Returns a list of all links found in url"
   (find-links (safe-fetch-html url)))
 
+(defun absolute-link? (link)
+  (and (> (length link) 3)
+       (equal (subseq link 0 4) "http")))
+
 (defun extract-link (link domain)
   ;; Empty links happen sometimes, as do super short ones, should be removed
   ;; TBD: Deal properly with various forms of relative links (fails with Tailsteak site). For now, keep old slash version.
   ;; Anything not starting with http is assumed to be a relative link, starting slash removed, domain name appended
-  (if (and (> (length link) 0)
-           (slash? (char link 0)))
+  (if (absolute-link? link)
+      link
       (concat domain
-              link)
-      link))
+              link)))
 
-(defun vetted-links (url)
+(defun vetted-links (url) ;; TBD: Dubious
   (let ((domain (find-domain url)))
-    (remove-if-not #'(lambda (str) (and (> (length str) 0)
-                                        (equal (char str 0) (char "h" 0))))
-                   (mapcar #'(lambda (tag) (extract-link tag domain)) (url-links url)))))
+    (remove-if-not #'absolute-link?
+                   (print (mapcar #'(lambda (link) (extract-link (print link) domain))
+                            (url-links url))))))
 
 (defun find-domain (url)
   (do ((i 0 (1+ i))
        (slashes 2 (- slashes (if (slash? (char url i)) 1 0))))
       ((or (< slashes 0)
            (>= i (length url)))
-       (if (slash? (char url (1- i)))
-           (subseq url 0 (1- i))
-           (subseq url 0 i)))))
+       (subseq url 0 i))))
 
 (defun remove-domain (url)
   (do ((i 0 (1+ i))

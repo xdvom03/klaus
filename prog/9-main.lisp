@@ -102,7 +102,7 @@ Some sites use scripts to deliver boilerplate. While this is not a problem for c
                    (setf (ltk:text e1) current-url)
                    (button 0 2 W "Open & edit history" #'(lambda () (change-screen (history-window 0 1 master *entries-per-page*))))
                    (button 1 1 W "List links" #'(lambda ()
-                                                  (change-screen (link-window 0 1 master current-url))))
+                                                  (change-screen (link-window 0 1 master (ltk:text e1)))))
                    (button 2 1 W "Random link" #'(lambda ()
                                                    (let* ((url (ltk:text e1))
                                                           (links (vetted-links url))
