@@ -100,9 +100,16 @@
                                                a))
                                        strings)))
 
-(defun list-hashes (hashtable)
+(defun list-hashes (hashtable) ;; TBD: Check usage
   (let ((acc nil))
     (maphash #'(lambda (a b) (push (cons a b) acc))
+             hashtable)
+    acc))
+
+(defun list-keys (hashtable)
+  (let ((acc nil))
+    ;; Stop the warning by adding a useless b
+    (maphash #'(lambda (a b) b (push a acc))
              hashtable)
     acc))
 
@@ -130,3 +137,15 @@
 (defun ln (a)
   ;; Ln formulation requires high float precision
   (log (coerce a 'double-float)))
+
+(defun map-to-hash (fun list &key key-fun)
+  ;; key-fun is applied to the list to produce keys.
+  (let ((acc (make-hash-table :test #'equal)))
+    (mapcar #'(lambda (elem)
+                (setf (gethash (if key-fun
+                                   (funcall key-fun elem)
+                                   elem)
+                               acc)
+                      (funcall fun elem)))
+            list)
+    acc))
