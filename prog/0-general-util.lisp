@@ -6,13 +6,13 @@
 ;;;----------------------------------------------------------------------------------------------
 ;;; UTILS
 
-(defparameter *classes-folder* "../DATA/klaus/classes/")
-(defparameter *files-folder* "../DATA/klaus/files/")
-(defparameter *aliases-file* "../DATA/klaus/file-aliases")
+(defparameter *classes-folder* "../DATA/classes/")
+(defparameter *files-folder* "../DATA/files/")
+(defparameter *aliases-file* "../DATA/file-aliases")
 ;; BEWARE: Do not change without knowing what you are doing! Can mess up history!
 ;; TBD: Turn this into another folder
-(defparameter *history-file* "../DATA/klaus/history/history")
-(defparameter *history-temp-file* "../DATA/klaus/history/history2")
+(defparameter *history-file* "../DATA/history/history")
+(defparameter *history-temp-file* "../DATA/history/history2")
 (defparameter *history-rename* "history")
 
 (defparameter *wanderbot-file* "../DATA/klaus/wanderbot")
