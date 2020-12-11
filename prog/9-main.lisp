@@ -17,27 +17,28 @@ Some sites use scripts to deliver boilerplate. While this is not a problem for c
 ;;; GUI
 
 (defun words-explainer (r c master words word-scores folder-corpus opponent-corpus page-length)
+  ;; TBD: Move the exps to a more reasonable place
   (let* ((f (frame r c master))
          ;; BUG: We cannot rely on words for being actually for (kde nic neni, ani smrt nebere, treba Lifehack hodnotny)
-         (words-for (reverse (remove-if #'(lambda (word) (< (gethash word word-scores) 0.5))
+         (words-for (reverse (remove-if #'(lambda (word) (< (exp (gethash word word-scores)) 0.5))
                                         words)))
-         (words-against (remove-if #'(lambda (word) (> (gethash word word-scores) 0.5))
+         (words-against (remove-if #'(lambda (word) (> (exp (gethash word word-scores)) 0.5))
                                    words)))
     (button 0 0 f "words for" #'pass)
     (button 0 1 f "words against" #'pass)
     (scrollable-list 1 0 f page-length (mapcar #'list words-for
-                                               (mapcar #'(lambda (word) (coerce (gethash word word-scores) 'single-float)) words-for)
+                                               (mapcar #'(lambda (word) (coerce (exp (gethash word word-scores)) 'single-float)) words-for)
                                                (mapcar #'(lambda (word) (coerce (occurrences word folder-corpus) 'single-float)) words-for)
                                                (mapcar #'(lambda (word) (coerce (occurrences word opponent-corpus) 'single-float)) words-for)))
     (scrollable-list 1 1 f page-length (mapcar #'list words-against
-                                               (mapcar #'(lambda (word) (coerce (gethash word word-scores) 'single-float)) words-against)
+                                               (mapcar #'(lambda (word) (coerce (exp (gethash word word-scores)) 'single-float)) words-against)
                                                (mapcar #'(lambda (word) (coerce (occurrences word folder-corpus) 'single-float)) words-against)
                                                (mapcar #'(lambda (word) (coerce (occurrences word opponent-corpus) 'single-float)) words-against)))))
 
 (defun folder-name (path)
   (second (reverse (split path #\/))))
 
-(defun pair-scores-explainer (r c master vocab folders pair-scores pair-chosen-words) ; TBD: Fix names
+(defun pair-scores-explainer (r c master vocab folders pair-scores pair-words pair-word-scores) ; TBD: Fix names
   ;; The scores FOR a given folder are in its rows. TBD: Make that clear from the window
   (let* ((f (frame r c master)))
     (dotimes (i (length folders))
@@ -55,16 +56,8 @@ Some sites use scripts to deliver boilerplate. While this is not a problem for c
                                                     (/ smaller-size (get-file-count opponent))
                                                     vocab)) ;; TBD: Rework code to make that [whether a corpus is normalized or not] more obvious next time. TBD: Don't request the full vocab.
                  (pair (cons folder opponent))
-                 (chosen-words (gethash pair pair-chosen-words))
-                 (word-scores (let ((acc (make-hash-table :test #'equal)))
-                                (dolist (word chosen-words)
-                                  (setf (gethash word acc)
-                                        (word-probability (occurrences word folder-corpus)
-                                                          (+ (occurrences word folder-corpus)
-                                                             (occurrences word opponent-corpus))
-                                                          2
-                                                          *smoothing-factor*)))
-                                acc))
+                 (chosen-words (gethash pair pair-words))
+                 (word-scores (gethash pair pair-word-scores))
                  (score (gethash pair pair-scores)))
             (button (1+ i)
                     (1+ j)
@@ -167,10 +160,10 @@ Some sites use scripts to deliver boilerplate. While this is not a problem for c
                               ;; produces conses of (subfolder . score)
                               (let* ((subfolders (subfolders current-folder))
                                      (vocab (if *try-to-class?* (tokens (url-text url)))))
-                                (multiple-value-bind (scores probsum pair-scores pair-chosen-words) (scores vocab subfolders)
+                                (multiple-value-bind (scores probsum pair-scores pair-words pair-word-scores) (scores vocab subfolders)
                                   (setf (ltk:text probsum-label) (concat "Maximum possible probability: " (my-round (/ (fallback probsum 1)))))
-                                  (if *explain?*
-                                      (pair-scores-explainer 0 0 (window "HUJAJA") vocab subfolders pair-scores pair-chosen-words))
+                                  (if (and subfolders *explain?*)
+                                      (pair-scores-explainer 0 0 (window "HUJAJA") vocab subfolders pair-scores pair-words pair-word-scores))
                                   (let ((counter 1)
                                         (sorted-subfolders (sort (copy-seq subfolders) #'> :key #'(lambda (folder) (fallback (gethash folder scores) (/ (length subfolders)))))))
                                     (dolist (i sorted-subfolders)
@@ -264,7 +257,7 @@ Some sites use scripts to deliver boilerplate. While this is not a problem for c
                                                         " word count: "
                                                         (occurrences word (get-recursive-corpus i))
                                                         ", out of "
-                                                        (get-file-count i)
+                                                        (get-word-count i)
                                                         " words in total. Portion: "
                                                         (my-round (* 10000 (/ (occurrences word (get-recursive-corpus i))
                                                                               (get-file-count i))))

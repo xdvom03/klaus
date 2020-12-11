@@ -40,9 +40,15 @@
         (values scores
                 final-probsum))))
 
-(defun word-probability (target total subfolder-count smoothing-factor)
-  (/ (+ smoothing-factor target)
-     (+ (* smoothing-factor subfolder-count) total)))
+(defun smooth-ratio (target total subfolder-count smoothing-factor)
+  (- (ln (+ smoothing-factor target))
+     (ln (+ (* smoothing-factor subfolder-count) total))))
+
+(defun word-probability (word target total subfolder-count)
+  (smooth-ratio (occurrences word target)
+                (occurrences word total)
+                subfolder-count
+                *smoothing-factor*))
 
 ;;; SCORE MATH
 ;;;----------------------------------------------------------------------------------------------
@@ -53,7 +59,9 @@
                               #'<
                               :key #'(lambda (word) (gethash word word-scores))))
          (evidence-length (max *evidence-length*
-                               (floor (/ (length (remove-if #'(lambda (word) (>= 4/5 (gethash word word-scores) 1/5))
+                               (floor (/ (length (remove-if #'(lambda (word) (>= (ln *max-word-score*)
+                                                                                 (gethash word word-scores)
+                                                                                 (ln *min-word-score*)))
                                                             ordered-words))
                                          2)))))
     (append (subseq ordered-words 0 (min evidence-length
@@ -76,7 +84,8 @@
                                (mapcar #'(lambda (path) (gethash path corpuses))
                                        folders)))
          (scores (make-hash-table :test #'equal))
-         (evidence (make-hash-table :test #'equal)))
+         (evidence-words (make-hash-table :test #'equal))
+         (evidence-scores (make-hash-table :test #'equal)))
     (dolist (path folders)
       ;; balance evidence for and against
       (let* ((corpus (gethash path corpuses))
@@ -84,48 +93,45 @@
              (word-scores (let ((acc (make-hash-table :test #'equal)))
                             (dolist (word vocab)
                               (setf (gethash word acc)
-                                    (word-probability (occurrences word corpus)
-                                                      (occurrences word total-corpus)
-                                                      folder-count
-                                                      *smoothing-factor*)))
+                                    (word-probability word corpus total-corpus folder-count)))
                             acc))
              (chosen-words (chosen-words vocab word-scores))
-             (score (apply #'* (mapcar #'(lambda (word) (gethash word word-scores))
-                                       ;; Need the best words here
+             (score (apply #'+ (mapcar #'(lambda (word) (gethash word word-scores))
                                        chosen-words))))
         (setf (gethash path scores) score)
-        (setf (gethash path evidence) chosen-words)))
+        (setf (gethash path evidence-words) chosen-words)
+        (setf (gethash path evidence-scores) word-scores)))
 
-    ;; Potential BUG: Very long ratios
-    (let ((prob-sum (apply #'+ (mapcar #'(lambda (path) (gethash path scores)) folders))))
+    (let ((prob-sum (apply #'ln+ (mapcar #'(lambda (path) (gethash path scores)) folders))))
       (dolist (path folders)
         (setf (gethash path scores)
-              (coerce (/ (gethash path scores)
-                         prob-sum)
-                      'double-float))))
-    (cons scores evidence)))
+              (exp (- (gethash path scores)
+                      prob-sum)))))
+    (values scores evidence-words evidence-scores)))
 
 (defun scores (vocab folders)
   ;; In folders without subfolders, we don't want to do anything
   (if (and folders *try-to-class?*)
       (let ((pair-scores (make-hash-table :test #'equal))
-            (pair-chosen-words (make-hash-table :test #'equal)))
+            (pair-words (make-hash-table :test #'equal))
+            (pair-word-scores (make-hash-table :test #'equal)))
         (dolist (folder folders)
           (dolist (opponent folders)
             (if (equal folder opponent)
                 (setf (gethash (cons folder opponent) pair-scores) 0) ; chosen words can remain empty
                 ;; TBD: multiple-value-bind?
-                (let* ((data (compare-folders vocab (list folder opponent)))
-                       (scores (car data))
-                       (evidence (cdr data)))
+                (multiple-value-bind (scores evidence-words evidence-scores) (compare-folders vocab (list folder opponent)) 
                   (setf (gethash (cons folder opponent) pair-scores)
                         (gethash folder scores))
-                  (setf (gethash (cons folder opponent) pair-chosen-words)
-                        (gethash folder evidence))))))
+                  (setf (gethash (cons folder opponent) pair-words)
+                        (gethash folder evidence-words))
+                  (setf (gethash (cons folder opponent) pair-word-scores)
+                        (gethash folder evidence-scores))))))
         ;; the actual scores and some data for the explainer
         (multiple-value-bind (scores probsum) (pagerank folders pair-scores)
           (values scores
                   probsum
                   pair-scores
-                  pair-chosen-words)))
+                  pair-words
+                  pair-word-scores)))
       (make-hash-table :test #'equal)))
