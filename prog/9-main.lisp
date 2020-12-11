@@ -1,28 +1,15 @@
 #|
-BUG: (?) Pagerank seems to produce really weird results: http://www.spacenewsmag.com/feature/would-allan-mcdonald-be-heard-today/ gets massive scores for space, but only 36%.
-State of the union: New backend kinda sorta works, but a lot of things are fragile, scoring is untested and the explainer has display problems. Conduct a code review, refactor.
-
 PROBLEM: A few tiny folders can mess up the confidence for the whole superfolder. Add more data.
 Convergence gets slow for very obvious choices, like boilerplace. We lose 30 orders of magnitude of certainty. Probably fine, for we are still sure. TBD: Make the algorithm wait for having converged.
 TBD: Toggle adding into history
 TBD: Speed up
 TBD: Load title for links
 TBD: Autoclose explainers when a thing is classed.
-TBD: Consider a category an average of its subcategories, not files. This would help protect against availability bias (say, Lifehack taking over trash) and make the system more semantic. 
-TBD: Display where word scores came from (target/total normalised occurrences)
-
-Proof against tends to be a stronger discriminator than proof for. Is that a problem? It helps distinguish, say, articles about copyright from legal boilerplate. But what about the general case?
-This seems fixed by symmetry in the simpler two-class case: proof for IS proof against of the other folder.
+TBD: Consider a category an average of its subcategories, not files. This would help protect against availability bias (say, Lifehack taking over trash) and make the system more semantic.
 
 What do we do with <noscript>? It caused c2wiki to class as boilerplate, but I think there's no good reason to exclude it. Made irrelevant by C2wiki depending on Javascript, and thus not being downloadable.
 
 Some sites use scripts to deliver boilerplate. While this is not a problem for classification (just ignore them or input manually), it might mess up the crawler.
-
-Possible windows:
-Main menu
-Database (classes)
-History
-
 |#
 
 ;;; NORMAL STUFFS
