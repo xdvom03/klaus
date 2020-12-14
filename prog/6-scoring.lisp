@@ -24,12 +24,11 @@
                                                (gethash (cons option option2) scores-table))))
                                     options))
                      (apply #'+ (mapcar #'(lambda (option2) (if (equal option2 option)
-                                                                (/ 10000000000000000) ; prevents division by zero if it is certain the document belongs in a given category. TBD: Fix properly with logarithms.
+                                                                0
                                                                 (gethash option2 scores)))
                                         options)))))
           (let ((probsum (apply #'+ (mapcar #'(lambda (opt) (gethash opt acc))
                                             options))))
-            ;; BUG: Float precision can fail, causing a 0/0 to appear here. I put it off with double floats, but it needs addressing eventually.
             ;; TBD: Maybe somehow display the eventual probsum, because it is also a result of the calculation, it is unique, and seems to somehow reflect on the certainty of the result
             ;; Probsum: Min 1, Max N/2 for N options
             (dolist (option options)
