@@ -144,6 +144,8 @@ Some sites use scripts to deliver boilerplate. While this is not a problem for c
                         (options-frame (frame 1 0 fr))
                         (comment-frame (frame 1 1 fr))
 
+                        (vocab (if *try-to-class?* (tokens (url-text url))))
+
                         ;; variable stuff
                         (e (entry 2 0 options-frame))
                         (tex (text 0 0 comment-frame ""))
@@ -157,10 +159,11 @@ Some sites use scripts to deliver boilerplate. While this is not a problem for c
                                 (ltk:destroy i))
                               (setf widget-list nil)
                               (setf (ltk:text folder-label) (concat "Current folder: " (simplified-path current-folder)))
-                              ;; produces conses of (subfolder . score)
-                              (let* ((subfolders (subfolders current-folder))
-                                     (vocab (if *try-to-class?* (tokens (url-text url)))))
-                                (multiple-value-bind (scores probsum pair-scores pair-words pair-word-scores) (scores vocab subfolders)
+                              (let ((subfolders (subfolders current-folder)))
+                                (multiple-value-bind (scores probsum pair-scores pair-words pair-word-scores) (scores vocab
+                                                                                                                      subfolders
+                                                                                                                      (map-to-hash #'get-recursive-corpus subfolders)
+                                                                                                                      (map-to-hash #'get-word-count subfolders))
                                   (setf (ltk:text probsum-label) (concat "Maximum possible probability: " (my-round (/ (fallback probsum 1)))))
                                   (if (and subfolders *explain?*)
                                       (pair-scores-explainer 0 0 (window "HUJAJA") vocab subfolders pair-scores pair-words pair-word-scores))
@@ -260,7 +263,7 @@ Some sites use scripts to deliver boilerplate. While this is not a problem for c
                                                         (get-word-count i)
                                                         " words in total. Portion: "
                                                         (my-round (* 10000 (/ (occurrences word (get-recursive-corpus i))
-                                                                              (get-file-count i))))
+                                                                              (get-word-count i))))
                                                         "‱")
                                                 #'(lambda ()
                                                     (redraw i)))

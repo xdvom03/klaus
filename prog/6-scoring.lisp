@@ -69,24 +69,17 @@
             (subseq ordered-words (max 0
                                        (- (length ordered-words) evidence-length))))))
 
-(defun compare-folders (vocab folders)
+(defun compare-folders (vocab paths corpuses)
   ;; Returns a cons of two hash tables. A hash table of path -> score, and a hash table of path -> chosen words.
-  (let* ((folder-count (length folders))
-         (smallest-folder (apply #'min (mapcar #'get-word-count folders)))
-         (corpuses (let ((acc (make-hash-table :test #'equal)))
-                     (dolist (path folders)
-                       (setf (gethash path acc)
-                             (normalize-corpus (get-recursive-corpus path)
-                                               (/ smallest-folder (get-word-count path)) ; TBD: Warn if a folder is empty!
-                                               vocab)))
-                     acc))
+  ;; Already gets normalised corpuses
+  (let* ((folder-count (length (list-keys corpuses)))
          (total-corpus (reduce #'add-hashtable-corpuses
                                (mapcar #'(lambda (path) (gethash path corpuses))
-                                       folders)))
+                                       paths)))
          (scores (make-hash-table :test #'equal))
          (evidence-words (make-hash-table :test #'equal))
          (evidence-scores (make-hash-table :test #'equal)))
-    (dolist (path folders)
+    (dolist (path paths)
       ;; balance evidence for and against
       (let* ((corpus (gethash path corpuses))
              ;; we need a score for every word-path pair
@@ -102,14 +95,15 @@
         (setf (gethash path evidence-words) chosen-words)
         (setf (gethash path evidence-scores) word-scores)))
 
-    (let ((prob-sum (apply #'ln+ (mapcar #'(lambda (path) (gethash path scores)) folders))))
-      (dolist (path folders)
+    (let ((prob-sum (apply #'ln+ (mapcar #'(lambda (path) (gethash path scores)) paths))))
+      (dolist (path paths)
         (setf (gethash path scores)
               (exp (- (gethash path scores)
                       prob-sum)))))
     (values scores evidence-words evidence-scores)))
 
-(defun scores (vocab folders)
+(defun scores (vocab folders corpuses word-counts)
+  (print word-counts)
   ;; In folders without subfolders, we don't want to do anything
   (if (and folders *try-to-class?*)
       (let ((pair-scores (make-hash-table :test #'equal))
@@ -119,8 +113,13 @@
           (dolist (opponent folders)
             (if (equal folder opponent)
                 (setf (gethash (cons folder opponent) pair-scores) 0) ; chosen words can remain empty
-                ;; TBD: multiple-value-bind?
-                (multiple-value-bind (scores evidence-words evidence-scores) (compare-folders vocab (list folder opponent)) 
+                (multiple-value-bind (scores evidence-words evidence-scores) (let ((min-size (min (gethash folder word-counts)
+                                                                                                  (gethash opponent word-counts))))
+                                                                               (compare-folders vocab (list folder opponent) (map-to-hash #'(lambda (path)
+                                                                                                                                              (normalize-corpus (gethash path corpuses)
+                                                                                                                                                                (/ min-size (gethash path word-counts))
+                                                                                                                                                                vocab))
+                                                                                                                                          (list folder opponent)))) 
                   (setf (gethash (cons folder opponent) pair-scores)
                         (gethash folder scores))
                   (setf (gethash (cons folder opponent) pair-words)
