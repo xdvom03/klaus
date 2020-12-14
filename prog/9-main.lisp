@@ -70,12 +70,9 @@ Some sites use scripts to deliver boilerplate. While this is not a problem for c
 
 (defun run ()
   #|
-  TBD: Hide all the state and windows here, then rename
-  TBD (marked): The total window is redundantly organised. The new screen should always grid it itself, at (0 1), but all the subwindows already grid everything themselves.
-  Thus, the (0 1) is awkwardly present through all the subwindows.
+  TBD: Abstract all the GUI stuff elsewhere
   TBD: Make it impossible to leave the parent class
   TBD: This is a mess. Read up on C2 Wiki GUI design, see if this can be done more functionally.
-  BUG: The explainers are not properly placed. Related to marked TBD.
   |#
   (ltk:with-ltk ()
     (ltk:withdraw ltk:*tk*)
@@ -91,7 +88,8 @@ Some sites use scripts to deliver boilerplate. While this is not a problem for c
                (link-window (r c master url)
                  (let ((links (vetted-links url)))
                    (scrollable-list r c master *entries-per-page* links
-                                    (mapcar #'(lambda (link) (setf current-url link))
+                                    (mapcar #'(lambda (link)
+                                                (lambda () (setf current-url link)))
                                             links))))
                
                (main-menu (r c master)

@@ -103,7 +103,6 @@
     (values scores evidence-words evidence-scores)))
 
 (defun scores (vocab folders corpuses word-counts)
-  (print word-counts)
   ;; In folders without subfolders, we don't want to do anything
   (if (and folders *try-to-class?*)
       (let ((pair-scores (make-hash-table :test #'equal))

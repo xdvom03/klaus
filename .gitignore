@@ -1,4 +1,5 @@
 portacle/
+prog/zzz-archive.lisp
 DATA/klaus/files/*
 DATA/klaus/file-aliases
 DATA/klaus/history/*

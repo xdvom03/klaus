@@ -28,27 +28,43 @@
   (and (> (length link) 3)
        (equal (subseq link 0 4) "http")))
 
+(defun relative-protocol-link? (link)
+  (and (> (length link) 1)
+       (equal (subseq link 0 2) "//")))
+
+(defun anchor-link? (link)
+  (and (> (length link) 0)
+       (equal (char link 0) #\#)))
+
 (defun extract-link (link domain)
   ;; Empty links happen sometimes, as do super short ones, should be removed
   ;; TBD: Deal properly with various forms of relative links (fails with Tailsteak site). For now, keep old slash version.
   ;; Anything not starting with http is assumed to be a relative link, starting slash removed, domain name appended
   (if (absolute-link? link)
       link
-      (concat domain
-              link)))
+      ;; double slash is relative protocol
+      (if (relative-protocol-link? link)
+          (concat "https:"
+                  link)
+          (concat domain
+                  link))))
 
-(defun vetted-links (url) ;; TBD: Dubious
+(defun vetted-links (url)
   (let ((domain (find-domain url)))
-    (remove-if-not #'absolute-link?
-                   (print (mapcar #'(lambda (link) (extract-link (print link) domain))
-                            (url-links url))))))
+    (remove-duplicates (remove-if-not #'absolute-link?
+                                      (mapcar #'(lambda (link) (extract-link link domain))
+                                              (remove-if #'anchor-link?
+                                                         (url-links url))))
+                       :test #'equal)))
 
 (defun find-domain (url)
   (do ((i 0 (1+ i))
        (slashes 2 (- slashes (if (slash? (char url i)) 1 0))))
       ((or (< slashes 0)
            (>= i (length url)))
-       (subseq url 0 i))))
+       (subseq url 0 (if (< slashes 0) ; if found a third slash, cut it, elsewhere keep the whole domain
+                         (1- i)
+                         i)))))
 
 (defun remove-domain (url)
   (do ((i 0 (1+ i))

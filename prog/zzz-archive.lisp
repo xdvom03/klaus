@@ -161,3 +161,17 @@
                   (subseq str 1 (- (length str) 2)))
               (remove-if #'(lambda (str) (equal str ""))
                          (split str #\Newline))))))
+
+(defun get-subfolder-corpus (folder)
+  ;; Like get-recursive-corpus, but without the files in the folder itself.
+  (corpus-subtract (get-recursive-corpus folder)
+                   (get-corpus folder)))
+
+(defun corpus-subtract (corp1 corp2)
+  ;; Works with hash tables
+  ;; Assumes that corp2 is a subcorpus of corp2, so there is nothing negative in the result (and the vocabulary of corp2 is included in the vocabulary of corp1)
+  ;; No need to remove words with 0 occurrences. TBD: In case of bottleneck, check if it makes the program faster.
+  (let ((acc (map-to-hash #'(lambda (word) (- (occurrences word corp1)
+                                              (occurrences word corp2)))
+                          (list-keys corp1))))
+    acc))
