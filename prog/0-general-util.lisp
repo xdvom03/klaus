@@ -141,11 +141,10 @@
 (defun map-to-hash (fun list &key key-fun)
   ;; key-fun is applied to the list to produce keys.
   (let ((acc (make-hash-table :test #'equal)))
-    (mapcar #'(lambda (elem)
-                (setf (gethash (if key-fun
-                                   (funcall key-fun elem)
-                                   elem)
-                               acc)
-                      (funcall fun elem)))
-            list)
+    (dolist (elem list)
+      (setf (gethash (if key-fun
+                         (funcall key-fun elem)
+                         elem)
+                     acc)
+            (funcall fun elem)))
     acc))
