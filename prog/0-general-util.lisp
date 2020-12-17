@@ -15,7 +15,7 @@
 (defparameter *history-temp-file* "../DATA/history/history2")
 (defparameter *history-rename* "history")
 
-(defparameter *wanderbot-file* "../DATA/klaus/wanderbot")
+(defparameter *crawl-data-folder* "../DATA/crawlers/")
 
 (defparameter *entries-per-page* 10)
 (defparameter *try-to-class?* t)

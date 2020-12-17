@@ -51,7 +51,15 @@ This seems like a functional problem, for corpuses are just hash tables (diction
 
 # Crawler
 
-The crawler inside is extremely poor. It is not configurable and presumably broken with the new backend.
+Crawling functionality is provided, but not accessible from the GUI. It respects robots.txt and properly identifies itself in request headers.
+
+## Wanderbot
+
+Simple bot that always follows a random link. Avoids visiting a given link twice and stays away fom social media (where it tended to get stuck). Demonstrates that some sites are rather difficult to leave.
+
+## Fidgetbot
+
+Starts with a seed and is focused towards a category. Avoids ever visiting the same domain (somewhat clumsily defined as the penultimate part of the url, i.e. www.example.com -> example, except in the case of a trailing dot, such as "www.example.com."), except if linked multiple times at once. Keeps a queue ranked by score (calculated by adding the probabilities of the URL belonging to the target class as it gets more specific). Tends to get a much more varied bunch of pages, but isn't that useful yet because it needs more data and perhaps geometric averaging in PageRank. It eventually suffers from a bug "too many files open", cause unknown. GUI pending.
 
 # Current corpora
 
