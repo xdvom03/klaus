@@ -66,3 +66,5 @@ LTK (http://www.peter-herth.de/ltk/index.html) for the window GUI.
 QURI (https://github.com/fukamachi/quri) for dealing with URL character issues (example.com/B%C3%A1g%C5%99i -> example.com/Bágři)
 
 Plump (https://github.com/Shinmera/plump) for something similar inside the HTML (XML escape: \&rsquo; -> ' (with a little help))
+
+Trivial-timeout (https://common-lisp.net/project/trivial-timeout/) because the timeout from Dexador only works in a version that is incompatible with a working LTK.
