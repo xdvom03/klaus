@@ -1,6 +1,6 @@
 ;; TBD: Clean and divide
 
-(ql:quickload (list "ltk" "dexador" "quri" "plump"))
+(ql:quickload (list "ltk" "dexador" "quri" "plump" "trivial-timeout"))
 
 ;;; IMPORTS
 ;;;----------------------------------------------------------------------------------------------
@@ -31,7 +31,8 @@
 (defparameter *min-word-score* 1/5)
 (defparameter *max-word-score* 4/5)
 
-(defparameter *forbidden-extensions* (list "css" "png" "mp4" "ico" "svg" "webmanifest" "js" "json"))
+(defparameter *forbidden-extensions* (list "css" "png" "mp4" "ico" "svg" "webmanifest" "js" "json" "xml"))
+(defparameter *timeout* 5)
 
 (defparameter *bg-col* "#f0f0f0")
 (defparameter *button-col* "#e0e0e0")
@@ -49,6 +50,10 @@
            ,name
            (progn
              ,if-nil)))))
+
+(defun one-elem? (lst)
+  (and (car lst)
+       (null (cdr lst))))
 
 (defun append1 (lst elem)
   (append lst (list elem)))
@@ -128,11 +133,22 @@
 
 (defun ln-add (num)
   "Computes ln(1+exp(num)) for ln formulation purposes."
-  (ln (1+ (exp num))))
+  (if (> num 80)
+      num
+      (ln (1+ (exp num)))))
 
-(defun ln+ (a b)
-  "Computes ln(exp(a)+exp(b)) for ln formulation purposes."
+(defun ln-add2 (a b)
   (+ a (ln-add (- b a))))
+
+(defun ln+ (&rest numbers)
+  "Adds all numbers in the logarithmic formulation. For two numbers, a ln+ b = ln(exp(a)+exp(b))."
+  ;; TBD: Tail-optimize
+  (if (one-elem? numbers)
+      (car numbers)
+      (apply #'ln+ (cons (let ((a (first numbers))
+                               (b (second numbers)))
+                           (+ a (ln-add (- b a))))
+                         (cdr (cdr numbers))))))
 
 (defun ln (a)
   ;; Ln formulation requires high float precision

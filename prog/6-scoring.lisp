@@ -1,4 +1,10 @@
+(defun close-enough (lst1 lst2)
+  (and (= (length lst1) (length lst2))
+       (every #'(lambda (a b) (< (abs (- a b)) (exp -10)))
+              lst1 lst2)))
+
 (defun pagerank (options scores-table)
+  ;; Gets logarithmic formulation
   ;; Pageranking one or zero folders results in division 0/0
   (if (< (length options) 2)
       (let ((scores (make-hash-table :test #'equal)))
@@ -7,37 +13,53 @@
         scores)
       (let ((scores (make-hash-table :test #'equal))
             (acc (make-hash-table :test #'equal))
-            (final-probsum nil))
+            (final-probsum 0))
         (dolist (option options)
           (setf (gethash option scores)
-                ;; BEWARE of ratios entering this calculation, for they explode in precision, size, and lag.
-                (coerce (/ (length options)) 'double-float)))
-        (dotimes (i *iterations*)
+                (ln (/ (length options)))))
+        ;; TBD: Speed this ridiculous thing up
+        (do ((old-options nil (mapcar #'(lambda (option) (gethash option scores)) options)))
+            ((close-enough (mapcar #'(lambda (option) (- (- (apply #'ln+
+                                                                   (remove-if #'null
+                                                                              (mapcar #'(lambda (option2)
+                                                                                          (if (not (equal option option2))
+                                                                                              (+ (gethash option2 scores)
+                                                                                                 (gethash (cons option option2) scores-table))))
+                                                                                      options)))
+                                                            (apply #'ln+ (remove-if #'null
+                                                                                    (mapcar #'(lambda (option2) (if (not (equal option2 option))
+                                                                                                                    (gethash option2 scores)))
+                                                                                            options))))
+                                                         final-probsum))
+                                   options)
+                           old-options))
           (dolist (option options)
-            ;; BUG: Possible division by 0. Limit probabilities to double float range. Fix properly with logarithm formulation.
             (setf (gethash option acc)
-                  (/ (apply #'+
-                            (mapcar #'(lambda (option2)
-                                        (if (equal option option2)
-                                            0
-                                            (* (gethash option2 scores)
-                                               (gethash (cons option option2) scores-table))))
-                                    options))
-                     (apply #'+ (mapcar #'(lambda (option2) (if (equal option2 option)
-                                                                0
-                                                                (gethash option2 scores)))
-                                        options)))))
-          (let ((probsum (apply #'+ (mapcar #'(lambda (opt) (gethash opt acc))
-                                            options))))
-            ;; TBD: Maybe somehow display the eventual probsum, because it is also a result of the calculation, it is unique, and seems to somehow reflect on the certainty of the result
-            ;; Probsum: Min 1, Max N/2 for N options
+                  (- (apply #'ln+
+                            (remove-if #'null
+                                       (mapcar #'(lambda (option2)
+                                                   (if (not (equal option option2))
+                                                       (+ (gethash option2 scores)
+                                                          (gethash (cons option option2) scores-table))))
+                                               options)))
+                     (apply #'ln+ (remove-if #'null
+                                             (mapcar #'(lambda (option2) (if (not (equal option2 option))
+                                                                             (gethash option2 scores)))
+                                                     options))))
+                  ;; TBD: Try the geometric average
+                  ))
+          (let ((probsum (apply #'ln+ (mapcar #'(lambda (opt) (gethash opt acc))
+                                              options))))
             (dolist (option options)
               (setf (gethash option scores)
-                    (/ (gethash option acc)
+                    (- (gethash option acc)
                        probsum)))
             (setf final-probsum probsum)))
+        (dolist (option options)
+          (setf (gethash option scores)
+                (exp (gethash option scores))))
         (values scores
-                final-probsum))))
+                (exp final-probsum)))))
 
 (defun smooth-ratio (target total subfolder-count smoothing-factor)
   (- (ln (+ smoothing-factor target))
@@ -97,8 +119,8 @@
     (let ((prob-sum (apply #'ln+ (mapcar #'(lambda (path) (gethash path scores)) paths))))
       (dolist (path paths)
         (setf (gethash path scores)
-              (exp (- (gethash path scores)
-                      prob-sum)))))
+              (- (gethash path scores)
+                 prob-sum))))
     (values scores evidence-words evidence-scores)))
 
 (defun scores (vocab folders corpuses word-counts)
@@ -113,11 +135,13 @@
                 (setf (gethash (cons folder opponent) pair-scores) 0) ; chosen words can remain empty
                 (multiple-value-bind (scores evidence-words evidence-scores) (let ((min-size (min (gethash folder word-counts)
                                                                                                   (gethash opponent word-counts))))
-                                                                               (compare-folders vocab (list folder opponent) (map-to-hash #'(lambda (path)
-                                                                                                                                              (normalize-corpus (gethash path corpuses)
-                                                                                                                                                                (/ min-size (gethash path word-counts))
-                                                                                                                                                                vocab))
-                                                                                                                                          (list folder opponent)))) 
+                                                                               (compare-folders vocab
+                                                                                                (list folder opponent)
+                                                                                                (map-to-hash #'(lambda (path)
+                                                                                                                 (normalize-corpus (gethash path corpuses)
+                                                                                                                                   (/ min-size (gethash path word-counts))
+                                                                                                                                   vocab))
+                                                                                                             (list folder opponent)))) 
                   (setf (gethash (cons folder opponent) pair-scores)
                         (gethash folder scores))
                   (setf (gethash (cons folder opponent) pair-words)

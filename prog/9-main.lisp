@@ -1,6 +1,6 @@
 #|
 PROBLEM: A few tiny folders can mess up the confidence for the whole superfolder. Add more data.
-Convergence gets slow for very obvious choices, like boilerplace. We lose 30 orders of magnitude of certainty. Probably fine, for we are still sure. TBD: Make the algorithm wait for having converged.
+Convergence gets slow for very obvious choices, like boilerplate. We lose 30 orders of magnitude of certainty. Probably fine, for we are still sure. TBD: Make the algorithm wait for having converged.
 TBD: Toggle adding into history
 TBD: Speed up
 TBD: Load title for links
@@ -58,14 +58,19 @@ Some sites use scripts to deliver boilerplate. While this is not a problem for c
                  (pair (cons folder opponent))
                  (chosen-words (gethash pair pair-words))
                  (word-scores (gethash pair pair-word-scores))
-                 (score (gethash pair pair-scores)))
-            (button (1+ i)
-                    (1+ j)
-                    f
-                    (if (= i j)
-                        ""
-                        (write-to-string (my-round score)))
-                    #'(lambda () (words-explainer 100 100 (window "hujaja") chosen-words word-scores folder-corpus opponent-corpus *entries-per-page*)))))))
+                 (score (gethash pair pair-scores))
+                 (b (button (1+ i)
+                            (1+ j)
+                            f
+                            (if (= i j)
+                                ""
+                                (write-to-string (my-round score)))
+                            #'(lambda () (words-explainer 100 100 (window "hujaja") chosen-words word-scores folder-corpus opponent-corpus *entries-per-page*)))))
+            (if (not (integerp score)) ;; integer is an empty score
+                (if (> score (ln+ (- (exp -5))))
+                    (ltk:configure b :background "#0f0")
+                    (if (< score -5)
+                        (ltk:configure b :background "#f00"))))))))
     f))
 
 (defun run ()
