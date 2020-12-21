@@ -1,8 +1,3 @@
-(defun close-enough (lst1 lst2)
-  (and (= (length lst1) (length lst2))
-       (every #'(lambda (a b) (< (abs (- a b)) (exp -10)))
-              lst1 lst2)))
-
 (defun pagerank (options scores-table)
   ;; Gets logarithmic formulation
   ;; Pageranking one or zero folders results in division 0/0
@@ -17,25 +12,14 @@
         (dolist (option options)
           (setf (gethash option scores)
                 (ln (/ (length options)))))
-        ;; TBD: Speed this ridiculous thing up
-        (do ((old-options nil (mapcar #'(lambda (option) (gethash option scores)) options)))
-            ((close-enough (mapcar #'(lambda (option) (- (- (apply #'ln+
-                                                                   (remove-if #'null
-                                                                              (mapcar #'(lambda (option2)
-                                                                                          (if (not (equal option option2))
-                                                                                              (+ (gethash option2 scores)
-                                                                                                 (gethash (cons option option2) scores-table))))
-                                                                                      options)))
-                                                            (apply #'ln+ (remove-if #'null
-                                                                                    (mapcar #'(lambda (option2) (if (not (equal option2 option))
-                                                                                                                    (gethash option2 scores)))
-                                                                                            options))))
-                                                         final-probsum))
-                                   options)
-                           old-options))
+        (do ((i *iterations* (1- i)))
+            ((or (zerop i)
+                 (some #'(lambda (option)
+                           (> (gethash option scores) -0.001))
+                       options)))
           (dolist (option options)
             (setf (gethash option acc)
-                  (- (apply #'ln+
+                  #|(- (apply #'ln+
                             (remove-if #'null
                                        (mapcar #'(lambda (option2)
                                                    (if (not (equal option option2))
@@ -45,9 +29,20 @@
                      (apply #'ln+ (remove-if #'null
                                              (mapcar #'(lambda (option2) (if (not (equal option2 option))
                                                                              (gethash option2 scores)))
-                                                     options))))
+                                                     options))))|#
                   ;; TBD: Try the geometric average
-                  ))
+                  (/ (apply #'+
+                            (remove-if #'null
+                                       (mapcar #'(lambda (option2)
+                                                   (if (not (equal option option2))
+                                                       (* (exp (gethash option2 scores))
+                                                          (gethash (cons option option2) scores-table))))
+                                               options)))
+                     (apply #'+ (remove-if #'null
+                                           (mapcar #'(lambda (option2)
+                                                       (if (not (equal option2 option))
+                                                           (exp (gethash option2 scores))))
+                                                   options))))))
           (let ((probsum (apply #'ln+ (mapcar #'(lambda (opt) (gethash opt acc))
                                               options))))
             (dolist (option options)
@@ -59,7 +54,7 @@
           (setf (gethash option scores)
                 (exp (gethash option scores))))
         (values scores
-                (exp final-probsum)))))
+                final-probsum))))
 
 (defun smooth-ratio (target total subfolder-count smoothing-factor)
   (- (ln (+ smoothing-factor target))

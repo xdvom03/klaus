@@ -45,6 +45,15 @@ Some sites use scripts to deliver boilerplate. While this is not a problem for c
       (let ((folder (nth i folders)))
         (button 0 (1+ i) f (folder-name folder) #'pass)
         (button (1+ i) 0 f (folder-name folder) #'pass)
+        (button (1+ i)
+                (1+ (length folders))
+                f
+                (write-to-string (apply #'+ (mapcar #'(lambda (opponent)
+                                                        (if (equal folder opponent)
+                                                            0
+                                                            (gethash (cons folder opponent) pair-scores)))
+                                                    folders)))
+                #'pass)
         (dotimes (j (length folders))
           (let* ((opponent (nth j folders))
                  (smaller-size (min (get-word-count folder)
@@ -67,11 +76,20 @@ Some sites use scripts to deliver boilerplate. While this is not a problem for c
                                 (write-to-string (my-round score)))
                             #'(lambda () (words-explainer 100 100 (window "hujaja") chosen-words word-scores folder-corpus opponent-corpus *entries-per-page*)))))
             (if (not (integerp score)) ;; integer is an empty score
-                (if (> score (ln+ (- (exp -5))))
-                    (ltk:configure b :background "#0f0")
-                    (if (< score -5)
-                        (ltk:configure b :background "#f00"))))))))
+                (ltk:configure b :background (color-code score)))))))
     f))
+
+(defun color-code (score)
+  ;; divided by standard deviations, coded in because the error function would require a separate library
+  (cond ((> score (ln 0.99865)) "#0f0") ; over 3 sigma
+        ((> score (ln 0.97725)) "#2d0") ; 2 to 3 sigma
+        ((> score (ln 0.84134)) "#4b0") ; 1 to 2 sigma
+        ((> score (ln 0.5)) "#690") ; 0 to 1 sigma
+        ((> score (ln 0.15866)) "#960") ; -1 to 0 sigma
+        ((> score (ln 0.02275)) "#b40") ; -2 to -1 sigma
+        ((> score (ln 0.00135)) "#d20") ; -3 to -2 sigma
+        (t "#f00") ; under -3 sigma
+        ))
 
 (defun run ()
   #|
@@ -99,41 +117,42 @@ Some sites use scripts to deliver boilerplate. While this is not a problem for c
                
                (main-menu (r c master)
                  (let* ((W (frame r c master))
-                        (e1 (entry 0 1 W))
+                        (e1 (entry 0 0 W))
                         ch
                         ch2)
                    (setf (ltk:text e1) current-url)
-                   (button 0 2 W "Open & edit history" #'(lambda () (change-screen (history-window 0 1 master *entries-per-page*))))
-                   (button 1 1 W "List links" #'(lambda ()
+                   (button 1 0 W "Wipe entry" #'(lambda ()
+                                                  (setf (ltk:text e1) "")))
+                   (button 2 0 W "List links" #'(lambda ()
                                                   (change-screen (link-window 0 1 master (ltk:text e1)))))
-                   (button 2 1 W "Random link" #'(lambda ()
+                   (button 3 0 W "Random link" #'(lambda ()
                                                    (let* ((url (ltk:text e1))
                                                           (links (vetted-links url))
                                                           (new-link (nth (random (length links)) links)))
                                                      (setf (ltk:text e1) new-link))))
-                   (button 3 1 W "Open in Firefox" #'(lambda ()
+                   (button 4 0 W "Open in Firefox" #'(lambda ()
                                                        (open-url (ltk:text e1))))
-                   (button 4 1 W "Open database" #'(lambda ()
-                                                     (setf current-url (ltk:text e1))
-                                                     (add-to-history current-url)
-                                                     (change-screen (database-window 0 1 master current-url))))
-                   (button 5 1 W "Find word counts" #'(lambda ()
+                   (button 0 1 W "Open & edit history" #'(lambda () (change-screen (history-window 0 1 master *entries-per-page*))))
+                   (button 1 1 W "Find word counts" #'(lambda ()
                                                         (if (gethash (ltk:text e1) (get-recursive-corpus *classes-folder*))
                                                             (change-screen (word-explainer 0 1 master (ltk:text e1)))
                                                             (log-print "Not a word."))))
-                   (button 1 2 W "Wipe entry" #'(lambda ()
-                                                  (setf (ltk:text e1) "")))
-                   (button 1 3 W "Rebuild corpus" #'rebuild-corpus)
-
-                   (setf ch (checkbox 2 3 w "Try to class?" #'(lambda (a)
+                   (button 2 1 W "Open database" #'(lambda ()
+                                                     (setf current-url (ltk:text e1))
+                                                     (add-to-history current-url)
+                                                     (change-screen (database-window 0 1 master current-url))))
+                   (setf ch (checkbox 3 1 W "Try to class?" #'(lambda (a)
                                                                 a
                                                                 (setf *try-to-class?* (ltk:value ch))
                                                                 (setf (ltk:value ch) *try-to-class?*))))
-                   (setf (ltk:value ch) *try-to-class?*)
-                   (setf ch2 (checkbox 3 3 w "Explain classing?" #'(lambda (a)
+                   (setf ch2 (checkbox 4 1 W "Explain classing?" #'(lambda (a)
                                                                      a
                                                                      (setf *explain?* (ltk:value ch2))
                                                                      (setf (ltk:value ch2) *explain?*))))
+                   (button 0 3 W "Rebuild corpus" #'rebuild-corpus)
+                   (button 1 3 W "Crawler menu" #'(lambda ()
+                                                    (change-screen (crawler-menu 0 1 master))))
+                   (setf (ltk:value ch) *try-to-class?*)
                    (setf (ltk:value ch2) *explain?*)
                    W))
                
@@ -167,7 +186,7 @@ Some sites use scripts to deliver boilerplate. While this is not a problem for c
                                                                                                                       subfolders
                                                                                                                       (map-to-hash #'get-recursive-corpus subfolders)
                                                                                                                       (map-to-hash #'get-word-count subfolders))
-                                  (setf (ltk:text probsum-label) (concat "Maximum possible probability: " (my-round (/ (fallback probsum 1)))))
+                                  (setf (ltk:text probsum-label) (concat "Maximum possible probability: " (my-round (exp (- (fallback probsum 0))))))
                                   (if (and (> (length subfolders) 1) *explain?*)
                                       (pair-scores-explainer 0 0 (window "HUJAJA") vocab subfolders pair-scores pair-words pair-word-scores))
                                   (let ((counter 1)
@@ -343,6 +362,28 @@ Some sites use scripts to deliver boilerplate. While this is not a problem for c
                      (button 1 3 fr "Push to history" #'(lambda ()
                                                           (add-to-history (ltk:text e)) (redraw)))
                      fr)))
+
+               (crawler-menu (r c master)
+                 (let* ((f (frame r c master))
+                        (e1 (entry 0 1 f))
+                        (e2 (entry 1 1 f))
+                        (e3 (entry 2 1 f))
+                        (e4 (entry 3 1 f))
+                        (fidgetbot-f (frame 5 5 f)))
+                   (setf (ltk:text e1) "https://tvtropes.org")
+                   (setf (ltk:text e2) "5")
+                   (setf (ltk:text e3) "../DATA/classes/articles/valuable/math/googology/")
+                   (setf (ltk:text e4) "5")
+                   (label 0 0 f "seed URL")
+                   (label 1 0 f "page count")
+                   (label 2 0 f "target")
+                   (label 3 0 f "queue size")
+                   (button 3 3 f "START" #'(lambda ()
+                                             (run-crawler fidgetbot-f
+                                                          (ltk:text e1)
+                                                          (read-from-string (ltk:text e2))
+                                                          (ltk:text e3)
+                                                          (read-from-string (ltk:text e4)))))))
                
                (back-to-main ()
                  (change-screen (main-menu 0 1 W))))
@@ -360,3 +401,93 @@ Some sites use scripts to deliver boilerplate. While this is not a problem for c
         (let ((X (frame 2 1 W)))
           (button 0 0 X "X" #'back-to-main))
         (back-to-main)))))
+
+(defun tick-compute (master queue queue-list acc acc-list visited-domains visited-list target queue-size)
+  (ltk:destroy queue-list)
+  (setf queue-list (scrollable-list 0 0 master *entries-per-page* queue))
+  (ltk:destroy acc-list)
+  (setf acc-list (scrollable-list 0 1 master *entries-per-page* acc))
+  (ltk:destroy visited-list)
+  (setf visited-list (scrollable-list 0 2 master *entries-per-page* visited-domains))
+  (let* ((best-url (pick-from-queue queue))
+         (raw-links (filter-links (vetted-links best-url)))
+         (links (remove-if #'(lambda (link) (or (member (core-domain (find-domain link))
+                                                        visited-domains
+                                                        :test #'equal)
+                                                (equal (core-domain (find-domain link))
+                                                       (core-domain (find-domain best-url)))))
+                           (mapcar #'remove-wikipedia-boilerplate
+                                   (remove-duplicates (remove-if-not #'(lambda (url) (and (url-allowed? *crawler-name* url)
+                                                                                          (not (or (equal url best-url)
+                                                                                                   (member url queue :test #'equal)
+                                                                                                   (member url acc :test #'equal)
+                                                                                                   (search "twitter." url)
+                                                                                                   (search "facebook." url)
+                                                                                                   (search "youtube." url)
+                                                                                                   (search "google." url)
+                                                                                                   (search "amazon." url)
+                                                                                                   (search "instagram." url)))))
+                                                                     raw-links)
+                                                      :test #'equal)))))
+    (push best-url acc)
+    (push (core-domain (find-domain best-url)) visited-domains)
+    #|(append-to-file (concat *crawl-data-folder* "focused-found")
+                    (concat (cdr (first (sort (copy-seq queue) #'> :key #'cdr))) " " best-url))|#
+    (setf queue (remove-nth 0 (sort (copy-seq queue) #'> :key #'cdr)))
+    (dolist (link links)
+      (if (not (or (member link acc :test #'equal)
+                   (member link queue :key #'car :test #'equal)))
+          (let* ((worst-score (cdr (last1 queue)))
+                 (score (link-score link target)))
+            (if (equal (url-text link)
+                       "nothingfound")
+                (princ "x")
+                (progn
+                  (princ ".")
+                                        ;(append-to-file (concat *crawl-data-folder* "focused-all") link)
+                                        ;(append-to-file (concat *crawl-data-folder* "focused-all") score)
+                  (if (> queue-size (length queue))
+                      (setf queue (sort (copy-seq (append1 queue (cons link score))) #'> :key #'cdr))
+                      (if (> score worst-score)
+                          (setf queue (sort (copy-seq (replace-last queue (cons link score))) #'> :key #'cdr)))))))
+          (princ "x")))
+    (list master queue queue-list acc acc-list visited-domains visited-list target queue-size)))
+
+(defun tick (a master queue queue-list acc acc-list visited-domains visited-list target queue-size)
+  (let ((data (tick-compute master queue queue-list acc acc-list visited-domains visited-list target queue-size)))
+    (print a)
+    (ltk:destroy queue-list)
+    (setf queue-list (scrollable-list 0 0 master *entries-per-page* queue))
+    (ltk:destroy acc-list)
+    (setf acc-list (scrollable-list 0 1 master *entries-per-page* acc))
+    (ltk:destroy visited-list)
+    (setf visited-list (scrollable-list 0 2 master *entries-per-page* visited-domains))
+    (if (not (zerop a))
+        (ltk:after 25 #'(lambda () (apply #'tick (1- a) data))))))
+
+(defun run-crawler (master seed page-count target queue-size)
+  ;; TBD: Run this recursively as inspired by calc.
+  (let ((queue-list (scrollable-list 0 0 master *entries-per-page* nil))
+        (queue (list (cons seed 0)))
+        (acc-list (scrollable-list 0 1 master *entries-per-page* nil))
+        (acc nil)
+        (visited-list (scrollable-list 0 2 master *entries-per-page* nil))
+        (visited-domains nil))
+    (tick page-count master queue queue-list acc acc-list visited-domains visited-list target queue-size)))
+
+
+
+
+
+
+
+(defun test (text)
+  (ltk:with-ltk ()
+    (let ((w (window "blee"))
+          (vocab (tokens text))
+          (subfolders (subfolders "../DATA/classes/articles/")))
+      (multiple-value-bind (scores probsum pair-scores pair-words pair-word-scores) (scores vocab
+                                                                                            subfolders
+                                                                                            (map-to-hash #'get-recursive-corpus subfolders)
+                                                                                            (map-to-hash #'get-word-count subfolders))
+        (pair-scores-explainer 0 0 w vocab subfolders pair-scores pair-words pair-word-scores)))))
