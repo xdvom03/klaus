@@ -1,6 +1,6 @@
 portacle/
 prog/zzz-archive.lisp
-DATA/klaus/files/*
-DATA/klaus/file-aliases
-DATA/klaus/history/*
+DATA/files/*
+DATA/file-aliases
+DATA/history/*
 *.fasl
