@@ -129,7 +129,7 @@
   (let ((divisor (expt 10 (- decimals))))
     (coerce (* (round num divisor)
                divisor)
-            'double-float)))
+            'single-float)))
 
 (defun ln-add (num)
   "Computes ln(1+exp(num)) for ln formulation purposes."

@@ -48,11 +48,11 @@ Some sites use scripts to deliver boilerplate. While this is not a problem for c
         (button (1+ i)
                 (1+ (length folders))
                 f
-                (write-to-string (apply #'+ (mapcar #'(lambda (opponent)
-                                                        (if (equal folder opponent)
-                                                            0
-                                                            (gethash (cons folder opponent) pair-scores)))
-                                                    folders)))
+                (write-to-string (my-round (apply #'+ (mapcar #'(lambda (opponent)
+                                                                  (if (equal folder opponent)
+                                                                      0
+                                                                      (gethash (cons folder opponent) pair-scores)))
+                                                              folders))))
                 #'pass)
         (dotimes (j (length folders))
           (let* ((opponent (nth j folders))
@@ -81,14 +81,22 @@ Some sites use scripts to deliver boilerplate. While this is not a problem for c
 
 (defun color-code (score)
   ;; divided by standard deviations, coded in because the error function would require a separate library
-  (cond ((> score (ln 0.99865)) "#0f0") ; over 3 sigma
-        ((> score (ln 0.97725)) "#2d0") ; 2 to 3 sigma
-        ((> score (ln 0.84134)) "#4b0") ; 1 to 2 sigma
-        ((> score (ln 0.5)) "#690") ; 0 to 1 sigma
-        ((> score (ln 0.15866)) "#960") ; -1 to 0 sigma
-        ((> score (ln 0.02275)) "#b40") ; -2 to -1 sigma
-        ((> score (ln 0.00135)) "#d20") ; -3 to -2 sigma
-        (t "#f00") ; under -3 sigma
+  (cond ((> score (ln 0.99977)) "#0f0") ; over 3.5
+        ((> score (ln 0.99865)) "#1e0") ; 3 to 3.5
+        ((> score (ln 0.99379)) "#2d0") ; 2.5 to 3
+        ((> score (ln 0.97725)) "#3c0") ; 2 to 2.5 sigma
+        ((> score (ln 0.93319)) "#4b0") ; 1.5 to 2
+        ((> score (ln 0.84134)) "#5a0") ; 1 to 1.5 sigma
+        ((> score (ln 0.69146)) "#690") ; 0.5 to 1
+        ((> score (ln 0.5)) "#780") ; 0 to 0.5 sigma
+        ((> score (ln 0.30854)) "#870") ; -0.5 to 0
+        ((> score (ln 0.15866)) "#960") ; -1 to -0.5 sigma
+        ((> score (ln 0.06681)) "#a50") ; -1.5 to -1
+        ((> score (ln 0.02275)) "#b40") ; -2 to -1.5 sigma
+        ((> score (ln 0.00621)) "#c30") ; -2.5 to -2
+        ((> score (ln 0.00135)) "#d20") ; -3 to -2.5 sigma
+        ((> score (ln 0.00023)) "#e10") ; -3.5 to -3
+        (t "#f00") ; under -3.5 sigma
         ))
 
 (defun run ()
