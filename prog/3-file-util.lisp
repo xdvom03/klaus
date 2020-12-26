@@ -9,7 +9,7 @@
   (cdr (uiop:read-file-lines file)))
 
 (defun read-from-file (path)
-  (with-open-file (stream path :direction :input)
+  (with-open-file (stream path :direction :input :if-does-not-exist nil)
     (read stream)))
 
 ;;; FILE READING

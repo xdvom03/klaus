@@ -44,40 +44,35 @@
              (+ start key-len))
          (equal key (subseq str start (+ start key-len))))))
 
-(let ((memo (make-hash-table :test #'equal)))
-  ;; Caching robots-txt for a single session
-  (defun robots-txt (site)
-    (fallback (gethash site memo)
-              (let* ((file (safe-fetch-html (concat (find-domain site) "/robots.txt")))
-                     (user-agents nil)
-                     (rules nil)
-                     (accepting-new-agents? t)
-                     (acc nil))
-                (dolist (line (split file (char *newline* 0)))
-                  (let* ((agent? (safe-check-substr line "User-agent: "))
-                         (allow? (safe-check-substr line "Allow: "))
-                         (disallow? (safe-check-substr line "Disallow: "))
-                         (line-body (subseq line (length (cond (agent? "User-agent: ")
-                                                               (allow? "Allow: ")
-                                                               (disallow? "Disallow: ")
-                                                               (t ""))))))
-                    (cond (agent?
-                           (if accepting-new-agents?
-                               (push line-body user-agents)
-                               (progn
-                                 (if user-agents
-                                     (push (cons user-agents rules) acc))
-                                 (setf user-agents (list line-body))
-                                 (setf rules nil))))
-                          (allow?
-                           (push (cons "Allow" line-body) rules))
-                          (disallow?
-                           (push (cons "Disallow" line-body) rules)))
-                    (setf accepting-new-agents? agent?)))
-                (push (cons user-agents rules) acc)
-                (setf (gethash site memo)
-                      (reverse acc))
-                (reverse acc)))))
+(defun robots-txt (site)
+  (let* ((file (safe-fetch-html (concat (find-domain site) "/robots.txt")))
+         (user-agents nil)
+         (rules nil)
+         (accepting-new-agents? t)
+         (acc nil))
+    (dolist (line (split file (char *newline* 0)))
+      (let* ((agent? (safe-check-substr line "User-agent: "))
+             (allow? (safe-check-substr line "Allow: "))
+             (disallow? (safe-check-substr line "Disallow: "))
+             (line-body (subseq line (length (cond (agent? "User-agent: ")
+                                                   (allow? "Allow: ")
+                                                   (disallow? "Disallow: ")
+                                                   (t ""))))))
+        (cond (agent?
+               (if accepting-new-agents?
+                   (push line-body user-agents)
+                   (progn
+                     (if user-agents
+                         (push (cons user-agents rules) acc))
+                     (setf user-agents (list line-body))
+                     (setf rules nil))))
+              (allow?
+               (push (cons "Allow" line-body) rules))
+              (disallow?
+               (push (cons "Disallow" line-body) rules)))
+        (setf accepting-new-agents? agent?)))
+    (push (cons user-agents rules) acc)
+    (reverse acc)))
 
 (defun extension (url)
   (last1 (split url (char "." 0))))

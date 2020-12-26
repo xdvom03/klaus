@@ -137,14 +137,14 @@
                                            word)))
                                words)))
     ;; TEMP: Spammed words are the worst
-    (remove-duplicates (append normal-words
+    #|(remove-duplicates (append normal-words
                                (make-list ?s :initial-element "?")
                                (make-list !s :initial-element "!"))
-                       :test #'equal)
+                       :test #'equal)|#
     ;; TEMP: Trying the bag of words again
-    #|(append normal-words
+    (append normal-words
             (make-list ?s :initial-element "?")
-            (make-list !s :initial-element "!"))|#
+            (make-list !s :initial-element "!"))
     ))
 
 (defun last-char (str)

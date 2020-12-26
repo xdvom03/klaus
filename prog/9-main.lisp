@@ -174,12 +174,11 @@ Some sites use scripts to deliver boilerplate. While this is not a problem for c
                         (options-frame (frame 1 0 fr))
                         (comment-frame (frame 1 1 fr))
 
-                        (vocab (if *try-to-class?* (tokens (url-text url))))
+                        (vocab (if *try-to-class?* (remove-duplicates (tokens (url-text (print url))) :test #'equal)))
 
                         ;; variable stuff
                         (e (entry 2 0 options-frame))
                         (tex (text 0 0 comment-frame ""))
-                        (probsum-label (label 5 0 options-frame ""))
                         (folder-label (label 0 0 options-frame ""))
                         (file-list (frame 0 1 file-frame)))
                    (labels ((redraw-confirmed (new-path)
@@ -190,24 +189,23 @@ Some sites use scripts to deliver boilerplate. While this is not a problem for c
                               (setf widget-list nil)
                               (setf (ltk:text folder-label) (concat "Current folder: " (simplified-path current-folder)))
                               (let ((subfolders (subfolders current-folder)))
-                                (multiple-value-bind (scores probsum pair-scores pair-words pair-word-scores) (scores vocab
-                                                                                                                      subfolders
-                                                                                                                      (map-to-hash #'get-recursive-corpus subfolders)
-                                                                                                                      (map-to-hash #'get-word-count subfolders))
-                                  (setf (ltk:text probsum-label) (concat "Maximum possible probability: " (my-round (exp (- (fallback probsum 0))))))
+                                (multiple-value-bind (scores pair-scores pair-words pair-word-scores) (scores vocab
+                                                                                                              subfolders
+                                                                                                              (map-to-hash #'get-recursive-corpus subfolders)
+                                                                                                              (map-to-hash #'get-word-count subfolders))
                                   (if (and (> (length subfolders) 1) *explain?*)
                                       (pair-scores-explainer 0 0 (window "HUJAJA") vocab subfolders pair-scores pair-words pair-word-scores))
                                   (let ((counter 1)
                                         (sorted-subfolders (sort (copy-seq subfolders) #'> :key #'(lambda (folder) (fallback (gethash folder scores) (/ (length subfolders)))))))
                                     (dolist (i sorted-subfolders)
-                                     (incf counter)
-                                     (push (button counter
-                                                   0
-                                                   folder-frame
-                                                   (concat (file-name i t) " score: " (my-round (fallback (gethash i scores) (/ (length subfolders)))) ", " (get-word-count i) " words, " (get-file-count i) " files.")
-                                                   #'(lambda ()
-                                                       (redraw i)))
-                                           widget-list)))))
+                                      (incf counter)
+                                      (push (button counter
+                                                    0
+                                                    folder-frame
+                                                    (concat (file-name i t) " score: " (my-round (fallback (gethash i scores) (/ (length subfolders)))) ", " (get-word-count i) " words, " (get-file-count i) " files.")
+                                                    #'(lambda ()
+                                                        (redraw i)))
+                                            widget-list)))))
                               (let ((links (class-links current-folder)))
                                 (ltk:destroy file-list)
                                 (setf file-list (scrollable-list 1 0 file-frame *entries-per-page* links
@@ -252,7 +250,7 @@ Some sites use scripts to deliver boilerplate. While this is not a problem for c
                                                                          (redownload-file url)
                                                                          (overwrite-file links-file (append1 existing-links url))
                                                                          (setf current-url "")
-                                                                         (back-to-main))
+                                                                         (back-to-main nil))
                                                                        (log-print "File already in folder."))))
                      
                      (button 1 0 comment-frame "Save comment" #'(lambda ()
@@ -306,16 +304,16 @@ Some sites use scripts to deliver boilerplate. While this is not a problem for c
                
                (link-options-window (url file)
                  (let* ((W (window url)))
+                   ;; BUG: Fails to redraw
                    (button 0 0 W "REMOVE" #'(lambda ()
                                               (overwrite-file file (remove-if #'(lambda (checked-url)
                                                                                   (equal checked-url url))
                                                                               (read-from-file file)))
                                               (ltk:destroy W)
-                                              (back-to-main)
                                               (log-print "Deleted file in folder " (write-to-string file) " with url: " url)))
                    (button 1 0 W "LOAD" #'(lambda ()
                                             (setf current-url url)
-                                            (back-to-main)
+                                            (back-to-main nil)
                                             (ltk:destroy W)))))
 
                (history-window (r c master page-length)
@@ -393,8 +391,10 @@ Some sites use scripts to deliver boilerplate. While this is not a problem for c
                                                           (ltk:text e3)
                                                           (read-from-string (ltk:text e4)))))))
                
-               (back-to-main ()
-                 (change-screen (main-menu 0 1 W))))
+               (back-to-main (database?)
+                 (change-screen (if database?
+                                    (database-window 0 1 W current-url)
+                                    (main-menu 0 1 W)))))
         (let ((log (frame 1 1 W))
               (log-list nil))
           (button 0 0 log "Wipe log" #'(lambda ()
@@ -407,10 +407,12 @@ Some sites use scripts to deliver boilerplate. While this is not a problem for c
               (push (button (1+ (length log-list)) 0 log full-string #'pass) log-list)
               full-string)))
         (let ((X (frame 2 1 W)))
-          (button 0 0 X "X" #'back-to-main))
-        (back-to-main)))))
+          (button 0 0 X "X" #'(lambda ()
+                                (back-to-main nil))))
+        (back-to-main nil)))))
 
 (defun tick-compute (master queue queue-list acc acc-list visited-domains visited-list target queue-size)
+  ;; BUG: Outdated compared to the fidgetbot (text interface).
   (ltk:destroy queue-list)
   (setf queue-list (scrollable-list 0 0 master *entries-per-page* queue))
   (ltk:destroy acc-list)
@@ -424,7 +426,7 @@ Some sites use scripts to deliver boilerplate. While this is not a problem for c
                                                         :test #'equal)
                                                 (equal (core-domain (find-domain link))
                                                        (core-domain (find-domain best-url)))))
-                           (mapcar #'remove-wikipedia-boilerplate
+                           (mapcar #'render-wikipedia
                                    (remove-duplicates (remove-if-not #'(lambda (url) (and (url-allowed? *crawler-name* url)
                                                                                           (not (or (equal url best-url)
                                                                                                    (member url queue :test #'equal)
@@ -482,20 +484,3 @@ Some sites use scripts to deliver boilerplate. While this is not a problem for c
         (visited-list (scrollable-list 0 2 master *entries-per-page* nil))
         (visited-domains nil))
     (tick page-count master queue queue-list acc acc-list visited-domains visited-list target queue-size)))
-
-
-
-
-
-
-
-(defun test (text)
-  (ltk:with-ltk ()
-    (let ((w (window "blee"))
-          (vocab (tokens text))
-          (subfolders (subfolders "../DATA/classes/articles/")))
-      (multiple-value-bind (scores probsum pair-scores pair-words pair-word-scores) (scores vocab
-                                                                                            subfolders
-                                                                                            (map-to-hash #'get-recursive-corpus subfolders)
-                                                                                            (map-to-hash #'get-word-count subfolders))
-        (pair-scores-explainer 0 0 w vocab subfolders pair-scores pair-words pair-word-scores)))))

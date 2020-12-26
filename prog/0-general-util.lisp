@@ -1,6 +1,6 @@
 ;; TBD: Clean and divide
 
-(ql:quickload (list "ltk" "dexador" "quri" "plump" "trivial-timeout"))
+(ql:quickload (list "ltk" "drakma" "quri" "plump" "trivial-timeout"))
 
 ;;; IMPORTS
 ;;;----------------------------------------------------------------------------------------------
@@ -25,7 +25,7 @@
 ")
 (defparameter *iterations* 200)
 (defparameter *decimals* 3)
-(defparameter *smoothing-factor* 1)
+(defparameter *smoothing-factor* 0.4)
 (defparameter *crawler-name* "botelaire")
 
 (defparameter *min-word-score* 1/5)

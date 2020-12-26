@@ -1,60 +1,21 @@
 (defun pagerank (options scores-table)
   ;; Gets logarithmic formulation
   ;; Pageranking one or zero folders results in division 0/0
-  (if (< (length options) 2)
-      (let ((scores (make-hash-table :test #'equal)))
-        (dolist (option options)
-          (setf (gethash option scores) 1))
-        scores)
-      (let ((scores (make-hash-table :test #'equal))
-            (acc (make-hash-table :test #'equal))
-            (final-probsum 0))
-        (dolist (option options)
-          (setf (gethash option scores)
-                (ln (/ (length options)))))
-        (do ((i *iterations* (1- i)))
-            ((or (zerop i)
-                 (some #'(lambda (option)
-                           (> (gethash option scores) -0.001))
-                       options)))
-          (dolist (option options)
-            (setf (gethash option acc)
-                  #|(- (apply #'ln+
-                            (remove-if #'null
-                                       (mapcar #'(lambda (option2)
-                                                   (if (not (equal option option2))
-                                                       (+ (gethash option2 scores)
-                                                          (gethash (cons option option2) scores-table))))
-                                               options)))
-                     (apply #'ln+ (remove-if #'null
-                                             (mapcar #'(lambda (option2) (if (not (equal option2 option))
-                                                                             (gethash option2 scores)))
-                                                     options))))|#
-                  ;; TBD: Try the geometric average
-                  (/ (apply #'+
-                            (remove-if #'null
-                                       (mapcar #'(lambda (option2)
-                                                   (if (not (equal option option2))
-                                                       (* (exp (gethash option2 scores))
-                                                          (gethash (cons option option2) scores-table))))
-                                               options)))
-                     (apply #'+ (remove-if #'null
-                                           (mapcar #'(lambda (option2)
-                                                       (if (not (equal option2 option))
-                                                           (exp (gethash option2 scores))))
-                                                   options))))))
-          (let ((probsum (apply #'ln+ (mapcar #'(lambda (opt) (gethash opt acc))
-                                              options))))
-            (dolist (option options)
-              (setf (gethash option scores)
-                    (- (gethash option acc)
-                       probsum)))
-            (setf final-probsum probsum)))
-        (dolist (option options)
-          (setf (gethash option scores)
-                (exp (gethash option scores))))
-        (values scores
-                final-probsum))))
+  (labels ((option-raw-score (option)
+             (if (< (length options) 2)
+                 1
+                 (apply #'+ (mapcar #'(lambda (option2)
+                                        (if (equal option option2)
+                                            0
+                                            (gethash (cons option option2) scores-table)))
+                                    options)))))
+    (let* ((raw-scores (mapcar #'option-raw-score
+                               options))
+           (probsum (apply #'ln+ raw-scores)))
+      (map-to-hash (compose #'exp
+                            #'(lambda (score) (- score probsum))
+                            #'option-raw-score)
+                   options))))
 
 (defun smooth-ratio (target total subfolder-count smoothing-factor)
   (- (ln (+ smoothing-factor target))
@@ -144,9 +105,8 @@
                   (setf (gethash (cons folder opponent) pair-word-scores)
                         (gethash folder evidence-scores))))))
         ;; the actual scores and some data for the explainer
-        (multiple-value-bind (scores probsum) (pagerank folders pair-scores)
+        (let ((scores (pagerank folders pair-scores)))
           (values scores
-                  probsum
                   pair-scores
                   pair-words
                   pair-word-scores)))

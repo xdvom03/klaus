@@ -3,12 +3,14 @@
     (fallback corpus-entry 0)))
 
 (defun text-corpus (text)
-  (let ((tokens (tokens text))
-        (corpus (make-hash-table :test #'equal)))
+  (let* ((tokens (tokens text))
+         (corpus (make-hash-table :test #'equal))
+         ;; TEMP: Use this for document weights
+         (weight 1))
     (dolist (token tokens)
       (if (gethash token corpus)
-          (incf (gethash token corpus) 1)
-          (setf (gethash token corpus) 1)))
+          (incf (gethash token corpus) weight)
+          (setf (gethash token corpus) weight)))
     corpus))
 
 (defun word-count (corpus)
@@ -93,9 +95,7 @@
   (corpus-hashtable (read-from-file (concat folder "corpus"))))
 
 (defun get-file-count (folder)
-  ;; Just looks into the file-count file
-  (read-from-file (concat folder "file-count")))
+  (fallback (read-from-file (concat folder "file-count")) 0))
 
 (defun get-word-count (folder)
-  ;; Just looks into the word-count file
-  (read-from-file (concat folder "word-count")))
+  (fallback (read-from-file (concat folder "word-count")) 0))

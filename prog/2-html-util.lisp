@@ -12,7 +12,7 @@
   "Gets HTML data from a URL, but if it 404's, it returns nothing found."
   ;; TBD: Figure out how to dynamically insert the bot name into the headers
   (let ((unsafe (ignore-errors (trivial-timeout:with-timeout (*timeout*)
-                                 (dex:get url :headers '(("User-Agent" . "Botelaire, crawler for https://github.com/xdvom03/klaus (reads robots.txt for botelaire). In case of any trouble, contact xdvom03 [at] gjk [dot] cz.")))))))
+                                 (drakma:http-request url :user-agent "botelaire (https://github.com/xdvom03/klaus, xdvom03 (at) gjk (dot) cz)")))))
     ;; an image link, or anything that isn't a string, is considered a 404
     (if (or (null unsafe) (not (stringp unsafe)))
         "nothingfound"
@@ -81,7 +81,8 @@
   ;; Placeholder for now until the MAJOR REFACTORING
   ;; Duplicate-ish of extract-text
   (let* ((raw (safe-fetch-html url))
-         (safe (make-safe (remove-diacritics (string-downcase (plump:decode-entities raw)))))
+         ;; TEMP: For some reason, not simple-string
+         (safe (make-safe (remove-diacritics (string-downcase (plump:decode-entities (coerce raw 'simple-string))))))
          (content (remove-multiple-spaces (remove-punctuation (remove-tags (remove-enclosed (remove-enclosed safe "<style" "</style>") "<script" "</script>"))))))
     content))
 

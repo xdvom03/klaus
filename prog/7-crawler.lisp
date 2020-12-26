@@ -44,12 +44,12 @@ Crawl 40 from:
             (setf path (concat path frag "/"))
             (setf prob (* prob (prob vocab path)))
             (incf acc prob))))
-    acc))
+    prob))
 
 (defun pick-from-queue (queue)
   (car (first (sort (copy-seq queue) #'> :key #'cdr))))
 
-(defun remove-wikipedia-boilerplate (link)
+(defun render-wikipedia (link)
   (if (and (or (equal (find-domain link) "https://en.wikipedia.org")
                (equal (find-domain link) "http://en.wikipedia.org"))
            (not (search "action=render" link)))
@@ -66,8 +66,7 @@ Crawl 40 from:
                           :direction :output :if-exists :append :if-does-not-exist :create)
     (print txt stream)))
 
-(defun fidgetbot (seed queue-size page-count target)
-  ;; TBD: Keep only one URL per domain in the queue
+(defun wanderbot (seed queue-size page-count target)
   (let ((queue (list (cons seed 0)))
         (acc nil)
         (visited-domains nil)
@@ -84,7 +83,7 @@ Crawl 40 from:
       (print (concat "checking " (pick-from-queue queue) ": "))
       (let* ((best-url (pick-from-queue queue))
              (raw-links (filter-links (vetted-links best-url)))
-             (links (mapcar #'remove-wikipedia-boilerplate
+             (links (mapcar #'render-wikipedia
                             (remove-duplicates (remove-if-not #'(lambda (url) (princ ".") (and (url-allowed? *crawler-name* url)
                                                                                                (not (or (equal url best-url)
                                                                                                         (member url queue :test #'equal)
@@ -104,27 +103,45 @@ Crawl 40 from:
                                                :test #'equal))))
         (push best-url acc)
         (push (core-domain (find-domain best-url)) visited-domains)
-        #|(append-to-file (concat *crawl-data-folder* "focused-found")
-        (concat (cdr (first (sort (copy-seq queue) #'> :key #'cdr))) " " best-url))|#
+        (append-to-file (concat *crawl-data-folder* "focused-found")
+                        (concat (cdr (first (sort (copy-seq queue) #'> :key #'cdr))) " " best-url))
         (push (concat (cdr (first (sort (copy-seq queue) #'> :key #'cdr))) " " best-url) results)
         (setf queue (remove-nth 0 (sort (copy-seq queue) #'> :key #'cdr)))
         (print (concat "found " (write-to-string (length raw-links)) " links, of which " (write-to-string (length links)) " will be checked: "))
+        ;; TBD: Make functional
         (dolist (link links)
           (if (not (or (member link acc :test #'equal)
                        (member link queue :key #'car :test #'equal)))
-              (let* ((worst-score (cdr (last1 queue)))
+              (let* ((domain-in-queue? (some #'(lambda (elem)
+                                                 (equal (core-domain (find-domain (car elem)))
+                                                        (core-domain (find-domain link))))
+                                             queue))
+                     (opponent (if domain-in-queue?
+                                   (first (remove-if-not #'(lambda (elem)
+                                                             (equal (core-domain (find-domain (car elem)))
+                                                                    (core-domain (find-domain link))))
+                                                         queue))
+                                   (last1 queue)))
+                     (opponent-score (cdr opponent))
+                     (opponent-url (car opponent))
                      (score (link-score link target)))
                 (if (equal (url-text link)
                            "nothingfound")
                     (princ "x")
                     (progn
                       (princ ".")
-                      ;(append-to-file (concat *crawl-data-folder* "focused-all") link)
-                      ;(append-to-file (concat *crawl-data-folder* "focused-all") score)
-                      (if (> queue-size (length queue))
-                          (setf queue (sort (copy-seq (append1 queue (cons link score))) #'> :key #'cdr))
-                          (if (> score worst-score)
-                              (setf queue (sort (copy-seq (replace-last queue (cons link score))) #'> :key #'cdr)))))))
+                                        ;(append-to-file (concat *crawl-data-folder* "focused-all") link)
+                                        ;(append-to-file (concat *crawl-data-folder* "focused-all") score)
+                      (if (or domain-in-queue?
+                              (<= queue-size (length queue)))
+                          (setf queue (sort (mapcar #'(lambda (elem)
+                                                        (if (and (equal (car elem) opponent-url)
+                                                                 (> score opponent-score))
+                                                            (cons link score)
+                                                            elem))
+                                                    queue)
+                                            #'> :key #'cdr))
+                          (setf queue (sort (copy-seq (append1 queue (cons link score))) #'> :key #'cdr))))))
               (princ "x")))))
     (reverse acc)))
 
@@ -134,9 +151,8 @@ Crawl 40 from:
 
 
 
-(defun wanderbot (seed page-count)
+(defun drunkbot (seed page-count)
   #|
-  RSS feeds might be trouble. Check how they work, or finally make the downloader give up after a while.
   Perhaps just screw Facebook & Twitter & Instagram completely.
   (safe-fetch-html "http://www.costco.com/robots.txt")
   (SAFE-FETCH-HTML "https://www.mouser.com/robots.txt")
