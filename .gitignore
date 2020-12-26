@@ -4,3 +4,6 @@ DATA/files/*
 DATA/file-aliases
 DATA/history/*
 *.fasl
+*/corpus
+*/file-count
+*/word-count
