@@ -81,7 +81,7 @@
 
 (defun scores (vocab folders corpuses word-counts)
   ;; In folders without subfolders, we don't want to do anything
-  (if (and folders *try-to-class?*)
+  (if folders
       (let ((pair-scores (make-hash-table :test #'equal))
             (pair-words (make-hash-table :test #'equal))
             (pair-word-scores (make-hash-table :test #'equal)))
@@ -94,10 +94,9 @@
                                                                                (compare-folders vocab
                                                                                                 (list folder opponent)
                                                                                                 (map-to-hash #'(lambda (path)
-                                                                                                                 (normalize-corpus (gethash path corpuses)
-                                                                                                                                   (/ min-size (gethash path word-counts))
-                                                                                                                                   vocab))
-                                                                                                             (list folder opponent)))) 
+                                                                                                                 (scale-corpus (gethash path corpuses)
+                                                                                                                               (/ min-size (gethash path word-counts))))
+                                                                                                             (list folder opponent))))
                   (setf (gethash (cons folder opponent) pair-scores)
                         (gethash folder scores))
                   (setf (gethash (cons folder opponent) pair-words)

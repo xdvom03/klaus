@@ -58,12 +58,10 @@ Some sites use scripts to deliver boilerplate. While this is not a problem for c
           (let* ((opponent (nth j folders))
                  (smaller-size (min (get-word-count folder)
                                     (get-word-count opponent)))
-                 (folder-corpus (normalize-corpus (get-recursive-corpus folder)
-                                                  (/ smaller-size (get-word-count folder))
-                                                  vocab))
-                 (opponent-corpus (normalize-corpus (get-recursive-corpus opponent)
-                                                    (/ smaller-size (get-word-count opponent))
-                                                    vocab)) ;; TBD: Rework code to make that [whether a corpus is normalized or not] more obvious next time. TBD: Don't request the full vocab.
+                 (folder-corpus (scale-corpus (get-recursive-corpus folder)
+                                              (/ smaller-size (get-word-count folder))))
+                 (opponent-corpus (scale-corpus (get-recursive-corpus opponent)
+                                                (/ smaller-size (get-word-count opponent)))) ;; TBD: Rework code to make that [whether a corpus is normalized or not] more obvious next time. TBD: Don't request the full vocab.
                  (pair (cons folder opponent))
                  (chosen-words (gethash pair pair-words))
                  (word-scores (gethash pair pair-word-scores))
@@ -174,26 +172,33 @@ Some sites use scripts to deliver boilerplate. While this is not a problem for c
                         (options-frame (frame 1 0 fr))
                         (comment-frame (frame 1 1 fr))
 
-                        (vocab (if *try-to-class?* (remove-duplicates (tokens (url-text (print url))) :test #'equal)))
+                        (vocab (if *try-to-class?*
+                                   (remove-duplicates (tokens (url-text url)) :test #'equal)))
 
                         ;; variable stuff
                         (e (entry 2 0 options-frame))
                         (tex (text 0 0 comment-frame ""))
                         (folder-label (label 0 0 options-frame ""))
-                        (file-list (frame 0 1 file-frame)))
+                        (file-list (frame 0 1 file-frame))
+                        parent-button)
                    (labels ((redraw-confirmed (new-path)
                               (setf current-folder new-path)
+                              (if (equal (simplified-path new-path) (simplified-path *classes-folder*))
+                                  (ltk:configure parent-button :state :disabled)
+                                  (ltk:configure parent-button :state :normal))
                               (setf (ltk:text tex) (read-comment current-folder))
                               (dolist (i widget-list)
                                 (ltk:destroy i))
                               (setf widget-list nil)
                               (setf (ltk:text folder-label) (concat "Current folder: " (simplified-path current-folder)))
                               (let ((subfolders (subfolders current-folder)))
-                                (multiple-value-bind (scores pair-scores pair-words pair-word-scores) (scores vocab
-                                                                                                              subfolders
-                                                                                                              (map-to-hash #'get-recursive-corpus subfolders)
-                                                                                                              (map-to-hash #'get-word-count subfolders))
-                                  (if (and (> (length subfolders) 1) *explain?*)
+                                (multiple-value-bind (scores pair-scores pair-words pair-word-scores) (if *try-to-class?*
+                                                                                                          (scores vocab
+                                                                                                                  subfolders
+                                                                                                                  (map-to-hash #'get-recursive-corpus subfolders)
+                                                                                                                  (map-to-hash #'get-word-count subfolders))
+                                                                                                          (map-to-hash #'(lambda (folder) (/ (length subfolders))) subfolders))
+                                  (if (and (> (length subfolders) 1) *explain?* *try-to-class?*)
                                       (pair-scores-explainer 0 0 (window "HUJAJA") vocab subfolders pair-scores pair-words pair-word-scores))
                                   (let ((counter 1)
                                         (sorted-subfolders (sort (copy-seq subfolders) #'> :key #'(lambda (folder) (fallback (gethash folder scores) (/ (length subfolders)))))))
@@ -224,7 +229,6 @@ Some sites use scripts to deliver boilerplate. While this is not a problem for c
                                                                                                                                (redraw-confirmed new-path)
                                                                                                                                (ltk:destroy warning-button))))))))
                      (label 0 0 folder-frame "FOLDERS")
-                     (button 1 0 folder-frame ".." #'(lambda () (redraw (parent-folder current-folder))))
 
                      (label 0 0 file-frame "FILES")
                      (let ((links (class-links current-folder)))
@@ -252,10 +256,13 @@ Some sites use scripts to deliver boilerplate. While this is not a problem for c
                                                                          (setf current-url "")
                                                                          (back-to-main nil))
                                                                        (log-print "File already in folder."))))
+                     (button 5 0 options-frame "Check folder" #'(lambda ()
+                                                                  (correlate-folder current-folder)))
                      
                      (button 1 0 comment-frame "Save comment" #'(lambda ()
                                                                   (log-print "Saved comment in " (simplified-path current-folder))
                                                                   (set-comment (ltk:text tex) current-folder)))
+                     (setf parent-button (button 1 0 folder-frame ".." #'(lambda () (redraw (parent-folder current-folder)))))
                      (redraw-confirmed current-folder)
                      fr)))
 
@@ -484,3 +491,29 @@ Some sites use scripts to deliver boilerplate. While this is not a problem for c
         (visited-list (scrollable-list 0 2 master *entries-per-page* nil))
         (visited-domains nil))
     (tick page-count master queue queue-list acc acc-list visited-domains visited-list target queue-size)))
+
+(defun correlate-folder (folder)
+  (dolist (link (class-links folder))
+    (print link)
+    (print (blind-check link folder)))
+  (log-print "Checked integrity of" folder))
+
+(defun blind-check (url folder)
+  (let* ((corp (downloaded-link-corpus url))
+         (sibling-folders (subfolders (parent-folder folder)))
+         (simple-path-scores (map-to-hash #'cdr
+                                          (list-hashes (scores (list-keys corp)
+                                                               sibling-folders
+                                                               (map-to-hash #'(lambda (option)
+                                                                                (if (equal (simplified-path option)
+                                                                                           (simplified-path folder))
+                                                                                    (add-hashtable-corpuses (get-recursive-corpus option)
+                                                                                                            (scale-corpus corp -1))
+                                                                                    (get-recursive-corpus option)))
+                                                                            sibling-folders)
+                                                               (map-to-hash #'get-word-count sibling-folders)))
+                                          :key-fun (compose #'simplified-path #'car))))
+    (gethash (simplified-path folder) simple-path-scores)))
+
+;; TBD: Fix the relative/absolute folder bug/ugliness
+;; TBD: Show blind checks in the regular interface

@@ -20,11 +20,10 @@
       (incf acc (occurrences word corpus)))
     acc))
 
-(defun normalize-corpus (corp num words)
-  ;; Scales the hash table format by a factor of num. Only carries over "words", not the full corpus.
+(defun scale-corpus (corp num)
   (map-to-hash #'(lambda (word)
                    (* num (occurrences word corp)))
-               words))
+               (mapcar #'car (list-hashes corp))))
 
 (defun rebuild-corpus (&optional (folder *classes-folder*))
   ;; Writes the cons list format of the corpuses into the respective files.
@@ -56,8 +55,13 @@
       (cons url-count corpus))))
 
 (defun add-hashtable-corpuses (corp1 corp2)
-  (map-to-hash #'(lambda (word) (+ (occurrences word corp1)
-                                   (occurrences word corp2)))
+  (map-to-hash #'(lambda (word) (if (>= (+ (occurrences word corp1)
+                                           (occurrences word corp2))
+                                        0)
+                                    (+ (occurrences word corp1)
+                                       (occurrences word corp2))
+                                    (progn (print word)
+                                           0)))
                (remove-duplicates (append (list-keys corp1)
                                           (list-keys corp2))
                                   :test #'equal)))
@@ -66,11 +70,14 @@
   ;; Only applicable to the list format of corpuses.
   (sort (copy-seq corp) #'< :key #'cdr))
 
+(defun downloaded-link-corpus (link)
+  ;; Looks into the downloaded file of the link
+  (text-corpus (extract-text (file-content link))))
+
 (defun get-corpus (folder)
   ;; Returns cons of url count & corpus
-  (let ((vocab-lists (mapcar #'text-corpus
-                             (mapcar #'(lambda (file-name) (extract-text (file-content file-name)))
-                                     (class-links folder)))))
+  (let ((vocab-lists (mapcar #'downloaded-link-corpus
+                             (class-links folder))))
     (values (if vocab-lists
                 (reduce #'add-hashtable-corpuses
                         vocab-lists)

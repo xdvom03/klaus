@@ -120,32 +120,9 @@
     (otherwise ltr)))
 
 (defun tokens (text)
-  ;; TEMP: Really imperative and possibly misplaced
-  (let* ((?s 0)
-         (!s 0)
-         (words (remove-if #'(lambda (word) (equal word ""))
-                           (split text #\ )))
-         (normal-words (mapcar #'(lambda (word)
-                                   (if (equal (last-char word) #\!)
-                                       (progn
-                                         (incf !s)
-                                         (cut-word word))
-                                       (if (equal (last-char word) #\?)
-                                           (progn
-                                             (incf ?s)
-                                             (cut-word word))
-                                           word)))
-                               words)))
-    ;; TEMP: Spammed words are the worst
-    #|(remove-duplicates (append normal-words
-                               (make-list ?s :initial-element "?")
-                               (make-list !s :initial-element "!"))
-                       :test #'equal)|#
-    ;; TEMP: Trying the bag of words again
-    (append normal-words
-            (make-list ?s :initial-element "?")
-            (make-list !s :initial-element "!"))
-    ))
+  ;; includes repetitions
+  (remove-if #'(lambda (word) (equal word ""))
+             (split text #\ )))
 
 (defun last-char (str)
   (char str (1- (length str))))

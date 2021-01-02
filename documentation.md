@@ -49,6 +49,8 @@ To mitigate it, several diversifying measures are used.
 3) Try to use demonstrative websites. In some cases, a website's topic is just not reflected in its vocabulary. This can be caused by many interleaved topics, a lot of irrelevant content on the site (such as advertising for other content), or a heavy use of metaphor. Such websites should not be used for training, as their idiosyncracies won't be repeated elsewhere.
 4) Try to divide any folder into different ways of approaching it. For instance, "food" can contain recipes, food safety, or nutrition. The lowest levels of the hierarchy are less important as targets (indeed, with under 5 files, classing is myopic at best) and more as specifications of the variations on the topic that should be included.
 5) Try to include these subclasses in equal amounts. An example of this principle failing is currently the "math" folder, which is dominated by discussions of googology that are easy to find from the googology Wikia.
+6) Check for class integrity. This crude tool can show that some files don't appear to belong in their respective classes. This may be either due to misclassed files or underrepresented subcategories. It may, however, come up with false OK results caused by domain boilerplate.
+7) Use existing web directories (such as DMOZ), but don't copy everything from them, as they are sometimes outdated and use a different classification scheme.
 
 # Crawling
 

@@ -25,11 +25,12 @@ Crawl 40 from:
                           param)))))
 
 (defun prob (vocab folder)
-  (let ((simple-path-scores (map-to-hash #'cdr
+  (let* ((sibling-folders (subfolders (parent-folder folder)))
+         (simple-path-scores (map-to-hash #'cdr
                                          (list-hashes (scores vocab
-                                                              (subfolders (parent-folder folder))
-                                                              (map-to-hash #'get-recursive-corpus (subfolders (parent-folder folder)))
-                                                              (map-to-hash #'get-word-count (subfolders (parent-folder folder)))))
+                                                              sibling-folders
+                                                              (map-to-hash #'get-recursive-corpus sibling-folders)
+                                                              (map-to-hash #'get-word-count sibling-folders)))
                                          :key-fun (compose #'simplified-path #'car))))
     (gethash (simplified-path folder) simple-path-scores)))
 
@@ -78,8 +79,8 @@ Crawl 40 from:
       ;;(print visited-domains)
       ;;(print "VISITED:")
       ;;(print acc)
-      (print "RESULTS:")
-      (print results)
+      ;;(print "RESULTS:")
+      ;;(print results)
       (print (concat "checking " (pick-from-queue queue) ": "))
       (let* ((best-url (pick-from-queue queue))
              (raw-links (filter-links (vetted-links best-url)))
@@ -94,11 +95,12 @@ Crawl 40 from:
                                                                                                         (search "google." url)
                                                                                                         (search "amazon." url)
                                                                                                         (search "instagram." url)))))
-                                                              (remove-if #'(lambda (link) (or (member (core-domain (find-domain link))
-                                                                                                      visited-domains
-                                                                                                      :test #'equal)
-                                                                                              (equal (core-domain (find-domain link))
-                                                                                                     (core-domain (find-domain best-url)))))
+                                                              (remove-if #'(lambda (link) (and nil ;; TEMP: Testing keeping of domains
+                                                                                               (or #|(member (core-domain (find-domain link))
+                                                                                                visited-domains ; ;
+                                                                                                :test #'equal)|#
+                                                                                                (equal (core-domain (find-domain link))
+                                                                                                       (core-domain (find-domain best-url))))))
                                                                          raw-links))
                                                :test #'equal))))
         (push best-url acc)
@@ -130,10 +132,8 @@ Crawl 40 from:
                     (princ "x")
                     (progn
                       (princ ".")
-                                        ;(append-to-file (concat *crawl-data-folder* "focused-all") link)
-                                        ;(append-to-file (concat *crawl-data-folder* "focused-all") score)
                       (if (or domain-in-queue?
-                              (<= queue-size (length queue)))
+                              (>= (length queue) queue-size))
                           (setf queue (sort (mapcar #'(lambda (elem)
                                                         (if (and (equal (car elem) opponent-url)
                                                                  (> score opponent-score))
@@ -141,15 +141,14 @@ Crawl 40 from:
                                                             elem))
                                                     queue)
                                             #'> :key #'cdr))
-                          (setf queue (sort (copy-seq (append1 queue (cons link score))) #'> :key #'cdr))))))
+                          (progn (print "push")
+                                 (push (cons link score) queue)
+                                 (setf queue (sort (copy-seq queue) #'> :key #'cdr)))))))
               (princ "x")))))
     (reverse acc)))
 
 (defun random-pick (lst)
   (nth (random (length lst)) lst))
-
-
-
 
 (defun drunkbot (seed page-count)
   #|

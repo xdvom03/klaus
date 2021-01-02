@@ -12,6 +12,7 @@
   "Gets HTML data from a URL, but if it 404's, it returns nothing found."
   ;; TBD: Figure out how to dynamically insert the bot name into the headers
   (let ((unsafe (ignore-errors (trivial-timeout:with-timeout (*timeout*)
+                                 ;; BUG: Errors if the site contains any invalid UTF-8 characters.
                                  (drakma:http-request url :user-agent "botelaire (https://github.com/xdvom03/klaus, xdvom03 (at) gjk (dot) cz)")))))
     ;; an image link, or anything that isn't a string, is considered a 404
     (if (or (null unsafe) (not (stringp unsafe)))
