@@ -254,7 +254,7 @@ Some sites use scripts to deliver boilerplate. While this is not a problem for c
                                                                          (redownload-file url)
                                                                          (overwrite-file links-file (append1 existing-links url))
                                                                          (setf current-url "")
-                                                                         (back-to-main nil))
+                                                                         (back-to-main))
                                                                        (log-print "File already in folder."))))
                      (button 5 0 options-frame "Check folder" #'(lambda ()
                                                                   (correlate-folder current-folder)))
@@ -320,7 +320,7 @@ Some sites use scripts to deliver boilerplate. While this is not a problem for c
                                               (log-print "Deleted file in folder " (write-to-string file) " with url: " url)))
                    (button 1 0 W "LOAD" #'(lambda ()
                                             (setf current-url url)
-                                            (back-to-main nil)
+                                            (back-to-main)
                                             (ltk:destroy W)))))
 
                (history-window (r c master page-length)
@@ -398,10 +398,8 @@ Some sites use scripts to deliver boilerplate. While this is not a problem for c
                                                           (ltk:text e3)
                                                           (read-from-string (ltk:text e4)))))))
                
-               (back-to-main (database?)
-                 (change-screen (if database?
-                                    (database-window 0 1 W current-url)
-                                    (main-menu 0 1 W)))))
+               (back-to-main ()
+                 (change-screen (main-menu 0 1 W))))
         (let ((log (frame 1 1 W))
               (log-list nil))
           (button 0 0 log "Wipe log" #'(lambda ()
@@ -415,8 +413,8 @@ Some sites use scripts to deliver boilerplate. While this is not a problem for c
               full-string)))
         (let ((X (frame 2 1 W)))
           (button 0 0 X "X" #'(lambda ()
-                                (back-to-main nil))))
-        (back-to-main nil)))))
+                                (back-to-main))))
+        (back-to-main)))))
 
 (defun tick-compute (master queue queue-list acc acc-list visited-domains visited-list target queue-size)
   ;; BUG: Outdated compared to the fidgetbot (text interface).

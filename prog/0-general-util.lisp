@@ -1,5 +1,3 @@
-;; TBD: Clean and divide
-
 (ql:quickload (list "ltk" "drakma" "quri" "plump" "trivial-timeout"))
 
 ;;; IMPORTS
@@ -164,3 +162,11 @@
                      acc)
             (funcall fun elem)))
     acc))
+
+(defun compose (&rest functions)
+  (if (one-elem? functions)
+      (car functions)
+      (lambda (param)
+        (funcall (car functions)
+                 (funcall (apply #'compose (cdr functions))
+                          param)))))

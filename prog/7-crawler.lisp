@@ -16,14 +16,6 @@ Crawl 40 from:
 "https://www.jscc.edu/academics/programs/writing-center/writing-resources/five-paragraph-essay.html"
 |#
 
-(defun compose (&rest functions)
-  (if (one-elem? functions)
-      (car functions)
-      (lambda (param)
-        (funcall (car functions)
-                 (funcall (apply #'compose (cdr functions))
-                          param)))))
-
 (defun prob (vocab folder)
   (let* ((sibling-folders (subfolders (parent-folder folder)))
          (simple-path-scores (map-to-hash #'cdr
