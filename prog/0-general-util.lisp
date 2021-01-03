@@ -5,8 +5,9 @@
 ;;; UTILS
 
 (defparameter *classes-folder* "../DATA/classes/")
+(defparameter *generated-data-folder* "../DATA/generated-data/")
 (defparameter *files-folder* "../DATA/files/")
-(defparameter *aliases-file* "../DATA/file-aliases")
+(defparameter *aliases-file* "../DATA/files/file-aliases")
 ;; BEWARE: Do not change without knowing what you are doing! Can mess up history!
 ;; TBD: Turn this into another folder
 (defparameter *history-file* "../DATA/history/history")

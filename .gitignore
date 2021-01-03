@@ -1,9 +1,5 @@
 portacle/
-prog/zzz-archive.lisp
-DATA/files/*
-DATA/file-aliases
-DATA/history/*
+DATA/files/
+DATA/history/
+DATA/generated-data/
 *.fasl
-*/corpus
-*/file-count
-*/word-count

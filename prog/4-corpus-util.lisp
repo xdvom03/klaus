@@ -27,32 +27,33 @@
 
 (defun rebuild-corpus (&optional (folder *classes-folder*))
   ;; Writes the cons list format of the corpuses into the respective files.
-  (labels ((print-to-file (file-name &rest things)
-             (apply #'overwrite-file (concat folder file-name) things)))
+  (let ((corpus-folder (generated-folder folder)))
+    (labels ((print-to-file (file-name &rest things)
+               (apply #'overwrite-file (concat corpus-folder file-name) things)))
     
-    (let ((subfolders (subfolders folder))
-          (url-count 0)
-          (corpus (make-hash-table :test #'equal))
-          (timer (get-internal-real-time)))
+      (let ((subfolders (subfolders folder))
+            (url-count 0)
+            (corpus (make-hash-table :test #'equal))
+            (timer (get-internal-real-time)))
       
-      (dolist (subfolder subfolders)
-        (let ((data (rebuild-corpus subfolder)))
-          (incf url-count (car data))
-          (setf corpus (add-hashtable-corpuses corpus (cdr data)))))
+        (dolist (subfolder subfolders)
+          (let ((data (rebuild-corpus subfolder)))
+            (incf url-count (car data))
+            (setf corpus (add-hashtable-corpuses corpus (cdr data)))))
       
-      (multiple-value-bind (folder-corpus folder-file-count) (get-corpus folder)
-        (incf url-count folder-file-count)
-        (setf corpus (add-hashtable-corpuses corpus folder-corpus)))
-      (print-to-file "file-count"
-                     url-count)
-      (print-to-file "word-count"
-                     (word-count corpus))
-      (print-to-file "corpus" (corpus-list corpus))
-      (if (equal folder *classes-folder*)
-          (log-print "Rebuilt the corpus. Time taken: "
-                     ;; internal-time-units-per-second is a LISP built-in constant
-                     (my-round (/ (- (get-internal-real-time) timer) internal-time-units-per-second))))
-      (cons url-count corpus))))
+        (multiple-value-bind (folder-corpus folder-file-count) (get-corpus folder)
+          (incf url-count folder-file-count)
+          (setf corpus (add-hashtable-corpuses corpus folder-corpus)))
+        (print-to-file "file-count"
+                       url-count)
+        (print-to-file "word-count"
+                       (word-count corpus))
+        (print-to-file "corpus" (corpus-list corpus))
+        (if (equal folder *classes-folder*)
+            (log-print "Rebuilt the corpus. Time taken: "
+                       ;; internal-time-units-per-second is a LISP built-in constant
+                       (my-round (/ (- (get-internal-real-time) timer) internal-time-units-per-second))))
+        (cons url-count corpus)))))
 
 (defun add-hashtable-corpuses (corp1 corp2)
   (map-to-hash #'(lambda (word) (if (>= (+ (occurrences word corp1)
@@ -96,13 +97,20 @@
       (push (cons word (occurrences word hashtable)) corpus))
     (sort-corpus corpus)))
 
-(defun get-recursive-corpus (folder)
+(defun generated-folder (class)
+  ;; Returns the path to where generated data for that class is stored
+  (concat *generated-data-folder* (subseq (simplified-path class) 1)))
+
+(defun get-generated-data (class data-name)
+  (read-from-file (concat (generated-folder class) data-name)))
+
+(defun get-recursive-corpus (class)
   ;; Looks into the corpus file and converts to the hash-table formulation
   ;; The vast majority of time is spent here, loading the corpus files.
-  (corpus-hashtable (read-from-file (concat folder "corpus"))))
+  (corpus-hashtable (get-generated-data class "corpus")))
 
-(defun get-file-count (folder)
-  (fallback (read-from-file (concat folder "file-count")) 0))
+(defun get-file-count (class)
+  (fallback (get-generated-data class "file-count") 0))
 
-(defun get-word-count (folder)
-  (fallback (read-from-file (concat folder "word-count")) 0))
+(defun get-word-count (class)
+  (fallback (get-generated-data class "word-count") 0))

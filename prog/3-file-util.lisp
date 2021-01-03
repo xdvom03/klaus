@@ -1,4 +1,5 @@
 (defun overwrite-file (path &rest things)
+  (ensure-directories-exist path)
   (with-open-file (stream path :direction :output :if-exists :supersede :if-does-not-exist :create)
     (dolist (thing things)
       (print thing stream))))
