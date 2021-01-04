@@ -21,12 +21,10 @@
   (mapcar #'namestring (directory (concat folder "*"))))
 
 (defun read-comment (folder)
+  ;; Text is a widget!
   (if (directory (concat folder "comment"))
       (read-from-file (concat folder "comment"))
-      (set-comment "" folder)))
-
-(defun set-comment (text folder)
-  (overwrite-file (concat folder "comment") text))
+      (overwrite-file (concat folder "comment") "ňyc")))
 
 (defun subfolders (folder)
   (remove-if-not #'folder? (directory* folder)))

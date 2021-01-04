@@ -6,7 +6,7 @@ This is a project for the "maturita" exam from IT at Gymnázium Jana Keplera.
 
 # How to use?
 
-Download files. I use Portacle on Linux Ubuntu to run the program. I put a compressed version of the entire system (minus data, see below) in the repository as "system.zip". Install Portacle (https://portacle.github.io/) into the "portacle" folder inside. Load and compile all files in ordr specified by numbers (they are there to properly sort alphabetically). Run (redownload \*classes-folder\*) to fetch the required data. Run in the REPL by typing in (run). Start by rebuilding the corpus. Then refer to the documentation.
+Download files. I use Portacle on Linux Ubuntu to run the program. I put a compressed version of the entire system (minus data, see below) in the repository as "system.zip". Install Portacle (https://portacle.github.io/) into the "portacle" folder inside. Load and compile all files in ordr specified by numbers (they are there to properly sort alphabetically). Run (redownload \*classes-folder\*) to fetch the required data. Edit the database by typing in (db) or use the program by typing in (run). Start by rebuilding the corpus. Then refer to the documentation.
 
 # Caveat emptor
 

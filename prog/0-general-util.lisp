@@ -8,16 +8,10 @@
 (defparameter *generated-data-folder* "../DATA/generated-data/")
 (defparameter *files-folder* "../DATA/files/")
 (defparameter *aliases-file* "../DATA/files/file-aliases")
-;; BEWARE: Do not change without knowing what you are doing! Can mess up history!
-;; TBD: Turn this into another folder
-(defparameter *history-file* "../DATA/history/history")
-(defparameter *history-temp-file* "../DATA/history/history2")
-(defparameter *history-rename* "history")
 
 (defparameter *crawl-data-folder* "../DATA/crawlers/")
 
 (defparameter *entries-per-page* 10)
-(defparameter *try-to-class?* t)
 (defparameter *explain?* nil)
 (defparameter *evidence-length* 6)
 (defparameter *newline* "
@@ -171,3 +165,31 @@
         (funcall (car functions)
                  (funcall (apply #'compose (cdr functions))
                           param)))))
+
+
+
+(defmacro letrec (bindings &body decls/forms)
+  ;; Originally writen by user "tfb" on SO (https://stackoverflow.com/questions/63999450/lisp-variable-using-itself-in-definition), rewritten to avoid loop
+  (assert (and (listp bindings)
+               (every #'(lambda (b)
+                          (or (symbolp b)
+                              (and (consp b)
+                                   (symbolp (first b))
+                                   (null (cddr b)))))
+                      bindings))
+          (bindings) "malformed bindings")
+  (let* ((names (mapcar #'(lambda (b)
+                            (etypecase b
+                              (symbol b)
+                              (cons (first b))))
+                        bindings))
+         (values (mapcar #'(lambda (b)
+                             (etypecase b
+                               (symbol nil)
+                               (cons (second b))))
+                         bindings))
+         (nvpairs (reduce #'append (mapcar #'list names values))))
+    `(let ,names
+       (setf ,@nvpairs)
+       (locally
+           ,@decls/forms))))

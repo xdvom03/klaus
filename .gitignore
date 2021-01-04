@@ -1,5 +1,4 @@
 portacle/
 DATA/files/
-DATA/history/
 DATA/generated-data/
 *.fasl

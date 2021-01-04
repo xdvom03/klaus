@@ -19,10 +19,18 @@
       (push (button (+ i starting-row) column window "" #'pass) acc))
     (reverse acc)))
 
-(defun text (r c master txt)
+(defun text (r c master txt height width font)
   (let ((tex (widget r c 'ltk:text master)))
+    (ltk:configure tex :height height)
+    (ltk:configure tex :width width)
+    (ltk:configure tex :font font)
     (setf (ltk:text tex) txt)
     tex))
+
+(defun read-text (text-widget)
+  ;; For whatever reason, reading from a text always adds a newline
+  (let ((str (ltk:text text-widget)))
+    (subseq str 0 (1- (length str)))))
 
 (defun listbox (r c master txt)
   (let ((l (widget r c 'ltk:listbox master)))

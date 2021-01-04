@@ -49,9 +49,10 @@
         (print-to-file "word-count"
                        (word-count corpus))
         (print-to-file "corpus" (corpus-list corpus))
-        (if (equal folder *classes-folder*)
-            (log-print "Rebuilt the corpus. Time taken: "
+        (print (concat "Rebuilt the corpus. Folder: "
+                       folder
                        ;; internal-time-units-per-second is a LISP built-in constant
+                       " Time taken: "
                        (my-round (/ (- (get-internal-real-time) timer) internal-time-units-per-second))))
         (cons url-count corpus)))))
 
