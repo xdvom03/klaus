@@ -87,12 +87,11 @@ Crawl 40 from:
                                                                                                         (search "google." url)
                                                                                                         (search "amazon." url)
                                                                                                         (search "instagram." url)))))
-                                                              (remove-if #'(lambda (link) (and nil ;; TEMP: Testing keeping of domains
-                                                                                               (or #|(member (core-domain (find-domain link))
-                                                                                                visited-domains ; ;
-                                                                                                :test #'equal)|#
-                                                                                                (equal (core-domain (find-domain link))
-                                                                                                       (core-domain (find-domain best-url))))))
+                                                              (remove-if #'(lambda (link) (or (member (core-domain (find-domain link))
+                                                                                                      visited-domains
+                                                                                                      :test #'equal)
+                                                                                              (equal (core-domain (find-domain link))
+                                                                                                     (core-domain (find-domain best-url)))))
                                                                          raw-links))
                                                :test #'equal))))
         (push best-url acc)
