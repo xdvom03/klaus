@@ -120,9 +120,10 @@
     (otherwise ltr)))
 
 (defun tokens (text)
-  ;; includes repetitions
-  (remove-if #'(lambda (word) (equal word ""))
-             (split text #\ )))
+  ;; TBD: Still has problems with different lengths of articles!
+  (let ((raw (remove-if #'(lambda (word) (equal word ""))
+                        (split text #\ ))))
+    (mapcar #'intern (remove-duplicates raw :test #'equal))))
 
 (defun last-char (str)
   (char str (1- (length str))))

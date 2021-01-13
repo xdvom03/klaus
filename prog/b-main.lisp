@@ -172,7 +172,7 @@ Some sites use scripts to deliver boilerplate. While this is not a problem for c
                          (push (button counter
                                        0
                                        folder-frame
-                                       (folder-description i (ltk:text e2))
+                                       (folder-description i (intern (ltk:text e2)))
                                        #'(lambda ()
                                            (change-folder i)))
                                subfolder-buttons)))))

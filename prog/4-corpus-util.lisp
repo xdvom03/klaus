@@ -1,10 +1,9 @@
 (defun occurrences (word corpus)
-  (let ((corpus-entry (gethash word corpus)))
-    (fallback corpus-entry 0)))
+  (fallback (gethash word corpus) 0))
 
 (defun text-corpus (text)
   (let* ((tokens (tokens text))
-         (corpus (make-hash-table :test #'equal))
+         (corpus (make-hash-table  :test #'eq))
          ;; TEMP: Use this for document weights
          (weight 1))
     (dolist (token tokens)
