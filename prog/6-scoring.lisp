@@ -41,10 +41,8 @@
                                                                                  (ln *min-word-score*)))
                                                             ordered-words))
                                          2)))))
-    (append (subseq ordered-words 0 (min evidence-length
-                                         (length ordered-words)))
-            (subseq ordered-words (max 0
-    (- (length ordered-words) evidence-length))))))
+    (subseq ordered-words 0 (min evidence-length
+                                 (length ordered-words)))))
 
 (defun compare-folders (vocab paths corpuses)
   ;; Returns a cons of two hash tables. A hash table of path -> score, and a hash table of path -> chosen words.
