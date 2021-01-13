@@ -1,3 +1,6 @@
+(defun warning-box (text title)
+  (ltk:message-box text title "ok" "warning"))
+
 (defun widget (r c type master)
   (let ((w (make-instance type :master master)))
     (ltk:grid w r c :sticky "nesw")

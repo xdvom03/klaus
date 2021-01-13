@@ -78,7 +78,7 @@
   (remove-enclosed text "<" ">"))
 
 (defun url-text (url)
-  ;; Fetches text of an url
+  ;; Fetches text of a url
   ;; Placeholder for now until the MAJOR REFACTORING
   ;; Duplicate-ish of extract-text
   (let* ((raw (safe-fetch-html url))

@@ -7,6 +7,8 @@ TBD: Load title for links
 TBD: Autoclose explainers when a thing is classed.
 TBD: Consider a category an average of its subcategories, not files. This would help protect against availability bias (say, Lifehack taking over trash) and make the system more semantic.
 
+BUG: Some graphics LTK problem - it cannot quite hide files.
+
 What do we do with <noscript>? It caused c2wiki to class as boilerplate, but I think there's no good reason to exclude it. Made irrelevant by C2wiki depending on Javascript, and thus not being downloadable.
 
 Some sites use scripts to deliver boilerplate. While this is not a problem for classification (just ignore them or input manually), it might mess up the crawler.
@@ -39,7 +41,7 @@ Some sites use scripts to deliver boilerplate. While this is not a problem for c
              (existing-links (read-from-file links-file)))
         (redownload-file link)
         (overwrite-file links-file (append1 existing-links link)))
-      (print "File already in folder.")))
+      (warning-box "File already in folder." "nice try")))
 
 (defun action (link origin class mode)
   (case mode
@@ -215,12 +217,15 @@ Some sites use scripts to deliver boilerplate. While this is not a problem for c
                    (e3 (entry 6 0 options-frame)))
             (button 7 0 options-frame "Create folder" #'(lambda ()
                                                           (let ((txt (ltk:text e3)))
-                                                            (ensure-directories-exist (concat current-folder txt "/"))
-                                                            (overwrite-file (concat current-folder txt "/links") nil)
-                                                            (overwrite-file (concat current-folder txt "/comments") "")
-                                                            (rebuild-corpus (concat current-folder txt "/"))
-                                                            (setf (ltk:text e3) "")
-                                                            (change-folder (concat current-folder txt "/")))))
+                                                            (if (equal txt "")
+                                                                (warning-box "Empty folder names are a BAD IDEA." "NOPE")
+                                                                (progn
+                                                                  (ensure-directories-exist (concat current-folder txt "/"))
+                                                                  (overwrite-file (concat current-folder txt "/links") nil)
+                                                                  (overwrite-file (concat current-folder txt "/comments") "")
+                                                                  (rebuild-corpus (concat current-folder txt "/"))
+                                                                  (setf (ltk:text e3) "")
+                                                                  (change-folder (concat current-folder txt "/")))))))
             (setf (ltk:value ch) show-word-counts?)
             (setf (ltk:value ch2) show-file-counts?)
             (setf (ltk:value ch3) show-word-details?)

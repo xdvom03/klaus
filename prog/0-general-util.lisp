@@ -21,6 +21,7 @@
 (defparameter *smoothing-factor* 0.4)
 (defparameter *crawler-name* "botelaire")
 
+;; TBD: This is duplicate now
 (defparameter *min-word-score* 1/5)
 (defparameter *max-word-score* 4/5)
 
