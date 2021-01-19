@@ -7,8 +7,6 @@ TBD: Load title for links
 TBD: Autoclose explainers when a thing is classed.
 TBD: Consider a category an average of its subcategories, not files. This would help protect against availability bias (say, Lifehack taking over trash) and make the system more semantic.
 
-BUG: Some graphics LTK problem - it cannot quite hide files.
-
 What do we do with <noscript>? It caused c2wiki to class as boilerplate, but I think there's no good reason to exclude it. Made irrelevant by C2wiki depending on Javascript, and thus not being downloadable.
 
 Some sites use scripts to deliver boilerplate. While this is not a problem for classification (just ignore them or input manually), it might mess up the crawler.
@@ -77,10 +75,10 @@ Some sites use scripts to deliver boilerplate. While this is not a problem for c
              (bucket-buttons nil)
              
              (folder-frame (frame 0 0 fr))
-             (file-frame (frame 0 1 fr))
-             (comment-frame (frame 0 2 fr))
-             (bucket-frame (frame 0 3 fr))
-             (options-frame (frame 0 4 fr))
+             (file-frame (frame 1 0 W))
+             (comment-frame (frame 0 1 fr))
+             (bucket-frame (frame 0 2 fr))
+             (options-frame (frame 0 3 fr))
 
              ;; variable stuff
              (old-comment (read-comment *classes-folder*))
@@ -207,9 +205,13 @@ Some sites use scripts to deliver boilerplate. While this is not a problem for c
                                                                        (declare (ignore a))
                                                                        (setf show-word-details? (ltk:value ch3))
                                                                        (redraw-subfolders))))
+                   (placeholder-widget nil)
                    (ch4 (checkbox 1 0 detail-frame "Show files?" #'(lambda (a)
                                                                      (declare (ignore a))
                                                                      (setf show-files? (ltk:value ch4))
+                                                                     (if (and placeholder-widget show-files?)
+                                                                         (ltk:destroy placeholder-widget)
+                                                                         (setf placeholder-widget (empty-widget 0 0 file-frame)))
                                                                      (if show-files?
                                                                          (setf files-label (label 0 0 file-frame "FILES"))
                                                                          (ltk:destroy files-label))
