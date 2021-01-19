@@ -71,9 +71,3 @@
         (visited-list (scrollable-list 0 2 master *entries-per-page* nil))
         (visited-domains nil))
     (tick page-count master queue queue-list acc acc-list visited-domains visited-list target queue-size)))
-
-(defun correlate-folder (folder)
-  (dolist (link (class-links folder))
-    (print link)
-    (print (blind-check link folder)))
-  (print (concat "Checked integrity of" folder)))
