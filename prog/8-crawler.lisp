@@ -28,7 +28,7 @@ Crawl 40 from:
 
 (defun link-score (url target-folder)
   (let ((path *classes-folder*)
-        (vocab (tokens (url-text url)))
+        (vocab (remove-duplicates (tokens (url-text url)) :test #'equal))
         (acc 0)
         (prob 1))
     (dolist (frag (split (subseq (simplified-path target-folder) 1) #\/))
@@ -132,8 +132,7 @@ Crawl 40 from:
                                                             elem))
                                                     queue)
                                             #'> :key #'cdr))
-                          (progn (print "push")
-                                 (push (cons link score) queue)
+                          (progn (push (cons link score) queue)
                                  (setf queue (sort (copy-seq queue) #'> :key #'cdr)))))))
               (princ "x")))))
     (reverse acc)))
