@@ -83,3 +83,11 @@
 
 (defun file-content (file-name)
   (read-from-file (concat *files-folder* (file-alias file-name))))
+
+(defun link-occurrences (link &optional (folder *classes-folder*))
+  ;; returns all folders where the link is present
+  (remove-if #'null
+             (append1 (apply #'append (mapcar #'(lambda (subfolder) (link-occurrences link subfolder))
+                                              (subfolders folder)))
+                      (if (member link (recursive-links folder) :test #'equal)
+                          folder))))
