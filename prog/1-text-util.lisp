@@ -121,9 +121,11 @@
 
 (defun tokens (text)
   ;; TBD: Still has problems with different lengths of articles!
-  (let ((raw (remove-if #'(lambda (word) (equal word ""))
-                        (split text #\ ))))
-    (mapcar #'intern (remove-duplicates raw :test #'equal))))
+  (let ((raw (mapcar #'intern (remove-if #'(lambda (word) (equal word ""))
+                                         (split text #\ )))))
+    ;; TEMP: Trying out new system
+    (apply #'append (mapcar #'(lambda (lst) (remove-duplicates lst :test #'equal))
+                            (cut raw *word-group-size*))))) 
 
 (defun last-char (str)
   (char str (1- (length str))))

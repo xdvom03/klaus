@@ -13,6 +13,7 @@
 
 (defparameter *entries-per-page* 10)
 (defparameter *explain?* nil)
+(defparameter *blind?* nil)
 (defparameter *evidence-length* 6)
 (defparameter *newline* "
 ")
@@ -24,9 +25,10 @@
 ;; TBD: This is duplicate now
 (defparameter *min-word-score* 1/5)
 (defparameter *max-word-score* 4/5)
+(defparameter *word-group-size* 250)
 
 (defparameter *forbidden-extensions* (list "css" "png" "mp4" "ico" "svg" "webmanifest" "js" "json" "xml"))
-(defparameter *timeout* 5)
+(defparameter *timeout* 10)
 
 (defparameter *bg-col* "#f0f0f0")
 (defparameter *button-col* "#e0e0e0")
@@ -146,6 +148,7 @@
 
 (defun ln (a)
   ;; Ln formulation requires high float precision
+  ;; TBD: Does it still?
   (log (coerce a 'double-float)))
 
 (defun map-to-hash (fun list &key key-fun)
@@ -167,6 +170,16 @@
                  (funcall (apply #'compose (cdr functions))
                           param)))))
 
+(defun cut (lst size)
+  (let ((acc nil)
+        (acc2 nil))
+    (dotimes (i (length lst))
+      (push (nth i lst) acc2)
+      (if (zerop (mod (1+ i) size))
+          (progn
+            (push (reverse acc2) acc)
+            (setf acc2 nil))))
+    (append1 (reverse acc) (reverse acc2))))
 
 
 (defmacro letrec (bindings &body decls/forms)
