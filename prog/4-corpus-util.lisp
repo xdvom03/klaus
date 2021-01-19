@@ -48,21 +48,14 @@
         (print-to-file "word-count"
                        (word-count corpus))
         (print-to-file "corpus" (corpus-list corpus))
-        (print (concat "Rebuilt the corpus. Folder: "
-                       folder
-                       ;; internal-time-units-per-second is a LISP built-in constant
-                       " Time taken: "
-                       (my-round (/ (- (get-internal-real-time) timer) internal-time-units-per-second))))
+        ;; internal-time-units-per-second is a LISP built-in constant
+        (if (equal folder *classes-folder*)
+            (info-box (concat "Rebuilt the corpus. Time taken: " (my-round (/ (- (get-internal-real-time) timer) internal-time-units-per-second))) "success!"))
         (cons url-count corpus)))))
 
 (defun add-hashtable-corpuses (corp1 corp2)
-  (map-to-hash #'(lambda (word) (if (>= (+ (occurrences word corp1)
-                                           (occurrences word corp2))
-                                        0)
-                                    (+ (occurrences word corp1)
-                                       (occurrences word corp2))
-                                    (progn (print word)
-                                           0)))
+  (map-to-hash #'(lambda (word) (+ (occurrences word corp1)
+                                   (occurrences word corp2)))
                (remove-duplicates (append (list-keys corp1)
                                           (list-keys corp2))
                                   :test #'equal)))
