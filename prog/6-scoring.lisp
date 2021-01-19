@@ -12,10 +12,12 @@
     (let* ((raw-scores (mapcar #'option-raw-score
                                options))
            (probsum (apply #'ln+ raw-scores)))
-      (map-to-hash (compose #'exp
-                            #'(lambda (score) (- score probsum))
-                            #'option-raw-score)
-                   options))))
+      (values (map-to-hash (compose #'exp
+                                    #'(lambda (score) (- score probsum))
+                                    #'option-raw-score)
+                           options)
+              ;; For testing purposes
+              probsum))))
 
 (defun smooth-ratio (target total subfolder-count smoothing-factor)
   (- (ln (+ smoothing-factor target))
@@ -47,64 +49,71 @@
 (defun compare-folders (vocab paths corpuses)
   ;; Returns a cons of two hash tables. A hash table of path -> score, and a hash table of path -> chosen words.
   ;; Already gets normalised corpuses
+  ;; TBD: Make this two-folder. It's ridiculous.
   (let* ((folder-count (length (list-keys corpuses)))
-         (total-corpus (reduce #'add-hashtable-corpuses
-                               (mapcar #'(lambda (path) (gethash path corpuses))
-                                       paths)))
          (scores (make-hash-table :test #'equal))
          (evidence-words (make-hash-table :test #'equal))
-         (evidence-scores (make-hash-table :test #'equal)))
+         (evidence-details (make-hash-table :test #'equal)))
     (dolist (path paths)
       ;; balance evidence for and against
       (let* ((corpus (gethash path corpuses))
              ;; we need a score for every word-path pair
-             (word-scores (let ((acc (make-hash-table :test #'equal)))
-                            (dolist (word vocab)
-                              (setf (gethash word acc)
-                                    (word-probability word corpus total-corpus folder-count)))
-                            acc))
+             (word-scores (map-to-hash #'(lambda (word)
+                                           (smooth-ratio (occurrences word corpus)
+                                                         (apply #'+ (mapcar #'(lambda (path) (occurrences word (gethash path corpuses)))
+                                                                            paths))
+                                                         folder-count
+                                                         *smoothing-factor*))
+                                       vocab))
              (chosen-words (chosen-words vocab word-scores))
              (score (apply #'+ (mapcar #'(lambda (word) (gethash word word-scores))
                                        chosen-words))))
         (setf (gethash path scores) score)
         (setf (gethash path evidence-words) chosen-words)
-        (setf (gethash path evidence-scores) word-scores)))
+        (setf (gethash path evidence-details) (map-to-hash #'(lambda (word)
+                                                               (concat (apply #'concat (mapcar #'(lambda (path) (concat (my-round (occurrences word (gethash path corpuses))) " ")) paths))
+                                                                       "-> "
+                                                                       (my-round (exp (gethash word word-scores)))))
+                                                           vocab))))
 
     (let ((prob-sum (apply #'ln+ (mapcar #'(lambda (path) (gethash path scores)) paths))))
       (dolist (path paths)
         (setf (gethash path scores)
               (- (gethash path scores)
                  prob-sum))))
-    (values scores evidence-words evidence-scores)))
+    (values scores evidence-words evidence-details)))
 
 (defun scores (vocab folders corpuses word-counts)
+  ;; excluded data is a cons of (url . folder) used for blind checks
   ;; In folders without subfolders, we don't want to do anything
   (if folders
-      (let ((pair-scores (make-hash-table :test #'equal))
-            (pair-words (make-hash-table :test #'equal))
-            (pair-word-scores (make-hash-table :test #'equal)))
+      (let* ((pair-scores (make-hash-table :test #'equal))
+             (pair-words (make-hash-table :test #'equal))
+             (pair-word-details (make-hash-table :test #'equal)))
         (dolist (folder folders)
           (dolist (opponent folders)
             (if (equal folder opponent)
                 (setf (gethash (cons folder opponent) pair-scores) 0) ; chosen words can remain empty
-                (multiple-value-bind (scores evidence-words evidence-scores) (let ((min-size (min (gethash folder word-counts)
-                                                                                                  (gethash opponent word-counts))))
-                                                                               (compare-folders vocab
-                                                                                                (list folder opponent)
-                                                                                                (map-to-hash #'(lambda (path)
-                                                                                                                 (scale-corpus (gethash path corpuses)
-                                                                                                                               (/ min-size (gethash path word-counts))))
-                                                                                                             (list folder opponent))))
+                (multiple-value-bind (scores evidence-words evidence-details) (let ((min-size (min (gethash folder word-counts)
+                                                                                                   (gethash opponent word-counts))))
+                                                                                (compare-folders vocab
+                                                                                                 (list folder opponent)
+                                                                                                 (map-to-hash #'(lambda (path)
+                                                                                                                  (scale-corpus (gethash path corpuses)
+                                                                                                                                (/ min-size (gethash path word-counts))))
+                                                                                                              (list folder opponent))))
                   (setf (gethash (cons folder opponent) pair-scores)
                         (gethash folder scores))
                   (setf (gethash (cons folder opponent) pair-words)
                         (gethash folder evidence-words))
-                  (setf (gethash (cons folder opponent) pair-word-scores)
-                        (gethash folder evidence-scores))))))
+                  (setf (gethash (cons folder opponent) pair-word-details)
+                        (gethash folder evidence-details))))))
         ;; the actual scores and some data for the explainer
-        (let ((scores (pagerank folders pair-scores)))
+        (multiple-value-bind (scores probsum) (pagerank folders pair-scores)
           (values scores
+                  probsum
                   pair-scores
                   pair-words
-                  pair-word-scores)))
-      (make-hash-table :test #'equal)))
+                  pair-word-details)))
+      (values (make-hash-table :test #'equal)
+              1)))
