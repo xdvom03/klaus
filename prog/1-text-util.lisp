@@ -59,12 +59,12 @@
                    (push (char text i) acc)))))
     (convert-to-str (reverse acc))))
 
-(defun filter (text allow-rule censor-by)
+(defun filter (text allow-rule &optional censor-by)
   (let ((acc nil))
     (dotimes (i (length text))
       (if (funcall allow-rule (char text i))
           (push (char text i) acc)
-          (push censor-by acc)))
+          (if censor-by (push censor-by acc))))
     (convert-to-str (reverse acc))))
 
 (defun remove-multiple-spaces (text)
@@ -81,8 +81,7 @@
   ;; Only keeps well-known characters to prevent printing trouble
   (filter text #'(lambda (a) (member a '(#\  #\EM_DASH #\LEFTWARDS_ARROW #\EN_DASH #\PLUS-MINUS_SIGN #\THIN_SPACE #\MINUS_SIGN #\' #\DEGREE_SIGN #\# #\6 #\Tab #\_ #\7 #\% #\& #\? #\+ #\@ #\} #\Z #\X #\M #\z #\H #\q #\V #\K #\J #\y
                                          #\x #\B #\* #\G #\A #\9 #\4 #\5 #\3 #\I #\v #\0 #\b #\S #\: #\{ #\f #\] #\[ #\Q #\L #\R #\w #\; #\2 #\1 #\, #\$ #\) #\\ #\| #\^ #\( #\N #\. #\u #\p #\k #\W #\/ #\8 #\F #\U #\r #\d #\g #\j
-                                         #\o #\- #\n #\e #\i #\" #\= #\s #\a #\c #\> #\l #\m #\t #\h #\E #\P #\Y #\T #\C #\O #\D #\! #\< #\  #\Newline)))
-          (char "*" 0)))
+                                         #\o #\- #\n #\e #\i #\" #\= #\s #\a #\c #\> #\l #\m #\t #\h #\E #\P #\Y #\T #\C #\O #\D #\! #\< #\  #\Newline)))))
 
 (defun remove-punctuation (text)
   ;; Replaces commas, parentheses, periods, etc. by spaces
@@ -90,8 +89,8 @@
   ;; TBD: Remove double and multiple spaces
   (filter text #'(lambda (a)
                    (not (member a '(#\EM_DASH #\LEFTWARDS_ARROW #\EN_DASH #\PLUS-MINUS_SIGN #\THIN_SPACE #\MINUS_SIGN #\DEGREE_SIGN #\# #\& #\+ #\}
-                                    #\* #\: #\{ #\] #\[ #\; #\, #\) #\\ #\| #\^ #\( #\. #\/ #\-
-                                    #\" #\= #\> #\< #\Newline #\Tab))))
+                                    #\* #\: #\{ #\] #\[ #\; #\) #\\ #\| #\^ #\( #\/ #\- #\. #\, #\? #\!
+                                    #\" #\= #\> #\< #\Newline #\Tab #\Return))))
           (char " " 0)))
 
 (defun remove-diacritics (str)
@@ -100,30 +99,13 @@
        str))
 
 (defun basic-letter (ltr)
-  (case ltr
-    (#\á #\a)
-    (#\é #\e)
-    (#\ě #\e)
-    (#\í #\i)
-    (#\ó #\o)
-    (#\ú #\u)
-    (#\ů #\u)
-    (#\ý #\y)
-    (#\č #\c)
-    (#\ď #\d)
-    (#\ň #\n)
-    (#\ř #\r)
-    (#\š #\s)
-    (#\ť #\t)
-    (#\ž #\z)
-    (#\RIGHT_SINGLE_QUOTATION_MARK #\')
-    (otherwise ltr)))
+  (if (eq ltr #\RIGHT_SINGLE_QUOTATION_MARK)
+      #\RIGHT_SINGLE_QUOTATION_MARK
+      ltr))
 
 (defun tokens (text)
-  ;; TBD: Still has problems with different lengths of articles!
   (let ((raw (mapcar #'intern (remove-if #'(lambda (word) (equal word ""))
                                          (split text #\ )))))
-    ;; TEMP: Trying out new system
     (apply #'append (mapcar #'(lambda (lst) (remove-duplicates lst :test #'equal))
                             (cut raw *word-group-size*))))) 
 
@@ -132,3 +114,8 @@
 
 (defun cut-word (word)
   (subseq word 0 (1- (length word))))
+
+(defun decode-xml-entities (txt)
+  ;; plump may cause "junk in string". Cause unknown, happens rarely, so the decoding is skipped if the error occurs.
+  (fallback (ignore-errors (plump:decode-entities txt))
+            txt))

@@ -77,14 +77,25 @@
 (defun remove-tags (text)
   (remove-enclosed text "<" ">"))
 
+(defun remove-fluff (text)
+  (remove-enclosed (remove-enclosed text
+                                    "<style" "</style>")
+                   "<script" "</script>"))
+
+(defun raw-text (url)
+  (remove-multiple-spaces (remove-punctuation (remove-diacritics (decode-xml-entities (remove-tags (remove-fluff (string-downcase (coerce (safe-fetch-html url) 'simple-string)))))))))
+
+(defun clean-text (txt)
+  (remove-multiple-spaces (make-safe txt)))
+
 (defun url-text (url)
   ;; Fetches text of a url
   ;; Placeholder for now until the MAJOR REFACTORING
   ;; Duplicate-ish of extract-text
   (let* ((raw (safe-fetch-html url))
          ;; TEMP: For some reason, not simple-string
-         (safe (make-safe (remove-diacritics (string-downcase (plump:decode-entities (coerce raw 'simple-string))))))
-         (content (remove-multiple-spaces (remove-punctuation (remove-tags (remove-enclosed (remove-enclosed safe "<style" "</style>") "<script" "</script>"))))))
+         (safe (string-downcase (decode-xml-entities (coerce raw 'simple-string))))
+         (content (remove-multiple-spaces (remove-punctuation (remove-diacritics (make-safe (remove-tags (remove-fluff safe))))))))
     content))
 
 (defun extract-text (html)
