@@ -274,3 +274,28 @@
                                                                                     (map-to-hash #'get-recursive-corpus subfolders)
                                                                                     (map-to-hash #'get-word-count subfolders))
         (pair-scores-explainer 0 0 w vocab subfolders pair-scores pair-words pair-word-scores)))))
+
+(defun remove-diacritics (str)
+  (map 'string
+       #'basic-letter
+       str))
+
+(defun basic-letter (ltr)
+  (case ltr
+    (#\á #\a)
+    (#\é #\e)
+    (#\ě #\e)
+    (#\í #\i)
+    (#\ó #\o)
+    (#\ú #\u)
+    (#\ů #\u)
+    (#\ý #\y)
+    (#\č #\c)
+    (#\ď #\d)
+    (#\ň #\n)
+    (#\ř #\r)
+    (#\š #\s)
+    (#\ť #\t)
+    (#\ž #\z)
+    (#\RIGHT_SINGLE_QUOTATION_MARK #\')
+    (otherwise ltr)))

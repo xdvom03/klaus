@@ -25,7 +25,7 @@
 ;; TBD: This is duplicate now
 (defparameter *min-word-score* 1/5)
 (defparameter *max-word-score* 4/5)
-(defparameter *word-group-size* 250)
+(defparameter *word-group-size* 1000)
 
 (defparameter *forbidden-extensions* (list "css" "png" "mp4" "ico" "svg" "webmanifest" "js" "json" "xml"))
 (defparameter *timeout* 10)

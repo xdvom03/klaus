@@ -35,7 +35,11 @@
                             (if (= i j)
                                 ""
                                 (write-to-string (my-round score)))
-                            #'(lambda () (words-explainer 100 100 (window (concat (simplified-path folder) " over " (simplified-path opponent))) chosen-words word-details *entries-per-page*)))))
+                            #'(lambda () (words-explainer 100 100
+                                                          (window (concat (folder-name (simplified-path folder))
+                                                                          " over "
+                                                                          (folder-name (simplified-path opponent))))
+                                                          chosen-words word-details *entries-per-page*)))))
             (if (not (integerp score)) ;; integer is an empty score
                 (ltk:configure b :background (color-code score)))))))
     f))

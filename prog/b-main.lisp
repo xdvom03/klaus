@@ -1,6 +1,5 @@
 #|
 PROBLEM: A few tiny folders can mess up the confidence for the whole superfolder. Add more data.
-Convergence gets slow for very obvious choices, like boilerplate. We lose 30 orders of magnitude of certainty. Probably fine, for we are still sure. TBD: Make the algorithm wait for having converged.
 TBD: Toggle adding into history
 TBD: Speed up
 TBD: Load title for links
@@ -92,7 +91,7 @@ Some sites use scripts to deliver boilerplate. While this is not a problem for c
              (show-file-counts? nil)
              (show-word-counts? nil)
              (show-word-details? nil)
-             (show-files? nil)
+             (show-files? t)
 
              (detail-frame (frame 5 0 options-frame))
              (e2 (entry 0 1 detail-frame))
