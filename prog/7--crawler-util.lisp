@@ -84,3 +84,14 @@
                          :test #'equal))
              (remove-duplicates (mapcar #'remove-fragment
                                         raw-links))))
+
+(defun comprehensible? (vocab)
+  (let ((total-corp (get-recursive-corpus *classes-folder*)))
+    (/ (1+ (length (remove-if #'(lambda (word) (zerop (occurrences word total-corp)))
+                              vocab)))
+       (1+ (length vocab)))))
+
+(defun comprehensible-text? (raw clean)
+  ;; send txt for speed
+  (/ (1+ (length raw))
+     (1+ (length clean))))

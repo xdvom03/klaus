@@ -2,7 +2,6 @@
 TBD: Properly cut off trailing section hashtags and other useless link fluff
 TBD: Properly cache link scores, profile
 Not using a robots.txt library because is has no license.
-BUG: Unsaved comment message
 TBD: Cache robots.txt (or a sensible format thereof)
 BUG: Can get stuck on: "Open too many files" or scoring "http://lightspeed.sourceforge.net/". Make it fail gracefully in these cases, releasing the queue AND acc with each major visited file (not just scored, but actually taken).
 
@@ -22,7 +21,8 @@ Crawl 40 from:
                                          (list-hashes (scores vocab
                                                               sibling-folders
                                                               (map-to-hash #'get-recursive-corpus sibling-folders)
-                                                              (map-to-hash #'get-word-count sibling-folders)))
+                                                              (map-to-hash #'get-word-count sibling-folders)
+                                                              nil))
                                          :key-fun (compose #'simplified-path #'car))))
     (gethash (simplified-path folder) simple-path-scores)))
 
@@ -77,16 +77,18 @@ Crawl 40 from:
       (let* ((best-url (pick-from-queue queue))
              (raw-links (filter-links (vetted-links best-url)))
              (links (mapcar #'render-wikipedia
-                            (remove-duplicates (remove-if-not #'(lambda (url) (princ ".") (and (url-allowed? *crawler-name* url)
-                                                                                               (not (or (equal url best-url)
-                                                                                                        (member url queue :test #'equal)
-                                                                                                        (member url acc :test #'equal)
-                                                                                                        (search "twitter." url)
-                                                                                                        (search "facebook." url)
-                                                                                                        (search "youtube." url)
-                                                                                                        (search "google." url)
-                                                                                                        (search "amazon." url)
-                                                                                                        (search "instagram." url)))))
+                            (remove-duplicates (remove-if-not #'(lambda (url) (princ ".") (let* ((raw (raw-text url))
+                                                                                                 (clean (clean-text raw))
+                                                                                                 (vocab (mapcar #'intern (remove-duplicates (split clean #\ ) :test #'equal))))
+                                                                                            (and (url-allowed? *crawler-name* url)
+                                                                                                 (not (or (equal url best-url)
+                                                                                                          (member url queue :test #'equal)
+                                                                                                          (member url acc :test #'equal)))
+                                                                                                 (print url)
+                                                                                                 (> (print (length vocab)) 50) ;; way too short websites aren't too classifiable
+                                                                                                 (> (print (comprehensible-text? raw clean)) 0.75) ;; avoiding lots of unknown characters
+                                                                                                 (> (print (comprehensible? vocab)) 0.4) ;; avoiding unknown languages
+                                                                                                 )))
                                                               (remove-if #'(lambda (link) (or (member (core-domain (find-domain link))
                                                                                                       visited-domains
                                                                                                       :test #'equal)

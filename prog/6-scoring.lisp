@@ -46,7 +46,7 @@
     (subseq ordered-words 0 (min evidence-length
                                  (length ordered-words)))))
 
-(defun compare-folders (vocab paths corpuses)
+(defun compare-folders (vocab paths corpuses &optional (want-evidence? t))
   ;; Returns a cons of two hash tables. A hash table of path -> score, and a hash table of path -> chosen words.
   ;; Already gets normalised corpuses
   ;; TBD: Make this two-folder. It's ridiculous.
@@ -69,12 +69,14 @@
              (score (apply #'+ (mapcar #'(lambda (word) (gethash word word-scores))
                                        chosen-words))))
         (setf (gethash path scores) score)
-        (setf (gethash path evidence-words) chosen-words)
-        (setf (gethash path evidence-details) (map-to-hash #'(lambda (word)
-                                                               (concat (apply #'concat (mapcar #'(lambda (path) (concat (my-round (occurrences word (gethash path corpuses))) " ")) paths))
-                                                                       "-> "
-                                                                       (my-round (exp (gethash word word-scores)))))
-                                                           vocab))))
+        (if want-evidence?
+            (progn
+              (setf (gethash path evidence-words) chosen-words)
+              (setf (gethash path evidence-details) (map-to-hash #'(lambda (word)
+                                                                     (concat (apply #'concat (mapcar #'(lambda (path) (concat " / " (my-round (occurrences word (gethash path corpuses))))) paths))
+                                                                             " -> "
+                                                                             (my-round (exp (gethash word word-scores)))))
+                                                                 vocab))))))
 
     (let ((prob-sum (apply #'ln+ (mapcar #'(lambda (path) (gethash path scores)) paths))))
       (dolist (path paths)
@@ -83,7 +85,7 @@
                  prob-sum))))
     (values scores evidence-words evidence-details)))
 
-(defun scores (vocab folders corpuses word-counts)
+(defun scores (vocab folders corpuses word-counts &optional (want-evidence? t))
   ;; excluded data is a cons of (url . folder) used for blind checks
   ;; In folders without subfolders, we don't want to do anything
   (if folders
@@ -101,13 +103,16 @@
                                                                                                  (map-to-hash #'(lambda (path)
                                                                                                                   (scale-corpus (gethash path corpuses)
                                                                                                                                 (/ min-size (gethash path word-counts))))
-                                                                                                              (list folder opponent))))
+                                                                                                              (list folder opponent))
+                                                                                                 want-evidence?))
                   (setf (gethash (cons folder opponent) pair-scores)
                         (gethash folder scores))
-                  (setf (gethash (cons folder opponent) pair-words)
-                        (gethash folder evidence-words))
-                  (setf (gethash (cons folder opponent) pair-word-details)
-                        (gethash folder evidence-details))))))
+                  (if want-evidence?
+                      (progn
+                        (setf (gethash (cons folder opponent) pair-words)
+                              (gethash folder evidence-words))
+                        (setf (gethash (cons folder opponent) pair-word-details)
+                              (gethash folder evidence-details))))))))
         ;; the actual scores and some data for the explainer
         (multiple-value-bind (scores probsum) (pagerank folders pair-scores)
           (values scores
