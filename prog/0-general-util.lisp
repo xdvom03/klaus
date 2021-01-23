@@ -163,6 +163,7 @@
     acc))
 
 (defun compose (&rest functions)
+  ;; result acts right first, as one would naturally write the functions
   (if (one-elem? functions)
       (car functions)
       (lambda (param)
@@ -180,6 +181,36 @@
             (push (reverse acc2) acc)
             (setf acc2 nil))))
     (append1 (reverse acc) (reverse acc2))))
+
+(defun split (text char)
+  "Returns a list of parts of the text denoted by the character. Removes the splitting character."
+  (let ((word-acc nil)
+        (text-acc nil))
+    (dotimes (i (length text))
+      (if (equal (char text i) char)
+          (progn
+            (push (reverse text-acc) word-acc)
+            (setf text-acc nil))
+          (push (char text i) text-acc)))
+    (mapcar #'(lambda (a) (convert-to-str a)) ; needed to turn character lists into words
+            (reverse (cons (reverse text-acc) word-acc)))))
+
+(defun join (fragments filler)
+  ;; not tail-recursive
+  (if (cdr fragments)
+      (join (cons (concat (first fragments) filler (second fragments)) (cddr fragments)) filler)
+      (car fragments)))
+
+(defun assoc-to-hashtable (list)
+  ;; Converts from the assoc list format to the hash table format
+  (map-to-hash #'cdr list :key-fun #'car))
+
+(defun hashtable-to-assoc (hashtable)
+  ;; Converts from the hash table format to the assoc list format
+  (let ((corpus nil))
+    (dolist (word (list-keys hashtable))
+      (push (cons word (gethash word hashtable)) corpus))
+    corpus))
 
 
 (defmacro letrec (bindings &body decls/forms)

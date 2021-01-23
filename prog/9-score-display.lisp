@@ -7,25 +7,25 @@
                                                words
                                                (mapcar #'(lambda (word) (gethash word word-details)) words)))))
 
-(defun pair-scores-explainer (r c master folders pair-scores pair-words pair-word-details) ; TBD: Fix names
-  ;; The scores FOR a given folder are in its rows. TBD: Make that clear from the window
+(defun pair-scores-explainer (r c master classes pair-scores pair-words pair-word-details) ; TBD: Fix names
+  ;; The scores FOR a given class are in its rows. TBD: Make that clear from the window
   (let* ((f (frame r c master)))
-    (dotimes (i (length folders))
-      (let ((folder (nth i folders)))
-        (button 0 (1+ i) f (folder-name folder) #'pass)
-        (button (1+ i) 0 f (folder-name folder) #'pass)
+    (dotimes (i (length classes))
+      (let ((class (nth i classes)))
+        (button 0 (1+ i) f (folder-name class) #'pass)
+        (button (1+ i) 0 f (folder-name class) #'pass)
         (button (1+ i)
-                (1+ (length folders))
+                (1+ (length classes))
                 f
                 (write-to-string (my-round (apply #'+ (mapcar #'(lambda (opponent)
-                                                                  (if (equal folder opponent)
+                                                                  (if (equal class opponent)
                                                                       0
-                                                                      (gethash (cons folder opponent) pair-scores)))
-                                                              folders))))
+                                                                      (gethash (cons class opponent) pair-scores)))
+                                                              classes))))
                 #'pass)
-        (dotimes (j (length folders))
-          (let* ((opponent (nth j folders))
-                 (pair (cons folder opponent))
+        (dotimes (j (length classes))
+          (let* ((opponent (nth j classes))
+                 (pair (cons class opponent))
                  (chosen-words (gethash pair pair-words))
                  (word-details (gethash pair pair-word-details))
                  (score (gethash pair pair-scores))
@@ -36,9 +36,9 @@
                                 ""
                                 (write-to-string (my-round score)))
                             #'(lambda () (words-explainer 100 100
-                                                          (window (concat (folder-name (simplified-path folder))
+                                                          (window (concat (folder-name class)
                                                                           " over "
-                                                                          (folder-name (simplified-path opponent))))
+                                                                          (folder-name opponent)))
                                                           chosen-words word-details *entries-per-page*)))))
             (if (not (integerp score)) ;; integer is an empty score
                 (ltk:configure b :background (color-code score)))))))
@@ -53,7 +53,7 @@
         ((> score (ln 0.93319)) "#4b0") ; 1.5 to 2
         ((> score (ln 0.84134)) "#5a0") ; 1 to 1.5 sigma
         ((> score (ln 0.69146)) "#690") ; 0.5 to 1
-        ((> score (ln 0.5)) "#780") ; 0 to 0.5 sigma
+        ((> score (ln 0.5)) "#780")     ; 0 to 0.5 sigma
         ((> score (ln 0.30854)) "#870") ; -0.5 to 0
         ((> score (ln 0.15866)) "#960") ; -1 to -0.5 sigma
         ((> score (ln 0.06681)) "#a50") ; -1.5 to -1
@@ -61,7 +61,7 @@
         ((> score (ln 0.00621)) "#c30") ; -2.5 to -2
         ((> score (ln 0.00135)) "#d20") ; -3 to -2.5 sigma
         ((> score (ln 0.00023)) "#e10") ; -3.5 to -3
-        (t "#f00") ; under -3.5 sigma
+        (t "#f00")                      ; under -3.5 sigma
         ))
 
 (defun run ()
@@ -97,10 +97,10 @@
                
                (database-window (r c master url)
                  (let* ((fr (frame r c master))
-                        (current-folder *classes-folder*)
+                        (current-class "/")
                         (widget-list nil)
                         
-                        (folder-frame (frame 0 0 fr))
+                        (class-frame (frame 0 0 fr))
                         (options-frame (frame 0 1 fr))
                         (comment-frame (frame 0 2 fr))
 
@@ -108,65 +108,66 @@
 
                         ;; variable stuff
                         (tex (text 0 0 comment-frame "" 10 20 "NotoSans 10"))
-                        (folder-label (label 0 0 options-frame ""))
+                        (class-label (label 0 0 options-frame ""))
                         parent-button)
                    (labels ((redraw (new-path)
-                              (setf current-folder new-path)
-                              (if (equal (simplified-path new-path) (simplified-path *classes-folder*))
+                              (setf current-class new-path)
+                              (if (equal new-path "/")
                                   (ltk:configure parent-button :state :disabled)
                                   (ltk:configure parent-button :state :normal))
-                              (setf (ltk:text tex) (read-comment current-folder))
+                              (setf (ltk:text tex) (read-comment current-class))
                               (dolist (i widget-list)
                                 (ltk:destroy i))
                               (setf widget-list nil)
-                              (setf (ltk:text folder-label) (concat "Current folder: " (simplified-path current-folder)))
-                              (let ((subfolders (subfolders current-folder))
-                                    (excluded-data (mapcar #'(lambda (folder) (cons current-url folder))
+                              (setf (ltk:text class-label) (concat "Current class: " current-class))
+                              (let ((subclasses (subclasses current-class))
+                                    (excluded-data (mapcar #'(lambda (class) (cons current-url class))
                                                            (link-occurrences current-url))))
                                 (multiple-value-bind (scores probsum pair-scores pair-words pair-word-details)
                                     (scores vocab
-                                            subfolders
+                                            subclasses
                                             (if *blind?*
-                                                (map-to-hash #'(lambda (folder)
-                                                                 (reduce #'add-hashtable-corpuses
+                                                (map-to-hash #'(lambda (class)
+                                                                 (reduce #'add-corpuses
                                                                          (append1 (remove-if #'null
                                                                                              (mapcar #'(lambda (excludee)
-                                                                                                         (if (equal (cdr excludee) folder)
+                                                                                                         (if (equal (cdr excludee) class)
                                                                                                              (scale-corpus (downloaded-link-corpus (car excludee)) -1)))
                                                                                                      excluded-data))
-                                                                                  (get-recursive-corpus folder))))
-                                                             subfolders)
-                                                (map-to-hash #'get-recursive-corpus subfolders))
+                                                                                  (get-recursive-corpus class))))
+                                                             subclasses)
+                                                (map-to-hash #'get-recursive-corpus subclasses))
                                             (if *blind?*
-                                                (map-to-hash #'(lambda (folder)
+                                                (map-to-hash #'(lambda (class)
                                                                  (apply #'+
                                                                         (append1 (remove-if #'null
                                                                                             (mapcar #'(lambda (excludee)
-                                                                                                        (if (equal (cdr excludee) folder)
+                                                                                                        (if (equal (cdr excludee) class)
                                                                                                             (- (length (list-keys (downloaded-link-corpus (car excludee)))))))
                                                                                                     excluded-data))
-                                                                                 (get-word-count folder))))
-                                                             subfolders)
-                                                (map-to-hash #'get-word-count subfolders)))
-                                  (if (and (> (length subfolders) 1) *explain?*)
+                                                                                 (get-word-count class))))
+                                                             subclasses)
+                                                (map-to-hash #'get-word-count subclasses)))
+                                  (declare (ignore probsum))
+                                  (if (and (> (length subclasses) 1) *explain?*)
                                       ;; TBD: Instead of scores, provide more details!
-                                      (pair-scores-explainer 0 0 (window "HUJAJA") subfolders pair-scores pair-words pair-word-details))
+                                      (pair-scores-explainer 0 0 (window "HUJAJA") subclasses pair-scores pair-words pair-word-details))
                                   (let ((counter 1)
-                                        (sorted-subfolders (sort (copy-seq subfolders) #'> :key #'(lambda (folder) (fallback (gethash folder scores) (/ (length subfolders)))))))
-                                    (dolist (i sorted-subfolders)
+                                        (sorted-subclasses (sort (copy-seq subclasses) #'> :key #'(lambda (class) (fallback (gethash class scores) (/ (length subclasses)))))))
+                                    (dolist (i sorted-subclasses)
                                       (incf counter)
                                       (push (button counter
                                                     0
-                                                    folder-frame
-                                                    (concat (file-name i t) " score: " (my-round (fallback (gethash i scores) (/ (length subfolders)))))
+                                                    class-frame
+                                                    (concat (folder-name i) " score: " (my-round (fallback (gethash i scores) (/ (length subclasses)))))
                                                     #'(lambda ()
                                                         (redraw i)))
                                             widget-list)))))))
-                     (label 0 0 folder-frame "FOLDERS")                     
+                     (label 0 0 class-frame "CLASSES")                     
                      (label 1 0 options-frame (concat "Current URL: " url))
                      
-                     (setf parent-button (button 1 0 folder-frame ".." #'(lambda () (redraw (parent-folder current-folder)))))
-                     (redraw current-folder)
+                     (setf parent-button (button 1 0 class-frame ".." #'(lambda () (redraw (parent-class current-class)))))
+                     (redraw current-class)
                      fr)))
                
                (back-to-main ()

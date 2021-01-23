@@ -1,9 +1,5 @@
-(defun empty-widget (r c master)
-  ;; Used to re-shrink an area after destroying a widget
-  (let ((w (widget r c 'ltk:canvas master)))
-    (ltk:configure w :width 1)
-    (ltk:configure w :height 1)
-    w))
+
+
 
 (defun warning-box (text title)
   (ltk:message-box text title "ok" "warning"))
@@ -14,7 +10,6 @@
 (defun widget (r c type master)
   (let ((w (make-instance type :master master)))
     (ltk:grid w r c :sticky "nesw")
-    ;; TEMP: Disabled because it messes up the debugger (ltk:after 0 #'(lambda () (ltk:mainloop))) ;; TBD: This is ugly. How exactly does LTK deal with showing things?
     w))
 
 (defun button (r c master txt command)

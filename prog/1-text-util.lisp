@@ -1,16 +1,3 @@
-(defun split (text char)
-  "Returns a list of parts of the text denoted by the character. Removes the splitting character."
-  (let ((word-acc nil)
-        (text-acc nil))
-    (dotimes (i (length text))
-      (if (equal (char text i) char)
-          (progn
-            (push (reverse text-acc) word-acc)
-            (setf text-acc nil))
-          (push (char text i) text-acc)))
-    (mapcar #'(lambda (a) (convert-to-str a)) ; needed to turn character lists into words
-            (reverse (cons (reverse text-acc) word-acc)))))
-
 (defun find-enclosed-text (text delim1 delim2 &optional (space nil))
   "Lists things between delim1 and delim2 found in text. Does not include the delimiters. Only returns the first word according to an optional parameter. If it's nil, it returns the whole delimited part. Ignores case." 
   (let ((acc nil)

@@ -15,23 +15,23 @@ Crawl 40 from:
 "https://www.jscc.edu/academics/programs/writing-center/writing-resources/five-paragraph-essay.html"
 |#
 
-(defun prob (vocab folder)
-  (let* ((sibling-folders (subfolders (parent-folder folder)))
-         (simple-path-scores (map-to-hash #'cdr
-                                         (list-hashes (scores vocab
-                                                              sibling-folders
-                                                              (map-to-hash #'get-recursive-corpus sibling-folders)
-                                                              (map-to-hash #'get-word-count sibling-folders)
-                                                              nil))
-                                         :key-fun (compose #'simplified-path #'car))))
-    (gethash (simplified-path folder) simple-path-scores)))
+(defun prob (vocab class)
+  (let* ((sibling-classes (subclasses (parent-class class)))
+         (path-scores (map-to-hash #'cdr
+                                   (list-hashes (scores vocab
+                                                        sibling-classes
+                                                        (map-to-hash #'get-recursive-corpus sibling-classes)
+                                                        (map-to-hash #'get-word-count sibling-classes)
+                                                        nil))
+                                   :key-fun #'car)))
+    (gethash class path-scores)))
 
-(defun link-score (url target-folder)
-  (let ((path *classes-folder*)
+(defun link-score (url target-class)
+  (let ((path "/")
         (vocab (remove-duplicates (tokens (url-text url)) :test #'equal))
         (acc 0)
         (prob 1))
-    (dolist (frag (split (subseq (simplified-path target-folder) 1) #\/))
+    (dolist (frag (split (subseq target-class 1) #\/))
       (if (not (equal frag ""))
           (progn
             (setf path (concat path frag "/"))
@@ -55,8 +55,7 @@ Crawl 40 from:
                      (reverse (split (last1 (split domain #\/)) #\.)))))
 
 (defun append-to-file (path txt)
-  (with-open-file (stream path
-                          :direction :output :if-exists :append :if-does-not-exist :create)
+  (with-open-file (stream path :direction :output :if-exists :append :if-does-not-exist :create)
     (print txt stream)))
 
 (defun wanderbot (seed queue-size page-count target)
@@ -84,10 +83,9 @@ Crawl 40 from:
                                                                                                  (not (or (equal url best-url)
                                                                                                           (member url queue :test #'equal)
                                                                                                           (member url acc :test #'equal)))
-                                                                                                 (print url)
-                                                                                                 (> (print (length vocab)) 50) ;; way too short websites aren't too classifiable
-                                                                                                 (> (print (comprehensible-text? raw clean)) 0.75) ;; avoiding lots of unknown characters
-                                                                                                 (> (print (comprehensible? vocab)) 0.4) ;; avoiding unknown languages
+                                                                                                 (> (length vocab) 50) ;; way too short websites aren't too classifiable
+                                                                                                 (> (comprehensible-text? raw clean) 0.75) ;; avoiding lots of unknown characters
+                                                                                                 (> (comprehensible? vocab) 0.4) ;; avoiding unknown languages
                                                                                                  )))
                                                               (remove-if #'(lambda (link) (or (member (core-domain (find-domain link))
                                                                                                       visited-domains
@@ -172,3 +170,105 @@ Crawl 40 from:
                 (print current-url stream))
               (push (print (random-pick links)) hst)))))
     (reverse hst)))
+
+;; TBD: Place this into correct util
+(defun best-key (hashtable pred)
+  (best-element (list-keys hashtable) pred #'(lambda (el) (gethash el hashtable))))
+
+(defun best-element (lst pred key)
+  (if lst
+      (let* ((acc (car lst))
+             (max (funcall key acc)))
+        (dolist (i lst)
+          (if (funcall pred (funcall key i) max)
+              (progn
+                (setf acc i)
+                (setf max (funcall key acc)))))
+        (values acc max))))
+
+
+(defun place (url &optional (class "/"))
+  (if (subclasses class)
+      (place url (let* ((subclasses (subclasses class))
+                        (simple-path-scores (map-to-hash #'cdr
+                                                         (list-hashes (scores (remove-duplicates (tokens (url-text url)) :test #'equal)
+                                                                              subclasses
+                                                                              (map-to-hash #'get-recursive-corpus subclasses)
+                                                                              (map-to-hash #'get-word-count subclasses)
+                                                                              nil))
+                                                         :key-fun #'car)))
+                   (best-key simple-path-scores #'>)))
+      class))
+
+(defun hop-links (current-url queue acc visited-domains intradomain-cap link-cap)
+  (let ((links (shuffle (remove-duplicates (remove-if (if (zerop intradomain-cap)
+                                                          #'(lambda (link) (princ ",")
+                                                              (or (member (core-domain (find-domain link))
+                                                                          visited-domains
+                                                                          :test #'equal)
+                                                                  (equal (core-domain (find-domain link))
+                                                                         (core-domain (find-domain current-url)))))
+                                                          #'(lambda (link) (princ ",")
+                                                              (or (member link acc :test #'equal)
+                                                                  (member link queue :test #'equal)
+                                                                  (not (equal (core-domain (find-domain link))
+                                                                              (core-domain (find-domain current-url)))))))
+                                                      (filter-links (vetted-links current-url)))
+                                           :test #'equal))))
+    (print (length links))
+    (do* ((i 0 (1+ i))
+          (url (nth 0 links) (nth i links))
+          (result nil (if (progn (princ ":")
+                                 (let* ((raw (raw-text url))
+                                        (clean (clean-text raw))
+                                        (vocab (mapcar #'intern (remove-duplicates (split clean #\ ) :test #'equal))))
+                                   (and (url-allowed? *crawler-name* url)
+                                        (not (or (equal url current-url)
+                                                 (member url queue :test #'equal)
+                                                 (member url acc :test #'equal)))
+                                        (> (length vocab) 50) ;; way too short websites aren't too classifiable
+                                        (> (comprehensible-text? raw clean) 0.75) ;; avoiding lots of unknown characters
+                                        (> (comprehensible? vocab) 0.4) ;; avoiding unknown languages
+                                        )))
+                          (append1 result (nth i links))
+                          result)))
+         ((or (>= (length result) link-cap)
+              (>= (1+ i) (length links)))
+          result))))
+
+(defun classbot (seed queue-size page-count)
+  (setf *random-state* (make-random-state t))
+  (let ((queue (list (cons seed 4)))
+        (acc nil)
+        (visited-domains nil))
+    (dotimes (i page-count)
+      (print queue)
+      (let* ((choice (nth (random (length queue)) queue))
+             (chosen-url (car choice))
+             (intradomain-cap (cdr choice))
+             (links (shuffle (hop-links chosen-url (mapcar #'car queue) acc visited-domains intradomain-cap (1+ (- queue-size (length queue)))))))
+        (push chosen-url acc)
+        (push (core-domain (find-domain chosen-url)) visited-domains)
+        (setf queue (remove-if #'(lambda (elem) (equal (car elem) chosen-url)) queue))
+        (print "!")
+        (let* ((folder (concat "../DATA/discovered" (place chosen-url)))
+               (path (concat folder "links")))
+          
+          (ensure-directories-exist path)
+          (overwrite-direct-file (concat folder "comment") "auto-generated class")
+          (redownload-file chosen-url)
+          (overwrite-direct-file path (append1 (fallback (ignore-errors (read-from-file path)) nil) chosen-url)))
+        (dolist (link links)
+          (princ ".")
+          (if (and (< (length queue) queue-size)
+                   #|(not (some #'(lambda (url)
+                                  (equal (core-domain (find-domain url))
+                                         (core-domain (find-domain link))))
+                              queue))|#
+                   (not (equal (url-text link)
+                               "nothingfound")))
+              (push (cons link (if (< intradomain-cap 1)
+                                   4
+                                   (1- intradomain-cap)))
+                    queue)))))
+    (reverse acc)))

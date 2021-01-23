@@ -1,6 +1,6 @@
 (defun pagerank (options scores-table)
   ;; Gets logarithmic formulation
-  ;; Pageranking one or zero folders results in division 0/0
+  ;; Pageranking one or zero classes results in division 0/0
   (labels ((option-raw-score (option)
              (if (< (length options) 2)
                  1
@@ -19,14 +19,14 @@
               ;; For testing purposes
               probsum))))
 
-(defun smooth-ratio (target total subfolder-count smoothing-factor)
+(defun smooth-ratio (target total subclass-count smoothing-factor)
   (- (ln (+ smoothing-factor target))
-     (ln (+ (* smoothing-factor subfolder-count) total))))
+     (ln (+ (* smoothing-factor subclass-count) total))))
 
-(defun word-probability (word target total subfolder-count)
+(defun word-probability (word target total subclass-count)
   (smooth-ratio (occurrences word target)
                 (occurrences word total)
-                subfolder-count
+                subclass-count
                 *smoothing-factor*))
 
 ;;; SCORE MATH
@@ -46,11 +46,11 @@
     (subseq ordered-words 0 (min evidence-length
                                  (length ordered-words)))))
 
-(defun compare-folders (vocab paths corpuses &optional (want-evidence? t))
+(defun compare-classes (vocab paths corpuses &optional (want-evidence? t))
   ;; Returns a cons of two hash tables. A hash table of path -> score, and a hash table of path -> chosen words.
   ;; Already gets normalised corpuses
-  ;; TBD: Make this two-folder. It's ridiculous.
-  (let* ((folder-count (length (list-keys corpuses)))
+  ;; TBD: Make this two-class. It's ridiculous.
+  (let* ((class-count (length (list-keys corpuses)))
          (scores (make-hash-table :test #'equal))
          (evidence-words (make-hash-table :test #'equal))
          (evidence-details (make-hash-table :test #'equal)))
@@ -62,7 +62,7 @@
                                            (smooth-ratio (occurrences word corpus)
                                                          (apply #'+ (mapcar #'(lambda (path) (occurrences word (gethash path corpuses)))
                                                                             paths))
-                                                         folder-count
+                                                         class-count
                                                          *smoothing-factor*))
                                        vocab))
              (chosen-words (chosen-words vocab word-scores))
@@ -85,36 +85,36 @@
                  prob-sum))))
     (values scores evidence-words evidence-details)))
 
-(defun scores (vocab folders corpuses word-counts &optional (want-evidence? t))
-  ;; excluded data is a cons of (url . folder) used for blind checks
-  ;; In folders without subfolders, we don't want to do anything
-  (if folders
+(defun scores (vocab classes corpuses word-counts &optional (want-evidence? t))
+  ;; excluded data is a cons of (url . class) used for blind checks
+  ;; In classes without subclasses, we don't want to do anything
+  (if classes
       (let* ((pair-scores (make-hash-table :test #'equal))
              (pair-words (make-hash-table :test #'equal))
              (pair-word-details (make-hash-table :test #'equal)))
-        (dolist (folder folders)
-          (dolist (opponent folders)
-            (if (equal folder opponent)
-                (setf (gethash (cons folder opponent) pair-scores) 0) ; chosen words can remain empty
-                (multiple-value-bind (scores evidence-words evidence-details) (let ((min-size (min (gethash folder word-counts)
+        (dolist (class classes)
+          (dolist (opponent classes)
+            (if (equal class opponent)
+                (setf (gethash (cons class opponent) pair-scores) 0) ; chosen words can remain empty
+                (multiple-value-bind (scores evidence-words evidence-details) (let ((min-size (min (gethash class word-counts)
                                                                                                    (gethash opponent word-counts))))
-                                                                                (compare-folders vocab
-                                                                                                 (list folder opponent)
+                                                                                (compare-classes vocab
+                                                                                                 (list class opponent)
                                                                                                  (map-to-hash #'(lambda (path)
                                                                                                                   (scale-corpus (gethash path corpuses)
                                                                                                                                 (/ min-size (gethash path word-counts))))
-                                                                                                              (list folder opponent))
+                                                                                                              (list class opponent))
                                                                                                  want-evidence?))
-                  (setf (gethash (cons folder opponent) pair-scores)
-                        (gethash folder scores))
+                  (setf (gethash (cons class opponent) pair-scores)
+                        (gethash class scores))
                   (if want-evidence?
                       (progn
-                        (setf (gethash (cons folder opponent) pair-words)
-                              (gethash folder evidence-words))
-                        (setf (gethash (cons folder opponent) pair-word-details)
-                              (gethash folder evidence-details))))))))
+                        (setf (gethash (cons class opponent) pair-words)
+                              (gethash class evidence-words))
+                        (setf (gethash (cons class opponent) pair-word-details)
+                              (gethash class evidence-details))))))))
         ;; the actual scores and some data for the explainer
-        (multiple-value-bind (scores probsum) (pagerank folders pair-scores)
+        (multiple-value-bind (scores probsum) (pagerank classes pair-scores)
           (values scores
                   probsum
                   pair-scores
