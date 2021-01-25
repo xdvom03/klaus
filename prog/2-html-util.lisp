@@ -75,12 +75,12 @@
            (subseq url i)))))
 
 (defun remove-tags (text)
-  (remove-enclosed text "<" ">"))
+  (remove-enclosed text "<" ">" #\ ))
 
 (defun remove-fluff (text)
   (remove-enclosed (remove-enclosed text
                                     "<style" "</style>")
-                   "<script" "</script>"))
+                   "<script" "</script>" #\ ))
 
 (defun raw-text (url)
   (remove-multiple-spaces (remove-punctuation (remove-diacritics (decode-xml-entities (remove-tags (remove-fluff (string-downcase (coerce (safe-fetch-html url) 'simple-string)))))))))
