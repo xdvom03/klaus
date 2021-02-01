@@ -17,7 +17,7 @@
     ;; an image link, or anything that isn't a string, is considered a 404
     (if (or (null unsafe) (not (stringp unsafe)))
         "nothingfound"
-        unsafe)))
+        (coerce unsafe 'simple-string))))
 
 (defun url-links (url)
   "Returns a list of all links found in url"
@@ -79,26 +79,21 @@
 
 (defun remove-fluff (text)
   (remove-enclosed (remove-enclosed text
-                                    "<style" "</style>")
+                                    "<style" "</style>" #\ )
                    "<script" "</script>" #\ ))
 
 (defun raw-text (url)
-  (remove-multiple-spaces (remove-punctuation (remove-diacritics (decode-xml-entities (remove-tags (remove-fluff (string-downcase (coerce (safe-fetch-html url) 'simple-string)))))))))
+  (extract-raw-text (safe-fetch-html url)))
 
 (defun clean-text (txt)
   (remove-multiple-spaces (make-safe txt)))
 
 (defun url-text (url)
   ;; Fetches text of a url
-  ;; Placeholder for now until the MAJOR REFACTORING
-  ;; Duplicate-ish of extract-text
-  (let* ((raw (safe-fetch-html url))
-         ;; TEMP: For some reason, not simple-string
-         (safe (string-downcase (decode-xml-entities (coerce raw 'simple-string))))
-         (content (remove-multiple-spaces (remove-punctuation (remove-diacritics (make-safe (remove-tags (remove-fluff safe))))))))
-    content))
+  (extract-text (safe-fetch-html url)))
 
 (defun extract-text (html)
-  (let* ((safe (make-safe (remove-diacritics (string-downcase html))))
-         (content (remove-punctuation (remove-tags (remove-enclosed (remove-enclosed safe "<style" "</style>") "<script" "</script>")))))
-    content))
+  (remove-multiple-spaces (remove-punctuation (make-safe (remove-diacritics (decode-xml-entities (remove-tags (remove-fluff (string-downcase html)))))))))
+
+(defun extract-raw-text (html)
+  (remove-multiple-spaces (remove-punctuation (remove-diacritics (decode-xml-entities (remove-tags (remove-fluff (string-downcase html))))))))

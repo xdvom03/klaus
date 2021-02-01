@@ -32,7 +32,6 @@
          (equal (subseq text start (+ start key-len)) key))))
 
 (defun remove-enclosed (text delim1 delim2 &optional swap-for)
-  ;; TBD: Verify
   "Removes all text enclosed between delim1 and delim2, including the tags. May replace with a character instead. Returns remaining text. Nondestructive."
   (let ((acc nil)
         (enclosed-p nil))
@@ -44,8 +43,8 @@
             ((fast-substr-check text delim2 i)
              (setf enclosed-p nil)
              (setf i (+ i (length delim2) -1)))
-            (t (if (not enclosed-p)
-                   (push (char text i) acc)))))
+            ((not enclosed-p)
+             (push (char text i) acc))))
     (convert-to-str (reverse acc))))
 
 (defun filter (text allow-rule &optional censor-by)
