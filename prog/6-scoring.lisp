@@ -93,26 +93,30 @@
              (pair-words (make-hash-table :test #'equal))
              (pair-word-details (make-hash-table :test #'equal)))
         (dolist (class classes)
-          (dolist (opponent classes)
-            (if (equal class opponent)
-                (setf (gethash (cons class opponent) pair-scores) 0) ; chosen words can remain empty
-                (multiple-value-bind (scores evidence-words evidence-details) (let ((min-size (min (gethash class word-counts)
-                                                                                                   (gethash opponent word-counts))))
-                                                                                (compare-classes vocab
-                                                                                                 (list class opponent)
-                                                                                                 (map-to-hash #'(lambda (path)
-                                                                                                                  (scale-corpus (gethash path corpuses)
-                                                                                                                                (/ min-size (gethash path word-counts))))
-                                                                                                              (list class opponent))
-                                                                                                 want-evidence?))
-                  (setf (gethash (cons class opponent) pair-scores)
-                        (gethash class scores))
-                  (if want-evidence?
-                      (progn
-                        (setf (gethash (cons class opponent) pair-words)
-                              (gethash class evidence-words))
-                        (setf (gethash (cons class opponent) pair-word-details)
-                              (gethash class evidence-details))))))))
+          (dolist (opponent (cdr (member class classes :test #'equal))) ; only check classes coming after it
+            (multiple-value-bind (scores evidence-words evidence-details) (let ((min-size (min (gethash class word-counts)
+                                                                                               (gethash opponent word-counts))))
+                                                                            (compare-classes vocab
+                                                                                             (list class opponent)
+                                                                                             (map-to-hash #'(lambda (path)
+                                                                                                              (scale-corpus (gethash path corpuses)
+                                                                                                                            (/ min-size (gethash path word-counts))))
+                                                                                                          (list class opponent))
+                                                                                             want-evidence?))
+              (setf (gethash (cons class opponent) pair-scores)
+                    (gethash class scores))
+              (setf (gethash (cons opponent class) pair-scores)
+                    (gethash opponent scores))
+              (if want-evidence?
+                  (progn
+                    (setf (gethash (cons class opponent) pair-words)
+                          (gethash class evidence-words))
+                    (setf (gethash (cons class opponent) pair-word-details)
+                          (gethash class evidence-details))
+                    (setf (gethash (cons opponent class) pair-words)
+                          (gethash opponent evidence-words))
+                    (setf (gethash (cons opponent class) pair-word-details)
+                          (gethash opponent evidence-details)))))))
         ;; the actual scores and some data for the explainer
         (multiple-value-bind (scores probsum) (pagerank classes pair-scores)
           (values scores
