@@ -35,13 +35,14 @@
                             (if (= i j)
                                 ""
                                 (write-to-string (my-round score)))
-                            #'(lambda () (words-explainer 100 100
-                                                          (window (concat (folder-name class)
-                                                                          " over "
-                                                                          (folder-name opponent)))
-                                                          chosen-words word-details *entries-per-page*)))))
-            (if (not (integerp score)) ;; integer is an empty score
-                (ltk:configure b :background (color-code score)))))))
+                            (if (= i j)
+                                #'pass
+                                #'(lambda () (words-explainer 100 100
+                                                              (window (concat (folder-name class)
+                                                                              " over "
+                                                                              (folder-name opponent)))
+                                                              chosen-words word-details *entries-per-page*))))))
+            (if score (ltk:configure b :background (color-code score)))))))
     f))
 
 (defun color-code (score)
@@ -77,23 +78,24 @@
                  (setf displayed-frame new-frame))
                
                (main-menu (r c master)
-                 (letrec ((W (frame r c master))
-                          (e1 (entry 0 0 W))
-                          (ch (checkbox 0 2 W "Explain classing?" #'(lambda (a)
-                                                                      a
-                                                                      (setf *explain?* (ltk:value ch))
-                                                                      (setf (ltk:value ch) *explain?*))))
-                          (ch2 (checkbox 0 3 W "Blind?" #'(lambda (a)
-                                                            a
-                                                            (setf *blind?* (ltk:value ch2))
-                                                            (setf (ltk:value ch2) *blind?*)))))
+                 (letrec ((fr (frame r c master))
+                          (e1 (entry 0 0 fr))
+                          (ch (checkbox 0 2 fr "Explain classing?" #'(lambda (a)
+                                                                       a
+                                                                       (setf *explain?* (ltk:value ch))
+                                                                       (setf (ltk:value ch) *explain?*))))
+                          (ch2 (checkbox 0 3 fr "Blind?" #'(lambda (a)
+                                                             a
+                                                             (setf *blind?* (ltk:value ch2))
+                                                             (setf (ltk:value ch2) *blind?*)))))
                    (setf (ltk:text e1) current-url)
-                   (button 0 1 W "Open database" #'(lambda ()
-                                                     (setf current-url (ltk:text e1))
-                                                     (change-screen (database-window 0 1 master current-url))))
+                   (button 0 1 fr "Open database" #'(lambda ()
+                                                      (setf current-url (ltk:text e1))
+                                                      (ltk:wm-title W current-url)
+                                                      (change-screen (database-window 0 1 master current-url))))
                    (setf (ltk:value ch) *explain?*)
                    (setf (ltk:value ch2) *blind?*)
-                   W))
+                   fr))
                
                (database-window (r c master url)
                  (let* ((fr (frame r c master))
@@ -101,14 +103,13 @@
                         (widget-list nil)
                         
                         (class-frame (frame 0 0 fr))
-                        (options-frame (frame 0 1 fr))
                         (comment-frame (frame 0 2 fr))
 
                         (vocab (remove-duplicates (tokens (url-text url)) :test #'equal))
 
                         ;; variable stuff
                         (tex (text 0 0 comment-frame "" 10 20 "NotoSans 10"))
-                        (class-label (label 0 0 options-frame ""))
+                        (class-label (label 0 0 class-frame ""))
                         parent-button)
                    (labels ((redraw (new-path)
                               (setf current-class new-path)
@@ -119,7 +120,7 @@
                               (dolist (i widget-list)
                                 (ltk:destroy i))
                               (setf widget-list nil)
-                              (setf (ltk:text class-label) (concat "Current class: " current-class))
+                              (setf (ltk:text class-label) current-class)
                               (let ((subclasses (subclasses current-class))
                                     (excluded-data (mapcar #'(lambda (class) (cons current-url class))
                                                            (link-occurrences current-url))))
@@ -163,8 +164,6 @@
                                                     #'(lambda ()
                                                         (redraw i)))
                                             widget-list)))))))
-                     (label 0 0 class-frame "CLASSES")                     
-                     (label 1 0 options-frame (concat "Current URL: " url))
                      
                      (setf parent-button (button 1 0 class-frame ".." #'(lambda () (redraw (parent-class current-class)))))
                      (redraw current-class)

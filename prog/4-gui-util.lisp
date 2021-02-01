@@ -1,5 +1,9 @@
-
-
+(defun empty-widget (r c master)
+  ;; Used to re-shrink an area after destroying a widget
+  (let ((w (widget r c 'ltk:canvas master)))
+    (ltk:configure w :width 1)
+    (ltk:configure w :height 1)
+    w))
 
 (defun warning-box (text title)
   (ltk:message-box text title "ok" "warning"))
