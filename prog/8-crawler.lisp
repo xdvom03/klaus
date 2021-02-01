@@ -228,13 +228,17 @@ Crawl 40 from:
                                                  (member url acc :test #'equal)))
                                         (> (length vocab) 50) ;; way too short websites aren't too classifiable
                                         (> (comprehensible-text? raw clean) 0.75) ;; avoiding lots of unknown characters
-                                        (> (comprehensible? vocab) 0.4) ;; avoiding unknown languages
+                                        (> (comprehensible? vocab) 0.5) ;; avoiding unknown languages
                                         )))
                           (append1 result (nth i links))
                           result)))
          ((or (>= (length result) link-cap)
               (>= (1+ i) (length links)))
           result))))
+
+
+
+
 
 (defun classbot (seed queue-size page-count)
   (setf *random-state* (make-random-state t))
@@ -258,17 +262,73 @@ Crawl 40 from:
           (overwrite-direct-file (concat folder "comment") "auto-generated class")
           (redownload-file chosen-url)
           (overwrite-direct-file path (append1 (fallback (ignore-errors (read-from-file path)) nil) chosen-url)))
-        (dolist (link links)
-          (princ ".")
-          (if (and (< (length queue) queue-size)
-                   #|(not (some #'(lambda (url)
-                                  (equal (core-domain (find-domain url))
-                                         (core-domain (find-domain link))))
-                              queue))|#
-                   (not (equal (url-text link)
-                               "nothingfound")))
-              (push (cons link (if (< intradomain-cap 1)
-                                   4
-                                   (1- intradomain-cap)))
-                    queue)))))
+        (let ((new-links nil))
+          (dolist (link links)
+            (princ ".")
+            (if (and (< (length queue) queue-size)
+                     #|(not (some #'(lambda (url)
+                     (equal (core-domain (find-domain url)) ; ;
+                     (core-domain (find-domain link)))) ; ;
+                     queue))|#
+                     (not (equal (url-text link)
+                                 "nothingfound")))
+                (progn
+                  (push link new-links)
+                  (push (cons link (if (< intradomain-cap 1)
+                                       4
+                                       (1- intradomain-cap)))
+                        queue))))
+          (append-to-file "../DATA/crawlers/classbot-path" (cons chosen-url new-links)))))
     (reverse acc)))
+
+(defun display-path (start)
+  ;; wow that is ugly & slow
+  (let ((hst (read-from-file "../DATA/crawlers/classbot-path"))
+        (queue (list "https://waitbutwhy.com"))
+        (reconstructed nil))
+    (dolist (elem hst)
+      (push queue reconstructed)
+      (setf queue (swap queue (car elem) (cdr elem))))
+    (ltk:with-ltk ()
+      (ltk:withdraw ltk:*tk*)
+      (let ((W (window ".")))
+        (ltk:on-close W #'(lambda () (ltk:destroy ltk:*tk*)))
+        (let ((aliases (make-hash-table :test #'equal))
+              (counter 0))
+          (dotimes (i (- (length reconstructed) start))
+            (dotimes (j (length (nth i (reverse reconstructed))))
+              (let* ((x (+ start i))
+                     (y j)
+                     (link (nth y (nth x (reverse reconstructed))))
+                     (b (if link
+                            (button x y W
+                                    (write-to-string (fallback (gethash link aliases)
+                                                               (setf (gethash link aliases) (incf counter))))
+                                    #'(lambda () (info-box link "baf"))))))
+                (if link
+                    (ltk:configure b :foreground "#ffffff"))
+                (if link
+                    (ltk:configure b :background ; "#000000"
+                                   (if (member (nth y (nth x (reverse reconstructed)))
+                                               (nth (min (length reconstructed) (1+ x)) (reverse reconstructed))
+                                               :test #'equal)
+                                       (if (member (nth y (nth x (reverse reconstructed)))
+                                                   (nth (max 0 (1- x)) (reverse reconstructed))
+                                                   :test #'equal)
+                                           "#000000"
+                                           "#008800")
+                                       (if (member (nth y (nth x (reverse reconstructed)))
+                                                   (nth (max 0 (1- x)) (reverse reconstructed))
+                                                   :test #'equal)
+                                           "#880088"
+                                           "#444444"))))))))))))
+
+(defun swap (lst elem new-seq)
+  (let ((acc nil))
+    (dotimes (i (length lst))
+      (if (equal (nth i lst) elem)
+          (setf acc (append (subseq lst 0 i)
+                            new-seq
+                            (subseq lst (min (length lst)
+                                             (1+ i)))))))
+    acc))
