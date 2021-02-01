@@ -219,7 +219,7 @@ Naming convention: 'class' is simplified path, 'folder' is actual folder.
                                                                (let ((new-class (concat current-class txt "/")))
                                                                  (ensure-directories-exist (full-path new-class))
                                                                  (overwrite-file new-class "links" nil)
-                                                                 (overwrite-file new-class "comments" "")
+                                                                 (overwrite-file new-class "comment" "")
                                                                  (rebuild-corpus new-class)
                                                                  (setf (ltk:text e3) "")
                                                                  (change-current-class (concat current-class txt "/")))))))
