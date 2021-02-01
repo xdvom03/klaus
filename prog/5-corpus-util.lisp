@@ -37,7 +37,7 @@
 
 ;;; CORPUS UTIL
 ;;;----------------------------------------------------------------------------------------------
-;;; FOLDER NAVIGATION 
+;;; REBUILDING CORPUS 
 
 (defun rebuild-corpus (&optional (class "/"))
   ;; Writes the cons list format of the corpuses into the respective files.
