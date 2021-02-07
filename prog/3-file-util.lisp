@@ -11,9 +11,6 @@
   (with-open-file (stream path :direction :input :if-does-not-exist :error)
     (read stream)))
 
-(defun file-content (file-name)
-  (read-from-file (concat *files-folder* (file-alias file-name))))
-
 (defun link-occurrences (link &optional (class "/"))
   ;; returns all folders where the link is present
   (remove-if #'null
@@ -84,9 +81,11 @@
   (file-alias file-name))
 
 (defun add-alias (name alias)
-  (let ((aliases (aliases)))
+  (let ((aliases (aliases))
+        (html (safe-fetch-html name)))
     (overwrite-direct-file *aliases-file* (append1 aliases (cons name alias)))
-    (overwrite-direct-file (concat *files-folder* alias) (safe-fetch-html name))))
+    (overwrite-direct-file (concat *html-folder* alias) html)
+    (overwrite-direct-file (concat *text-folder* alias) (extract-text html))))
 
 (defun file-alias (file-name)
   (gethash file-name (assoc-to-hashtable (aliases))))
@@ -96,3 +95,24 @@
 
 (defun used-aliases ()
   (mapcar #'cdr (aliases)))
+
+(defun read-core-text (url)
+  (read-from-file (concat *core-text-folder* (file-alias url))))
+
+(defun read-text (url)
+  (read-from-file (concat *text-folder* (file-alias url))))
+
+(defun read-html (url)
+  (read-from-file (concat *html-folder* (file-alias url))))
+
+;;; DOWNLOADING FILES
+;;;----------------------------------------------------------------------------------------------
+;;;
+
+(defun apply-to-all-classes (fun)
+  ;; not used in code yet, but useful to reset weights or stuff
+  (labels ((res (class)
+             (funcall fun class)
+             (dolist (subclass (subclasses class))
+               (res subclass))))
+    (res "/")))

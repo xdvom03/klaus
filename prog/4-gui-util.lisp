@@ -39,7 +39,7 @@
     (setf (ltk:text tex) txt)
     tex))
 
-(defun read-text (text-widget)
+(defun read-text-widget (text-widget)
   ;; For whatever reason, reading from a text always adds a newline
   (let ((str (ltk:text text-widget)))
     (subseq str 0 (1- (length str)))))

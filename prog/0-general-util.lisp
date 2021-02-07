@@ -4,12 +4,26 @@
 ;;;----------------------------------------------------------------------------------------------
 ;;; UTILS
 
+(defun concat (&rest strings)
+  ;; Writes numbers out, but leaves the rest be to signal errors if something VERY wrong is supplied
+  ;; Not allowing lists for now because it seems like more trouble than it's worth
+  (apply #'concatenate 'string (mapcar #'(lambda (a)
+                                           (if (null a) (error "Trying to concat with NIL")) ; specific case, signal first
+                                           (if (listp a) (error "Trying to concat a list, use convert-to-str instead!"))
+                                           (if (numberp a)
+                                               (write-to-string a)
+                                               a))
+                                       strings)))
+
 (defparameter *classes-folder* "../DATA/classes/")
 (defparameter *generated-data-folder* "../DATA/generated-data/")
 (defparameter *files-folder* "../DATA/files/")
-(defparameter *aliases-file* "../DATA/files/file-aliases")
-
+(defparameter *html-folder* (concat *files-folder* "html/"))
+(defparameter *text-folder* (concat *files-folder* "text/"))
+(defparameter *core-text-folder* (concat *files-folder* "core/"))
+(defparameter *aliases-file* (concat *files-folder* "file-aliases"))
 (defparameter *crawl-data-folder* "../DATA/crawlers/")
+(defparameter *discovered-folder* "../DATA/discovered") ;; without terminating slash because of place results
 
 (defparameter *entries-per-page* 10)
 (defparameter *explain?* nil)
@@ -26,8 +40,9 @@
 (defparameter *min-word-score* 1/5)
 (defparameter *max-word-score* 4/5)
 (defparameter *word-group-size* 1000)
+(defparameter *boilerplate-threshold* 4)
 
-(defparameter *forbidden-extensions* (list "css" "png" "mp4" "ico" "svg" "webmanifest" "js" "json" "xml"))
+(defparameter *forbidden-extensions* (list "css" "png" "mp4" "ico" "svg" "webmanifest" "js" "json" "xml" "jpg" "mp3" "scss"))
 (defparameter *timeout* 10)
 
 (defparameter *bg-col* "#f0f0f0")
@@ -89,17 +104,6 @@
 
 (defun convert-to-str (list)
   (concatenate 'string list))
-
-(defun concat (&rest strings)
-  ;; Writes numbers out, but leaves the rest be to signal errors if something VERY wrong is supplied
-  ;; Not allowing lists for now because it seems like more trouble than it's worth
-  (apply #'concatenate 'string (mapcar #'(lambda (a)
-                                           (if (null a) (error "Trying to concat with NIL")) ; specific case, signal first
-                                           (if (listp a) (error "Trying to concat a list, use convert-to-str instead!"))
-                                           (if (numberp a)
-                                               (write-to-string a)
-                                               a))
-                                       strings)))
 
 (defun list-hashes (hashtable) ;; TBD: Check usage
   (let ((acc nil))
@@ -214,7 +218,6 @@
 
 
 (defmacro letrec (bindings &body decls/forms)
-  ;; Originally writen by user "tfb" on SO (https://stackoverflow.com/questions/63999450/lisp-variable-using-itself-in-definition), rewritten to avoid loop
   (assert (and (listp bindings)
                (every #'(lambda (b)
                           (or (symbolp b)

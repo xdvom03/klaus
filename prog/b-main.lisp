@@ -53,6 +53,15 @@ Naming convention: 'class' is simplified path, 'folder' is actual folder.
   (let ((acc var))
     acc))
 
+(defun get-weight (class)
+  (fallback (ignore-errors
+             (read-from-file (concat (full-path class) "weight")))
+            1))
+
+(defun set-weight (class weight)
+  ;; TBD: Try using setf? Better style?
+  (overwrite-file class "weight" weight))
+
 (defun db ()
   #|
   TBD: Abstract all the GUI stuff elsewhere ; ;
@@ -71,6 +80,7 @@ Naming convention: 'class' is simplified path, 'folder' is actual folder.
              
              (class-frame (frame 0 0 fr))
              (file-frame (frame 1 0 W))
+             (properties-frame (frame 0 1 file-frame))
              (comment-frame (frame 0 1 fr))
              (bucket-frame (frame 0 2 fr))
              (options-frame (frame 0 3 fr))
@@ -91,7 +101,8 @@ Naming convention: 'class' is simplified path, 'folder' is actual folder.
 
              (detail-frame (frame 5 0 options-frame))
              (e2 (entry 0 1 detail-frame))
-             (files-label (if show-files? (label 0 0 file-frame "FILES"))))
+             (files-label (if show-files? (label 0 0 file-frame "FILES")))
+             (weight-entry (entry 0 0 properties-frame)))
         (labels ((class-description (class word)
                    (concat (folder-name class)
                            (if (or show-file-counts?
@@ -99,16 +110,18 @@ Naming convention: 'class' is simplified path, 'folder' is actual folder.
                                ": "
                                "")
                            (if show-word-counts?
-                               (concat (get-word-count class) " words ")
+                               (concat (my-round (* (get-weight class)
+                                                    (get-word-count class)))
+                                       " words ")
                                "")
                            (if show-file-counts?
                                (concat (get-file-count class) " files ")
                                "")
                            (if show-word-details?
                                (concat " word count: "
-                                       (occurrences word (get-recursive-corpus class))
+                                       (my-round (occurrences word (get-recursive-corpus class)))
                                        ", out of "
-                                       (get-word-count class)
+                                       (my-round (get-word-count class))
                                        " words in total. Portion: "
                                        (my-round (* 10000 (/ (occurrences word (get-recursive-corpus class))
                                                              (get-word-count class))))
@@ -150,7 +163,7 @@ Naming convention: 'class' is simplified path, 'folder' is actual folder.
 
                  (change-current-class (new-path)
                    (if (equal old-comment
-                              (read-text tex))
+                              (read-text-widget tex))
                        (change-class-confirmed new-path)
                        (let ((warning-button nil))
                          (setf warning-button (button 2 0 comment-frame "Change class despite unsaved comment" #'(lambda ()
@@ -158,6 +171,8 @@ Naming convention: 'class' is simplified path, 'folder' is actual folder.
                                                                                                                    (ltk:destroy warning-button)))))))
 
                  (redraw-subclasses ()
+                   (setf (ltk:text weight-entry) (get-weight current-class))
+                   (button 1 0 properties-frame "Set weight" #'(lambda () (set-weight current-class (read-from-string (ltk:text weight-entry)))))
                    (destroy-widgets subclass-buttons)
                    (setf subclass-buttons nil)
                    (let ((subclasses (subclasses current-class)))
@@ -195,7 +210,9 @@ Naming convention: 'class' is simplified path, 'folder' is actual folder.
                                                                             (declare (ignore a))
                                                                             (setf show-file-counts? (ltk:value ch2))
                                                                             (redraw-subclasses))))
-                   (b2 (button 3 0 options-frame "Rebuild corpus." #'rebuild-corpus))
+                   (b2 (button 0 1 options-frame "Rebuild corpus" #'rebuild-corpus))
+                   (b3 (button 1 1 options-frame "Rebuild text" #'build-text-database))
+                   (b4 (button 2 1 options-frame "Rebuild core text" #'build-core-text-database))
                    (ch3 (checkbox 0 0 detail-frame "Word details?" #'(lambda (a)
                                                                        (declare (ignore a))
                                                                        (setf show-word-details? (ltk:value ch3))
@@ -233,8 +250,8 @@ Naming convention: 'class' is simplified path, 'folder' is actual folder.
                                                        (setf (ltk:text e) "")))
           (label 0 0 class-frame "CLASSES")    
           (button 1 0 comment-frame "Save comment" #'(lambda ()
-                                                       (setf old-comment (read-text tex))
-                                                       (overwrite-file current-class "comment" (read-text tex))))
+                                                       (setf old-comment (read-text-widget tex))
+                                                       (overwrite-file current-class "comment" (read-text-widget tex))))
           (setf parent-button (button 1 0 class-frame ".." #'(lambda () (change-current-class (parent-class current-class)))))
           (change-class-confirmed current-class)
           (redraw-files)

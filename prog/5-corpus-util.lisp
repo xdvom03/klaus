@@ -1,17 +1,6 @@
 (defun occurrences (word corpus)
   (fallback (gethash word corpus) 0))
 
-(defun text-corpus (text)
-  (let* ((tokens (tokens text))
-         (corpus (make-hash-table :test #'eq))
-         ;; TEMP: Use this for document weights
-         (weight 1))
-    (dolist (token tokens)
-      (if (gethash token corpus)
-          (incf (gethash token corpus) weight)
-          (setf (gethash token corpus) weight)))
-    corpus))
-
 (defun word-count (corpus)
   (let ((vocab (list-keys corpus))
         (acc 0))
@@ -37,7 +26,11 @@
 
 ;;; CORPUS UTIL
 ;;;----------------------------------------------------------------------------------------------
-;;; REBUILDING CORPUS 
+;;; REBUILDING CORPUS
+
+(defun show-time (timer message)
+  ;; gets the time of start
+  (info-box (concat message " Time taken: " (my-round (/ (- (get-internal-real-time) timer) internal-time-units-per-second))) "success!"))
 
 (defun rebuild-corpus (&optional (class "/"))
   ;; Writes the cons list format of the corpuses into the respective files.
@@ -51,11 +44,10 @@
             (timer (get-internal-real-time)))
       
         (dolist (subclass subclasses)
-          ;; TBD: Use values!
-          (let ((data (rebuild-corpus subclass)))
-            (incf url-count (car data))
-            (setf corpus (add-corpuses corpus (cdr data)))))
-      
+          (multiple-value-bind (subfolder-corpus subfolder-url-count) (rebuild-corpus subclass)
+            (incf url-count subfolder-url-count)
+            (setf corpus (add-corpuses corpus (scale-corpus subfolder-corpus (get-weight subclass))))))
+        
         (multiple-value-bind (class-corpus class-file-count) (get-corpus class)
           (incf url-count class-file-count)
           (setf corpus (add-corpuses corpus class-corpus)))
@@ -66,8 +58,8 @@
         (print-to-file "corpus" (sort-corpus (hashtable-to-assoc corpus)))
         ;; internal-time-units-per-second is a LISP built-in constant
         (if (equal class "/")
-            (info-box (concat "Rebuilt the corpus. Time taken: " (my-round (/ (- (get-internal-real-time) timer) internal-time-units-per-second))) "success!"))
-        (cons url-count corpus)))))
+            (show-time timer "Rebuilt the corpus."))
+        (values corpus url-count)))))
 
 (defun get-corpus (class)
   ;; Returns cons of url count & corpus
@@ -99,5 +91,30 @@
   (fallback (get-generated-data class "word-count") 0))
 
 (defun downloaded-link-corpus (link)
-  ;; Looks into the downloaded file of the link
-  (text-corpus (extract-text (file-content link))))
+  ;; Looks into the downloaded & processed file of the link
+  (tokens (read-core-text link)))
+
+(defun build-text-database ()
+  (let ((timer (get-internal-real-time)))
+    (dolist (num (mapcar #'cdr (aliases)))
+      (overwrite-direct-file (concat *text-folder* num) 
+                             (extract-text (read-from-file (concat *html-folder* num)))))
+    (show-time timer "Rebuilt the text database.")))
+
+(defun build-core-text-database ()
+  (let ((timer (get-internal-real-time))
+        (boilerplate (make-hash-table :test #'equal)))
+    (dolist (alias (aliases))
+      (let* ((url (car alias))
+             (num (cdr alias))
+             (domain (find-domain url)))
+        (overwrite-direct-file (concat *core-text-folder* (print num))
+                               (reduce #'remove-substr (append (list (read-text url))
+                                                               (fallback (gethash domain boilerplate)
+                                                                         (let ((new-boilerplate (mapcar #'(lambda (words) (join words " "))
+                                                                                                        (boilerplate domain))))
+                                                                         
+                                                                           (setf (gethash domain boilerplate)
+                                                                                 new-boilerplate)
+                                                                           new-boilerplate)))))))
+    (show-time timer "Rebuilt the core text database.")))

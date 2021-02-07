@@ -105,7 +105,7 @@
                         (class-frame (frame 0 0 fr))
                         (comment-frame (frame 0 2 fr))
 
-                        (vocab (remove-duplicates (tokens (url-text url)) :test #'equal))
+                        (vocab (remove-duplicates (wordlist (url-text url))))
 
                         ;; variable stuff
                         (tex (text 0 0 comment-frame "" 10 20 "NotoSans 10"))
