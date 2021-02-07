@@ -1,2 +1,4 @@
 
-("https://hey.com/pricing/") 
+("https://hey.com/pricing/" "https://stripe.com/en-cz/pricing"
+ "https://basecamp.com/pricing" "https://github.com/pricing"
+ "https://thebrain.com/store" "https://skilled.dev/pricing") 
