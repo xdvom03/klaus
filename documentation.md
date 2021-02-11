@@ -69,33 +69,29 @@ It is intended to eventually have a class for any page the crawler may find on i
 
 # Crawling
 
-Crawling functionality is provided. It respects robots.txt and properly identifies itself in request headers. It is only accessible by the REPL, not from the GUI.
+Crawling functionality is provided. It respects robots.txt and properly identifies itself in request headers. It is only accessible by the REPL, not from the GUI. Pending class expansion, only an unfocused crawler is included.
 
-## Focused crawler model - Queuebot
+## Bot behaviour
 
-This is a basic bot behaviour model. The bot maintains a queue of links. In each step, it takes the best scoring link (according to a scoring system provided as a parameter), finds all its links, then follows the best-scoring one. 
+The system utilised (BackBot) always follows a random valid link (see below). If impossible, it places the current URL on a blacklist, then moves back. If it fails to find intra-domain links, it attempts to at least find an inter-domain link (note to self: this is dubious). It is optimised for speed - only considers links until it finds a valid one.
 
-### Link choice limitations
+## Link choice limitations
 
-To avoid getting stuck on a particular domain, the bot always stays on a single domain for a given number of steps (ignoring inter-domain links), then forcefully changes domains (ignoring intra-domain links and all domains it had already visited). All links with too few words, too many unknown characters, or too many unknown words are ignored. If there are no viable links, the site is discarded. This creates empty space in the queue, so the next step produces two (or however many are needed to fill the queue) new links instead of one.
+To avoid getting stuck on a particular domain, the bot always stays on a single domain for a given number of steps (ignoring inter-domain links), then forcefully changes domains (ignoring intra-domain links and all domains it had already visited). All links with too few words, too many unknown characters, or too many unknown words are ignored.
 
-## Wanderbot
+## Zoombot valuation
 
-Scores a link based on the probability of it belonging to a target folder. Could work if the target class was common enough to be found at random.
+This valuation will most likely be used for the focused crawler: Below a certain value (somewhere around 10<sup>-3</sup>), the actual probability is more influenced by the volume of text and coincidences than proximity of topics. Thus, in such cases, the bot should head in the most promising direction. A new scoring system works toward this goal: The score has two parts. First priority is the deepest folder that shows up as the first in classification (first all steps of the way). Second priority is the probability of the next level being correct. This would let the bot get somewhat close when there is no fully correct link, then eventually zoom in to the correct final folder. 
 
-## Zoombot
+## Running the bot
 
-Below a certain value (somewhere around 10<sup>-3</sup>), the actual probability is more influenced by the volume of text and coincidences than proximity of topics. Thus, in such cases, the bot should head in the most promising direction. A new scoring system works toward this goal: The score has two parts. First priority is the deepest folder that shows up as the first in classification (first all steps of the way). Second priority is the probability of the next level being correct. This would let the bot get somewhat close when there is no fully correct link, then eventually zoom in to the correct final folder.
-
-## Unfocused crawler - Classbot
-
-Starts with a seed, then crawls randomly (similarly to Queuebot, but without the evaluation step), placing everything it finds in mock folders. Downloads all found pages into files. Currently, creating a separate *files* folder for it must be done manually. The old folder is not needed as long as the corpus had been rebuilt. Unlike the queuebot, survives its queue emptying out by restarting from a random point along the way (which can work because of the randomness factor). It is optimised for speed - unlike Queuebot, only considers links until it has enough to refill the queue.
+BackBot starts with a seed and behaviour parameters. It places everything it finds in mock folders and downloads all found pages into the *files* folder. Currently, creating a separate *files* folder for it must be done manually. The old folder is not needed as long as the corpus had been rebuilt. Instead, one from an old crawl may be used to ban already known domains.
 
 # UI
 
 ## Missing pieces
 
-classes cannot be merged or removed programattically - this must be done by manually moving the underlying folders in "DATA/classes/".
+classes cannot be merged or removed programatically - this must be done by manually moving the underlying folders in "DATA/classes/", then rebuilding the corpus.
 
 ## REPL
 
@@ -123,9 +119,9 @@ Eventually, the bucket will only be used for moving or copying (which may end up
 
 I study articles in English because they are the most available. This creates numerous problems with miltiple meanings of a given word, but avoids most problems related to different forms of a given forms. No stemming is included in the hopes that the limited morphology of English may be a help instead of a hindrance. In theory, the program could easily distinguish between languages, but further distinctions would have to be built up for each language on its own, which is too much redundant work for a one-man project.
 
-## Programming language
+## Programming paradigm
 
-I use Common Lisp, a functional language. The problem is largely a functional one - corpuses are hash tables, sites are strings, and no more complicated data structures are needed, but this simple data must be modified in numerous ways. CL is reasonably fast when optimised, at least compared to Python.
+Common Lisp is a reasonably fast (when optimised) multi-paradigm language. The computational part of the program (classification) is written in a mostly functional style, while some text editing, file-building portions and the crawlers are written imperatively. There is no need for OOP as all data strutures are simple - corpuses are hash tables, sites are strings.
 
 CL's main drawback is its shortage of well-made libraries, which is the most visible with the GUI. 
 
