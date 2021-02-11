@@ -42,7 +42,7 @@
 (defparameter *word-group-size* 1000)
 (defparameter *boilerplate-threshold* 4)
 
-(defparameter *forbidden-extensions* (list "css" "png" "mp4" "ico" "svg" "webmanifest" "js" "json" "xml" "jpg" "mp3" "scss"))
+(defparameter *forbidden-extensions* (list "css" "png" "mp4" "ico" "svg" "webmanifest" "js" "json" "xml" "jpg" "mp3" "scss" "jsp" "xsl"))
 (defparameter *timeout* 10)
 
 (defparameter *bg-col* "#f0f0f0")
