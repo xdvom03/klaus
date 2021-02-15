@@ -128,17 +128,22 @@ Crawl 40 from:
   (place-vocab (remove-duplicates (wordlist (url-text url))) class))
 
 (defun place-vocab (vocab &optional (class "/"))
-  (if (subclasses class)
-      (place-vocab vocab (let* ((subclasses (subclasses class))
-                                (simple-path-scores (map-to-hash #'cdr
-                                                                 (list-hashes (scores vocab
-                                                                                      subclasses
-                                                                                      (map-to-hash #'get-recursive-corpus subclasses)
-                                                                                      (map-to-hash #'get-word-count subclasses)
-                                                                                      nil))
-                                                                 :key-fun #'car)))
-                           (best-key simple-path-scores #'>)))
-      class))
+  (let ((subclasses (subclasses class)))
+    (if (subclasses class)
+        (multiple-value-bind (scores probsum) (scores vocab
+                                                      subclasses
+                                                      (map-to-hash #'get-recursive-corpus subclasses)
+                                                      (map-to-hash #'get-word-count subclasses)
+                                                      nil)
+          (let ((simple-path-scores (map-to-hash #'cdr
+                                                 (list-hashes scores)
+                                                 :key-fun #'car)))
+            (multiple-value-bind (best-path best-score) (best-key simple-path-scores #'>)
+              ;; TBD: Why is score returning non-ln'd values?
+              (if (> (+ probsum (ln best-score)) (ln 1/2))
+                  (place-vocab vocab best-path)
+                  class))))
+        class)))
 
 (defun place-discovered (link)
   (redownload-file link)
