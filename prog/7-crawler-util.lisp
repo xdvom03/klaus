@@ -86,7 +86,8 @@
                                         raw-links))))
 
 (defun comprehensible? (vocab)
-  (let ((total-corp (get-recursive-corpus "/")))
+  (let ((total-corp (add-corpuses (get-recursive-corpus "/")
+                                  (scale-corpus (get-recursive-corpus "/non-english/") -1))))
     (/ (1+ (length (remove-if #'(lambda (word) (zerop (occurrences word total-corp)))
                               vocab)))
        (1+ (length vocab)))))
