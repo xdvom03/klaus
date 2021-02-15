@@ -42,6 +42,10 @@ If a class contains subclasses, their content is considered content of the paren
 
 The purpose of hierarchical classing is to class based on different criteria. For example, different criteria have to be used to classify articles (primarily topic-based) than commercial content (primarily purpose-based). 
 
+## Logarithmic representation
+
+To avoid trouble with floating point precision, all probabilities throughout classing are represented as their natural logarithms. They are also displayed as such in the multi-class explainer.
+
 # Data sourcing
 
 There is a potential for bias in the source data. Klaus only understands a class in terms of the files that are placed within it, and thus can pick up on irrelevant clues. This problem cannot be fixed completely: If there existed an unbiased, comprehensive directory of the Internet by topic to source the data from, there would be no need for this program to exist.
