@@ -31,6 +31,9 @@
          (equal (char text start) (char key 0)) ; simple optimisation - look first for a single matching character, eliminating most wrong guesses
          (equal (subseq text start (+ start key-len)) key))))
 
+(defun charlist (str)
+  (map 'list #'identity str))
+
 (defun remove-enclosed (text delim1 delim2 &optional swap-for)
   "Removes all text enclosed between delim1 and delim2, including the tags. May replace with a character instead. Returns remaining text. Nondestructive."
   (let ((acc nil)
@@ -39,10 +42,14 @@
       (cond ((fast-substr-check text delim1 i)
              (setf enclosed-p t)
              (if swap-for
-                 (push swap-for acc)))
+                 (if (characterp swap-for)
+                     (push swap-for acc)
+                     (setf acc
+                           (append (reverse (charlist swap-for)) acc)))))
             ((fast-substr-check text delim2 i)
              (setf enclosed-p nil)
-             (setf i (+ i (length delim2) -1)))
+             (setf i (+ i (length delim2) -1))
+             (push (char text i) acc))
             ((not enclosed-p)
              (push (char text i) acc))))
     (convert-to-str (reverse acc))))

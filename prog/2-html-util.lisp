@@ -75,6 +75,7 @@
            (subseq url i)))))
 
 (defun remove-tags (text)
+  ;; (remove-enclosed text "<img" ">" " ~image~ ")
   (remove-enclosed text "<" ">" #\ ))
 
 (defun remove-fluff (text)
@@ -93,7 +94,7 @@
   (extract-text (safe-fetch-html url)))
 
 (defun extract-text (html)
-  (remove-multiple-spaces (remove-punctuation (make-safe (remove-diacritics (decode-xml-entities (remove-tags (remove-fluff (string-downcase html)))))))))
+  (remove-multiple-spaces (remove-punctuation (remove-diacritics (decode-xml-entities (remove-tags (remove-fluff (make-safe (string-downcase html)))))))))
 
 (defun extract-raw-text (html)
   (remove-multiple-spaces (remove-punctuation (remove-diacritics (decode-xml-entities (remove-tags (remove-fluff (string-downcase html))))))))
