@@ -33,7 +33,7 @@
 ")
 (defparameter *iterations* 200)
 (defparameter *decimals* 3)
-(defparameter *smoothing-factor* 0.4)
+(defparameter *smoothing-factor* 1)
 (defparameter *crawler-name* "botelaire")
 
 ;; TBD: This is duplicate now
