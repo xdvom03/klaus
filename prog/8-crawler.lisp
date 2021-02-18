@@ -123,6 +123,8 @@ Crawl 40 from:
                 (setf max (funcall key acc)))))
         (values acc max))))
 
+(defun place-known (url &optional (class "/"))
+  (place-vocab (remove-duplicates (wordlist (read-text url))) class))
 
 (defun place (url &optional (class "/"))
   (place-vocab (remove-duplicates (wordlist (url-text url))) class))
@@ -140,7 +142,13 @@ Crawl 40 from:
                                                  :key-fun #'car)))
             (multiple-value-bind (best-path best-score) (best-key simple-path-scores #'>)
               ;; TBD: Why is score returning non-ln'd values?
-              (if (> (+ probsum (ln best-score)) (ln 1/2))
+              (if (> #|(+ probsum (if (<= best-score 0)
+                                    -1000 ;; TEMP
+                                    (ln best-score)))|# ; TEMP: Probsum fails because of tiny classes!
+                     (if (<= best-score 0)
+                         -1000 ;; TEMP
+                         (ln best-score))
+                     (ln 1/5))
                   (place-vocab vocab best-path)
                   class))))
         class)))
@@ -220,11 +228,7 @@ Crawl 40 from:
             (push current-url acc)
             (setf (gethash (core-domain (find-domain current-url)) visited-domains) t)
             (redownload-file current-url)
-            (let* ((folder (concat *discovered-folder* (place-vocab (remove-duplicates (wordlist (read-text current-url))))))
-                   (path (concat folder "links")))
-              (ensure-directories-exist path)
-              (overwrite-direct-file (concat folder "comment") "auto-generated class")
-              (overwrite-direct-file path (append1 (ignore-errors (read-from-file path)) current-url)))))
+            (discover current-url)))
 
       ;; find links
       (let* ((domain (core-domain (find-domain current-url)))
@@ -269,9 +273,27 @@ Crawl 40 from:
     (reverse (remove-if #'(lambda (url) (gethash url blacklist))
                         acc))))
 
+(defun discover (url)
+  (let* ((folder (concat *discovered-folder* (place-vocab (remove-duplicates (wordlist (read-text url))))))
+         (path (concat folder "links")))
+    (ensure-directories-exist path)
+    (overwrite-direct-file (concat folder "comment") "auto-generated class")
+    (overwrite-direct-file path (append1 (ignore-errors (read-from-file path)) url))))
 
+(defun rediscover ()
+  (let ((counter 0)
+        (urls (read-from-file "../DATA/bot-path")))
+    (dolist (url urls)
+      (print (concat (incf counter) "/" (length urls)))
+      (discover (print url)))))
+
+(defun sorted-bot-links ()
+  (let ((urls (read-from-file "../DATA/bot-path")))
+    (sort (copy-seq urls) #'< :key #'(lambda (url) (length (wordlist (read-text url)))))))
 
 
 
 
 ;; (apply-to-all-classes #'(lambda (path) (if (not (directory (concat (full-path path) "links"))) (overwrite-file path "links" nil))))
+;; (apply-to-all-classes #'(lambda (path) (if (not (directory (concat (full-path path) "comment"))) (overwrite-file path "comment" "placeholder"))))
+;; TBD: Call error if file has no alias!
