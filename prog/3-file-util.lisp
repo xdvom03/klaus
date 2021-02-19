@@ -75,17 +75,19 @@
 
 (defun redownload-file (file-name)
   (if (not (file-alias file-name))
-      (add-alias file-name (1+ (apply #'max (append1 (used-aliases) 0))))
+      (add-alias file-name)
       ;; TBD: maybe check for newer version?
       )
   (file-alias file-name))
 
-(defun add-alias (name alias)
-  (let ((aliases (aliases))
-        (html (safe-fetch-html name)))
-    (overwrite-direct-file *aliases-file* (append1 aliases (cons name alias)))
-    (overwrite-direct-file (concat *html-folder* alias) html)
-    (overwrite-direct-file (concat *text-folder* alias) (extract-text html))))
+;; TBD: Generalise to alias utils
+(defun add-alias (name)
+  (let* ((aliases (aliases))
+         (new-alias (1+ (apply #'max (append1 (mapcar #'cdr aliases) 0))))
+         (html (safe-fetch-html name)))
+    (overwrite-direct-file *aliases-file* (append1 aliases (cons name new-alias)))
+    (overwrite-direct-file (concat *html-folder* new-alias) html)
+    (overwrite-direct-file (concat *text-folder* new-alias) (extract-text html))))
 
 (defun file-alias (file-name)
   (gethash file-name (assoc-to-hashtable (aliases))))
@@ -93,6 +95,7 @@
 (defun aliases ()
   (read-from-file *aliases-file*))
 
+;; TBD: Useless?
 (defun used-aliases ()
   (mapcar #'cdr (aliases)))
 
@@ -104,6 +107,32 @@
 
 (defun read-html (url)
   (read-from-file (concat *html-folder* (file-alias url))))
+
+(defun domain-aliases ()
+  (read-from-file *domain-aliases-file*))
+
+(defun domain-alias (domain)
+  (gethash domain (assoc-to-hashtable (domain-aliases))))
+
+(defun read-domain-links (domain)
+  (let ((path (concat *domain-lists-folder* (domain-alias domain))))
+    (if (directory path)
+        (read-from-file path))))
+
+(defun read-domain-boilerplate (domain)
+  (let ((path (concat *boilerplate-folder* (domain-alias domain))))
+    (if (directory path)
+        (read-from-file path))))
+
+(defun add-domain-alias (domain)
+  (let* ((aliases (domain-aliases))
+         (new-alias (1+ (apply #'max (append1 (mapcar #'cdr aliases) 0)))))
+    (overwrite-direct-file *domain-aliases-file* (append1 aliases (cons domain new-alias)))))
+
+(defun readd-domain-alias (domain)
+  (if (not (domain-alias domain))
+      (add-domain-alias domain))
+  (domain-alias domain))
 
 ;;; DOWNLOADING FILES
 ;;;----------------------------------------------------------------------------------------------

@@ -21,7 +21,10 @@
 (defparameter *html-folder* (concat *files-folder* "html/"))
 (defparameter *text-folder* (concat *files-folder* "text/"))
 (defparameter *core-text-folder* (concat *files-folder* "core/"))
+(defparameter *domain-lists-folder* (concat *files-folder* "domain-lists/"))
+(defparameter *boilerplate-folder* (concat *files-folder* "boilerplate/"))
 (defparameter *aliases-file* (concat *files-folder* "file-aliases"))
+(defparameter *domain-aliases-file* (concat *files-folder* "domain-aliases"))
 (defparameter *crawl-data-folder* "../DATA/crawlers/")
 (defparameter *discovered-folder* "../DATA/discovered") ;; without terminating slash because of place results
 
