@@ -200,9 +200,9 @@ Crawl 40 from:
                (text (clean-text raw))
                (vocab (remove-duplicates (wordlist text))))
           (and (not (equal text "nothingfound"))
-               (> (length vocab) 50) ;; way too short websites aren't classifiable
-               (> (comprehensible-text? raw text) 0.75) ;; avoiding lots of unknown characters
-               (> (comprehensible? vocab) 0.5) ;; avoiding unknown languages
+               (> (length vocab) *min-word-count*) ;; way too short websites aren't classifiable
+               (> (comprehensible-text? raw text) *min-character-comprehensibility*) ;; avoiding lots of unknown characters
+               (> (comprehensible? vocab) *min-word-comprehensibility*) ;; avoiding unknown languages
                )))))
 
 (defun backbot (seed steps domain-steps)
@@ -282,7 +282,7 @@ Crawl 40 from:
 
 (defun rediscover ()
   (let ((counter 0)
-        (urls (read-from-file "../DATA/bot-path")))
+        (urls (read-from-file "../DATA/viewed-once")))
     (dolist (url urls)
       (print (concat (incf counter) "/" (length urls)))
       (discover (print url)))))
@@ -297,3 +297,26 @@ Crawl 40 from:
 ;; (apply-to-all-classes #'(lambda (path) (if (not (directory (concat (full-path path) "links"))) (overwrite-file path "links" nil))))
 ;; (apply-to-all-classes #'(lambda (path) (if (not (directory (concat (full-path path) "comment"))) (overwrite-file path "comment" "placeholder"))))
 ;; TBD: Call error if file has no alias!
+
+
+
+
+
+(defun raw-url (url)
+  (let* ((step1 (subseq url (+ 2 (search "//" url))))
+         (step2 (reverse (subseq (reverse step1)
+                                 (position-if #'(lambda (character) (not (equal character #\/)))
+                                              (reverse step1))))))
+    (if (equal (subseq step2 0 4) "www.")
+        (subseq step2 4)
+        step2)))
+
+(defun nonredundant-bot-path ()
+  (let ((lst (read-from-file "../DATA/bot-path")))
+    (print (length lst))
+    (remove-duplicates lst :test #'(lambda (url1 url2) (if (zerop (random 1000000)) (princ ".")) (equal (raw-url url1) (raw-url url2))))))
+
+(defun nonredundant-bot-links ()
+  (let ((lst (read-from-file "../DATA/bot-viewed")))
+    (print (length lst))
+    (remove-duplicates lst :test #'(lambda (url1 url2) (if (zerop (random 1000000)) (princ ".")) (equal (raw-url url1) (raw-url url2))))))

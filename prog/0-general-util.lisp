@@ -39,6 +39,11 @@
 (defparameter *smoothing-factor* 1)
 (defparameter *crawler-name* "botelaire")
 
+(defparameter *min-word-count* 450)
+(defparameter *min-character-comprehensibility* 0.8)
+(defparameter *min-word-comprehensibility* 0.6)
+
+
 ;; TBD: This is duplicate now
 (defparameter *min-word-score* 1/5)
 (defparameter *max-word-score* 4/5)
