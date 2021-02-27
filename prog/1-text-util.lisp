@@ -47,9 +47,10 @@
                      (setf acc
                            (append (reverse (charlist swap-for)) acc)))))
             ((fast-substr-check text delim2 i)
+             (if (not enclosed-p)
+                 (push (char text i) acc))
              (setf enclosed-p nil)
-             (setf i (+ i (length delim2) -1))
-             (push (char text i) acc))
+             (setf i (+ i (length delim2) -1)))
             ((not enclosed-p)
              (push (char text i) acc))))
     (convert-to-str (reverse acc))))
@@ -99,8 +100,7 @@
       ltr))
 
 (defun wordlist (text)
-  (mapcar #'intern (remove-if #'(lambda (word) (equal word ""))
-                              (split text #\ ))))
+  (mapcar #'intern (split text #\ )))
 
 (defun tokens (text)
   (let* ((raw (wordlist text))
@@ -128,10 +128,6 @@
   ;; plump may cause "junk in string". Cause unknown, happens rarely, so the decoding is skipped if the error occurs.
   (fallback (ignore-errors (plump:decode-entities txt))
             txt))
-
-
-
-
 
 (defun overlap-length (txt1 txt2)
   ;; only looks for sequences beginning at 0
