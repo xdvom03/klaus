@@ -66,6 +66,9 @@
 ;;; DOWNLOADING FILES
 
 (defun redownload (class)
+  (ensure-directories-exist *files-folder*)
+  (if (not (directory *aliases-file*))
+      (overwrite-direct-file *aliases-file* nil))
   (let ((files (class-links class)))
     (dolist (file files)
       (redownload-file file))

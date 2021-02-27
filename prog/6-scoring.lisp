@@ -43,6 +43,8 @@
                                                                                  (ln *min-word-score*)))
                                                             ordered-words))
                                          2)))))
+    ;;ordered-words
+    ;; TEMP: This needs resolving fast. Which words?
     (subseq ordered-words 0 (min evidence-length
                                  (length ordered-words)))))
 
@@ -125,4 +127,4 @@
                   pair-words
                   pair-word-details)))
       (values (make-hash-table :test #'equal)
-              1)))
+              0)))

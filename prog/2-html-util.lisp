@@ -94,7 +94,7 @@
   (extract-text (safe-fetch-html url)))
 
 (defun extract-text (html)
-  (remove-multiple-spaces (remove-punctuation (remove-diacritics (decode-xml-entities (remove-tags (remove-fluff (make-safe (string-downcase html)))))))))
+  (remove-multiple-spaces (make-safe (remove-punctuation (remove-diacritics (decode-xml-entities (remove-tags (remove-fluff (string-downcase html)))))))))
 
 (defun extract-raw-text (html)
   (remove-multiple-spaces (remove-punctuation (remove-diacritics (decode-xml-entities (remove-tags (remove-fluff (string-downcase html))))))))

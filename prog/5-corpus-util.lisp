@@ -104,6 +104,8 @@
 (defun build-core-text-database ()
   (ensure-directories-exist *domain-lists-folder*)
   (ensure-directories-exist *boilerplate-folder*)
+  (if (not (directory *domain-aliases-file*))
+      (overwrite-direct-file *domain-aliases-file* nil))
   (let* ((timer (get-internal-real-time))
          (urls (mapcar #'car (aliases)))
          (domains (remove-duplicates (mapcar #'find-domain urls) :test #'equal))

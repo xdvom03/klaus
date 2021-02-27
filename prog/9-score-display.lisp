@@ -14,15 +14,17 @@
       (let ((class (nth i classes)))
         (button 0 (1+ i) f (folder-name class) #'pass)
         (button (1+ i) 0 f (folder-name class) #'pass)
-        (button (1+ i)
-                (1+ (length classes))
-                f
-                (write-to-string (my-round (apply #'+ (mapcar #'(lambda (opponent)
-                                                                  (if (equal class opponent)
-                                                                      0
-                                                                      (gethash (cons class opponent) pair-scores)))
-                                                              classes))))
-                #'pass)
+        (let* ((total-score (apply #'+ (mapcar #'(lambda (opponent)
+                                                   (if (equal class opponent)
+                                                       0
+                                                       (gethash (cons class opponent) pair-scores)))
+                                               classes)))
+               (total-score-button (button (1+ i)
+                                           (1+ (length classes))
+                                           f
+                                           (write-to-string (my-round total-score))
+                                           #'pass)))
+          (ltk:configure total-score-button :background (color-code total-score)))
         (dotimes (j (length classes))
           (let* ((opponent (nth j classes))
                  (pair (cons class opponent))
