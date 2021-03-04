@@ -39,7 +39,7 @@
 ;;; CONVERTORS
 
 (defun simplified-path (path)
-  (let* ((path-parts (split path (char "/" 0)))
+  (let* ((path-parts (cl-strings:split path #\/))
          (varying-part (cdr (member "classes" path-parts :test #'equal))))
     (reduce #'(lambda (a b) (concat a "/" b))
             ;; Prepend an empty string in case of the home folder - reducing NIL it has no idea what the base state is.
@@ -56,10 +56,10 @@
   (mapcar #'simplified-path (remove-if-not #'folder? (mapcar #'namestring (directory (concat (full-path class) "*"))))))
 
 (defun parent-class (class)
-  (concat (join (remove-last (remove-last (split class #\/))) "/") "/"))
+  (concat (cl-strings:join (remove-last (remove-last (cl-strings:split class #\/))) :separator "/") "/"))
 
 (defun folder-name (path)
-  (second (reverse (split path #\/))))
+  (second (reverse (cl-strings:split path))))
 
 ;;; FOLDER NAVIGATION
 ;;;----------------------------------------------------------------------------------------------

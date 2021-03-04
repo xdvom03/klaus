@@ -116,7 +116,7 @@
       (readd-domain-alias domain)
       (if (not (equal (read-domain-links domain)
                       (gethash domain domain-lists)))
-          (let ((boilerplate (mapcar #'(lambda (words) (join words " "))
+          (let ((boilerplate (mapcar #'(lambda (words) (cl-strings:join words :separator " "))
                                      (boilerplate domain))))
             (overwrite-direct-file (concat *domain-lists-folder* (domain-alias domain))
                                    (gethash domain domain-lists))

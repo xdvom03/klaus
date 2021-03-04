@@ -91,7 +91,7 @@ Crawl 40 from:
   (let ((path "/")
         (acc 0)
         (prob 1))
-    (dolist (frag (split (subseq target-class 1) #\/))
+    (dolist (frag (cl-strings:split (subseq target-class 1) #\/))
       (if (not (equal frag ""))
           (progn
             (setf path (concat path frag "/"))
@@ -102,7 +102,7 @@ Crawl 40 from:
 (defun core-domain (domain)
   ;; Have to deal with trailing dot
   (second (remove-if #'(lambda (part) (equal part ""))
-                     (reverse (split (last1 (split domain #\/)) #\.)))))
+                     (reverse (cl-strings:split (last1 (cl-strings:split domain #\/)) #\.)))))
 
 (defun append-to-file (path txt)
   (with-open-file (stream path :direction :output :if-exists :append :if-does-not-exist :create)
@@ -171,13 +171,13 @@ Crawl 40 from:
 (defun zoombot-valuation (vocab target)
   (princ ".")
   (let* ((actual-place (place-vocab vocab))
-         (overlap-length (overlap-length (split actual-place #\/)
-                                         (split target #\/)))
-         (final-folder (concat (join (subseq (split target #\/)
-                                             0
-                                             (min (length (split target #\/))
-                                                  (1+ overlap-length)))
-                                     "/")
+         (overlap-length (overlap-length (cl-strings:split actual-place #\/)
+                                         (cl-strings:split target #\/)))
+         (final-folder (concat (cl-strings:join (subseq (cl-strings:split target #\/)
+                                                        0
+                                                        (min (length (cl-strings:split target #\/))
+                                                             (1+ overlap-length)))
+                                     :separator "/")
                                "/")))
     (+ overlap-length (vocab-score vocab final-folder))))
 

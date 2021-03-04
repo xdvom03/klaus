@@ -1,11 +1,8 @@
-(ql:quickload (list "ltk" "drakma" "quri" "plump" "trivial-timeout"))
+(ql:quickload (list "ltk" "drakma" "quri" "plump" "trivial-timeout" "cl-strings"))
 
 ;;; IMPORTS
 ;;;----------------------------------------------------------------------------------------------
-;;; UTILS
-
-(defun charlist (str)
-  (map 'list #'identity str))
+;;;  CONFIG VARIABLE INIT
 
 (defun concat (&rest strings)
   ;; Writes numbers out, but leaves the rest be to signal errors if something VERY wrong is supplied
@@ -17,6 +14,52 @@
                                                (write-to-string a)
                                                a))
                                        strings)))
+
+;; paths
+(defparameter *classes-folder* "../DATA/classes/")
+(defparameter *generated-data-folder* "../DATA/generated-data/")
+(defparameter *files-folder* "../DATA/files/")
+(defparameter *html-folder* (concat *files-folder* "html/"))
+(defparameter *text-folder* (concat *files-folder* "text/"))
+(defparameter *core-text-folder* (concat *files-folder* "core/"))
+(defparameter *domain-lists-folder* (concat *files-folder* "domain-lists/"))
+(defparameter *boilerplate-folder* (concat *files-folder* "boilerplate/"))
+(defparameter *aliases-file* (concat *files-folder* "file-aliases"))
+(defparameter *domain-aliases-file* (concat *files-folder* "domain-aliases"))
+(defparameter *crawl-data-folder* "../DATA/crawlers/")
+(defparameter *discovered-folder* "../DATA/discovered") ;; without terminating slash because of place results
+
+;; core engine
+(defparameter *score-threshold* 1/5)
+(defparameter *word-group-size* 1000)
+(defparameter *boilerplate-threshold* 4)
+(defparameter *evidence-length* 6)
+(defparameter *smoothing-factor* 1)
+(defparameter *allowed-characters* (cl-strings:chars "0123456789 abcdefghijklmnopqrstuvwxyz"))
+
+;; crawler
+(defparameter *crawler-name* "botelaire")
+(defparameter *user-agent* "botelaire (https://github.com/xdvom03/klaus, xdvom03 (at) gjk (dot) cz)")
+(defparameter *min-word-count* 450)
+(defparameter *min-character-comprehensibility* 0.8)
+(defparameter *min-word-comprehensibility* 0.6)
+(defparameter *forbidden-extensions* (list "css" "png" "mp4" "ico" "svg" "webmanifest" "js" "json" "xml" "jpg" "mp3" "scss" "jsp" "xsl"))
+(defparameter *timeout* 10)
+
+;; display
+(defparameter *entries-per-page* 10)
+(defparameter *bg-col* "#f0f0f0")
+(defparameter *button-col* "#e0e0e0")
+(defparameter *active-col* "#a0a0a0")
+(defparameter *text-col* "#000000")
+
+;; TBD: Should not be global!
+(defparameter *explain?* nil)
+(defparameter *blind?* nil)
+
+;;; CONFIG VARIABLE INIT
+;;;----------------------------------------------------------------------------------------------
+;;; UTILS
 
 (defun pass ())
 
@@ -75,13 +118,6 @@
     (maphash #'(lambda (a b) b (push a acc))
              hashtable)
     acc))
-
-(defun multi-equal (&rest things)
-  (if (cdr things)
-      (if (equal (car things)
-                 (second things))
-          (apply #'multi-equal (cdr things)))
-      (car things)))
 
 (defun my-round (num &optional (decimals 3))
   (let ((divisor (expt 10 (- decimals))))
@@ -144,25 +180,6 @@
             (setf acc2 nil))))
     (append1 (reverse acc) (reverse acc2))))
 
-(defun split (text char)
-  "Returns a list of parts of the text denoted by the character. Removes the splitting character."
-  (let ((word-acc nil)
-        (text-acc nil))
-    (dotimes (i (length text))
-      (if (equal (char text i) char)
-          (progn
-            (push (reverse text-acc) word-acc)
-            (setf text-acc nil))
-          (push (char text i) text-acc)))
-    (mapcar #'(lambda (a) (convert-to-str a)) ; needed to turn character lists into words
-            (reverse (cons (reverse text-acc) word-acc)))))
-
-(defun join (fragments filler)
-  ;; not tail-recursive
-  (if (cdr fragments)
-      (join (cons (concat (first fragments) filler (second fragments)) (cddr fragments)) filler)
-      (car fragments)))
-
 (defun assoc-to-hashtable (list)
   ;; Converts from the assoc list format to the hash table format
   (map-to-hash #'cdr list :key-fun #'car))
@@ -178,6 +195,15 @@
   "Open the URL in the browser. Waits a bit for it to load."
   (uiop:run-program (format nil "xdg-open ~S" url))
   (sleep 1))
+
+(defun safe-fetch-html (url)
+  "Gets HTML data from a URL, but if it 404's, it returns nothing found."
+  (let ((unsafe (ignore-errors ;; BUG: Errors if the site contains any invalid UTF-8 characters.
+                 (drakma:http-request url :user-agent *user-agent* :connection-timeout *timeout*))))
+    ;; an image link, or anything that isn't a string, is considered a 404
+    (if (or (null unsafe) (not (stringp unsafe)))
+        "nothingfound"
+        (coerce unsafe 'simple-string))))
 
 
 
@@ -215,49 +241,3 @@
            ,name
            (progn ;; TBD: Is this needed?
              ,if-nil)))))
-
-;;; UTILS
-;;;----------------------------------------------------------------------------------------------
-;;; CONFIG VARIABLES
-
-;; paths
-(defparameter *classes-folder* "../DATA/classes/")
-(defparameter *generated-data-folder* "../DATA/generated-data/")
-(defparameter *files-folder* "../DATA/files/")
-(defparameter *html-folder* (concat *files-folder* "html/"))
-(defparameter *text-folder* (concat *files-folder* "text/"))
-(defparameter *core-text-folder* (concat *files-folder* "core/"))
-(defparameter *domain-lists-folder* (concat *files-folder* "domain-lists/"))
-(defparameter *boilerplate-folder* (concat *files-folder* "boilerplate/"))
-(defparameter *aliases-file* (concat *files-folder* "file-aliases"))
-(defparameter *domain-aliases-file* (concat *files-folder* "domain-aliases"))
-(defparameter *crawl-data-folder* "../DATA/crawlers/")
-(defparameter *discovered-folder* "../DATA/discovered") ;; without terminating slash because of place results
-
-;; core engine
-(defparameter *score-threshold* 1/5)
-(defparameter *word-group-size* 1000)
-(defparameter *boilerplate-threshold* 4)
-(defparameter *evidence-length* 6)
-(defparameter *smoothing-factor* 1)
-(defparameter *allowed-characters* (charlist "0123456789 ,.abcdefghijklmnopqrstuvwxyz"))
-
-;; crawler
-(defparameter *crawler-name* "botelaire")
-(defparameter *user-agent* "botelaire (https://github.com/xdvom03/klaus, xdvom03 (at) gjk (dot) cz)")
-(defparameter *min-word-count* 450)
-(defparameter *min-character-comprehensibility* 0.8)
-(defparameter *min-word-comprehensibility* 0.6)
-(defparameter *forbidden-extensions* (list "css" "png" "mp4" "ico" "svg" "webmanifest" "js" "json" "xml" "jpg" "mp3" "scss" "jsp" "xsl"))
-(defparameter *timeout* 10)
-
-;; display
-(defparameter *entries-per-page* 10)
-(defparameter *bg-col* "#f0f0f0")
-(defparameter *button-col* "#e0e0e0")
-(defparameter *active-col* "#a0a0a0")
-(defparameter *text-col* "#000000")
-
-;; TBD: Should not be global!
-(defparameter *explain?* nil)
-(defparameter *blind?* nil)

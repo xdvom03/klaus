@@ -36,8 +36,8 @@
                               (mapcar #'car (aliases)))))
     (if (cdr links)
         (reduce #'multi-overlap
-                (append (list (list (split (read-text (car links)) #\ ))) ;; remember: one level of append gets lost!
-                        (mapcar #'(lambda (url) (split (read-text url) #\ ))
+                (append (list (list (cl-strings:split (read-text (car links))))) ;; remember: one level of append gets lost!
+                        (mapcar #'(lambda (url) (cl-strings:split (read-text url)))
                                 (cdr links)))))))
 
 (defun remove-substr (text substr)
@@ -49,13 +49,13 @@
 
 (defun core-text (url)
   (let* ((text (url-text url))
-         (boilerplate (join (boilerplate (find-domain url)) " "))
+         (boilerplate (cl-strings:join (boilerplate (find-domain url)) :separator " "))
          (mustard (search boilerplate text :test #'equal)))
     (concat (subseq text 0 mustard) (subseq text (+ mustard (length boilerplate))))))
 
 (defun core-text-known (url)
   (let* ((text (read-text url))
-         (boilerplate (mapcar #'(lambda (words) (join words " "))
+         (boilerplate (mapcar #'(lambda (words) (cl-strings:join words :separator " "))
                               (boilerplate (find-domain url)))))
     (reduce #'remove-substr (append (list text)
                                     boilerplate))))

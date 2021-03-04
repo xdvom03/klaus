@@ -117,17 +117,23 @@ To move many files at once, one would typically use click, mark, and drag. Seein
 
 Eventually, the bucket will only be used for moving or copying (which may end up deprecated - so far, no duplication is present in training files). The other options should happen locally.
 
-# Language choice
+# Design choices
 
 ## Natural language
 
-I study articles in English because they are the most available. This creates numerous problems with miltiple meanings of a given word, but avoids most problems related to different forms of a given forms. No stemming is included in the hopes that the limited morphology of English may be a help instead of a hindrance. In theory, the program could easily distinguish between languages, but further distinctions would have to be built up for each language on its own, which is too much redundant work for a one-man project.
+I study articles in English because they are the most available. This creates numerous problems with multiple meanings of a given word, but avoids most problems related to different forms of a given word (stemming in English is manageable automatically for most words). A non-English folder is only added as a surface-level class, not further divided once the correct language is reached. It is only there to help if the crawler were to accidentally enter a non-English site.
 
 ## Programming paradigm
 
-Common Lisp is a reasonably fast (when optimised) multi-paradigm language. The computational part of the program (classification) is written in a mostly functional style, while some text editing, file-building portions and the crawlers are written imperatively. There is no need for OOP as all data strutures are simple - corpuses are hash tables, sites are strings.
+Common Lisp is a reasonably fast (when optimised) multi-paradigm language. The analytical part of the program (classification) is written in a mostly functional style, while text manipulation algorithms, data storage and retrieval, and crawlers are wrtitten imperatively. There is no need for OOP as all data strutures are simple - corpuses are hash tables, sites are strings - and without associated actions.
 
-CL's main drawback is its shortage of well-made libraries, which is the most visible with the GUI. 
+CL's main drawback is its shortage of well-made libraries, which is the most visible with the GUI.
+
+## Data storage
+
+# Speed
+
+fast-substr-check is rought twice as fast as a full substring check in the average case
 
 # Used libraries
 
@@ -139,7 +145,7 @@ QURI (https://github.com/fukamachi/quri) for dealing with URL character issues (
 
 Plump (https://github.com/Shinmera/plump) for something similar inside the HTML (XML escape: \&rsquo; -> ' (with a little help))
 
-Trivial-timeout (https://common-lisp.net/project/trivial-timeout/) to timeout if a site is unreachable.
+cl-strings (https://github.com/diogoalexandrefranco/cl-strings) for string manipulation utilities.
 
 # Other used software
 

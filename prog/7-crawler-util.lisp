@@ -50,7 +50,7 @@
          (rules nil)
          (accepting-new-agents? t)
          (acc nil))
-    (dolist (line (split file #\Newline))
+    (dolist (line (cl-strings:split file #\Newline))
       (let* ((agent? (safe-check-substr line "User-agent: "))
              (allow? (safe-check-substr line "Allow: "))
              (disallow? (safe-check-substr line "Disallow: "))
@@ -75,7 +75,7 @@
     (reverse acc)))
 
 (defun extension (url)
-  (last1 (split url (char "." 0))))
+  (last1 (cl-strings:split url #\.)))
 
 (defun filter-links (raw-links)
   (remove-if #'(lambda (url)
