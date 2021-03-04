@@ -50,7 +50,7 @@
          (rules nil)
          (accepting-new-agents? t)
          (acc nil))
-    (dolist (line (split file (char *newline* 0)))
+    (dolist (line (split file #\Newline))
       (let* ((agent? (safe-check-substr line "User-agent: "))
              (allow? (safe-check-substr line "Allow: "))
              (disallow? (safe-check-substr line "Disallow: "))

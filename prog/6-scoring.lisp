@@ -38,13 +38,11 @@
                               #'<
                               :key #'(lambda (word) (gethash word word-scores))))
          (evidence-length (max *evidence-length*
-                               (floor (/ (length (remove-if #'(lambda (word) (>= (ln *max-word-score*)
+                               (floor (/ (length (remove-if #'(lambda (word) (>= (ln (- 1 *score-threshold*))
                                                                                  (gethash word word-scores)
-                                                                                 (ln *min-word-score*)))
+                                                                                 (ln *score-threshold*)))
                                                             ordered-words))
                                          2)))))
-    ;;ordered-words
-    ;; TEMP: This needs resolving fast. Which words?
     (subseq ordered-words 0 (min evidence-length
                                  (length ordered-words)))))
 

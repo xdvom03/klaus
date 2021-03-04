@@ -438,3 +438,9 @@
         (visited-domains nil))
     (tick page-count master queue queue-list acc acc-list visited-domains visited-list target queue-size)))
 
+;; unused functions
+(defun cut-word (word)
+  (subseq word 0 (1- (length word))))
+
+(defun last-char (str)
+  (char str (1- (length str))))

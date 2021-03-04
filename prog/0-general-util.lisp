@@ -4,6 +4,9 @@
 ;;;----------------------------------------------------------------------------------------------
 ;;; UTILS
 
+(defun charlist (str)
+  (map 'list #'identity str))
+
 (defun concat (&rest strings)
   ;; Writes numbers out, but leaves the rest be to signal errors if something VERY wrong is supplied
   ;; Not allowing lists for now because it seems like more trouble than it's worth
@@ -15,60 +18,7 @@
                                                a))
                                        strings)))
 
-(defparameter *classes-folder* "../DATA/classes/")
-(defparameter *generated-data-folder* "../DATA/generated-data/")
-(defparameter *files-folder* "../DATA/files/")
-(defparameter *html-folder* (concat *files-folder* "html/"))
-(defparameter *text-folder* (concat *files-folder* "text/"))
-(defparameter *core-text-folder* (concat *files-folder* "core/"))
-(defparameter *domain-lists-folder* (concat *files-folder* "domain-lists/"))
-(defparameter *boilerplate-folder* (concat *files-folder* "boilerplate/"))
-(defparameter *aliases-file* (concat *files-folder* "file-aliases"))
-(defparameter *domain-aliases-file* (concat *files-folder* "domain-aliases"))
-(defparameter *crawl-data-folder* "../DATA/crawlers/")
-(defparameter *discovered-folder* "../DATA/discovered") ;; without terminating slash because of place results
-
-(defparameter *entries-per-page* 10)
-(defparameter *explain?* nil)
-(defparameter *blind?* nil)
-(defparameter *evidence-length* 6)
-(defparameter *newline* "
-")
-(defparameter *iterations* 200)
-(defparameter *decimals* 3)
-(defparameter *smoothing-factor* 1)
-(defparameter *crawler-name* "botelaire")
-
-(defparameter *min-word-count* 450)
-(defparameter *min-character-comprehensibility* 0.8)
-(defparameter *min-word-comprehensibility* 0.6)
-
-
-;; TBD: This is duplicate now
-(defparameter *min-word-score* 1/5)
-(defparameter *max-word-score* 4/5)
-(defparameter *word-group-size* 1000)
-(defparameter *boilerplate-threshold* 4)
-
-(defparameter *forbidden-extensions* (list "css" "png" "mp4" "ico" "svg" "webmanifest" "js" "json" "xml" "jpg" "mp3" "scss" "jsp" "xsl"))
-(defparameter *timeout* 10)
-
-(defparameter *bg-col* "#f0f0f0")
-(defparameter *button-col* "#e0e0e0")
-(defparameter *active-col* "#a0a0a0")
-(defparameter *text-col* "#000000")
-
 (defun pass ())
-
-(defmacro fallback (obj if-nil)
-  "Identity unless obj is NIL. In that case, returns if-nil."
-  ;; avoiding multiple evaluation
-  (let ((name (gensym)))
-    `(let ((,name ,obj))
-       (if ,name
-           ,name
-           (progn
-             ,if-nil)))))
 
 (defun one-elem? (lst)
   (and (car lst)
@@ -133,7 +83,7 @@
           (apply #'multi-equal (cdr things)))
       (car things)))
 
-(defun my-round (num &optional (decimals *decimals*))
+(defun my-round (num &optional (decimals 3))
   (let ((divisor (expt 10 (- decimals))))
     (coerce (* (round num divisor)
                divisor)
@@ -224,6 +174,12 @@
       (push (cons word (gethash word hashtable)) corpus))
     corpus))
 
+(defun open-url (url)
+  "Open the URL in the browser. Waits a bit for it to load."
+  (uiop:run-program (format nil "xdg-open ~S" url))
+  (sleep 1))
+
+
 
 (defmacro letrec (bindings &body decls/forms)
   (assert (and (listp bindings)
@@ -249,3 +205,59 @@
        (setf ,@nvpairs)
        (locally
            ,@decls/forms))))
+
+(defmacro fallback (obj if-nil)
+  "Identity unless obj is NIL. In that case, returns if-nil."
+  ;; avoiding multiple evaluation
+  (let ((name (gensym)))
+    `(let ((,name ,obj))
+       (if ,name
+           ,name
+           (progn ;; TBD: Is this needed?
+             ,if-nil)))))
+
+;;; UTILS
+;;;----------------------------------------------------------------------------------------------
+;;; CONFIG VARIABLES
+
+;; paths
+(defparameter *classes-folder* "../DATA/classes/")
+(defparameter *generated-data-folder* "../DATA/generated-data/")
+(defparameter *files-folder* "../DATA/files/")
+(defparameter *html-folder* (concat *files-folder* "html/"))
+(defparameter *text-folder* (concat *files-folder* "text/"))
+(defparameter *core-text-folder* (concat *files-folder* "core/"))
+(defparameter *domain-lists-folder* (concat *files-folder* "domain-lists/"))
+(defparameter *boilerplate-folder* (concat *files-folder* "boilerplate/"))
+(defparameter *aliases-file* (concat *files-folder* "file-aliases"))
+(defparameter *domain-aliases-file* (concat *files-folder* "domain-aliases"))
+(defparameter *crawl-data-folder* "../DATA/crawlers/")
+(defparameter *discovered-folder* "../DATA/discovered") ;; without terminating slash because of place results
+
+;; core engine
+(defparameter *score-threshold* 1/5)
+(defparameter *word-group-size* 1000)
+(defparameter *boilerplate-threshold* 4)
+(defparameter *evidence-length* 6)
+(defparameter *smoothing-factor* 1)
+(defparameter *allowed-characters* (charlist "0123456789 ,.abcdefghijklmnopqrstuvwxyz"))
+
+;; crawler
+(defparameter *crawler-name* "botelaire")
+(defparameter *user-agent* "botelaire (https://github.com/xdvom03/klaus, xdvom03 (at) gjk (dot) cz)")
+(defparameter *min-word-count* 450)
+(defparameter *min-character-comprehensibility* 0.8)
+(defparameter *min-word-comprehensibility* 0.6)
+(defparameter *forbidden-extensions* (list "css" "png" "mp4" "ico" "svg" "webmanifest" "js" "json" "xml" "jpg" "mp3" "scss" "jsp" "xsl"))
+(defparameter *timeout* 10)
+
+;; display
+(defparameter *entries-per-page* 10)
+(defparameter *bg-col* "#f0f0f0")
+(defparameter *button-col* "#e0e0e0")
+(defparameter *active-col* "#a0a0a0")
+(defparameter *text-col* "#000000")
+
+;; TBD: Should not be global!
+(defparameter *explain?* nil)
+(defparameter *blind?* nil)
