@@ -107,7 +107,12 @@
                         (class-frame (frame 0 0 fr))
                         (comment-frame (frame 0 2 fr))
 
-                        (vocab (remove-duplicates (wordlist (url-text url))))
+                        ;; TBD: Error abstraction?
+                        (vocab (remove-duplicates (wordlist (handler-case (url-text url)
+                                                              (error (err-text)
+                                                                (warning-box err-text "Website error")
+                                                                (back-to-main)
+                                                                (abort))))))
 
                         ;; variable stuff
                         (tex (text 0 0 comment-frame "" 10 20 "NotoSans 10"))
@@ -125,7 +130,7 @@
                               (setf (ltk:text class-label) current-class)
                               (let ((subclasses (subclasses current-class))
                                     (excluded-data (mapcar #'(lambda (class) (cons current-url class))
-                                                           (link-occurrences current-url))))
+                                                           (location current-url))))
                                 (multiple-value-bind (scores probsum pair-scores pair-words pair-word-details)
                                     (scores vocab
                                             subclasses
@@ -135,7 +140,7 @@
                                                                          (append1 (remove-if #'null
                                                                                              (mapcar #'(lambda (excludee)
                                                                                                          (if (equal (cdr excludee) class)
-                                                                                                             (scale-corpus (downloaded-link-corpus (car excludee)) -1)))
+                                                                                                             (scale-corpus (downloaded-url-corpus (car excludee)) -1)))
                                                                                                      excluded-data))
                                                                                   (get-recursive-corpus class))))
                                                              subclasses)
@@ -146,7 +151,7 @@
                                                                         (append1 (remove-if #'null
                                                                                             (mapcar #'(lambda (excludee)
                                                                                                         (if (equal (cdr excludee) class)
-                                                                                                            (- (length (list-keys (downloaded-link-corpus (car excludee)))))))
+                                                                                                            (- (length (list-keys (downloaded-url-corpus (car excludee)))))))
                                                                                                     excluded-data))
                                                                                  (get-word-count class))))
                                                              subclasses)
@@ -177,5 +182,3 @@
           (button 0 0 X "X" #'(lambda ()
                                 (back-to-main))))
         (back-to-main)))))
-
-

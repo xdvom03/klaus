@@ -131,6 +131,10 @@ CL's main drawback is its shortage of well-made libraries, which is the most vis
 
 ## Data storage
 
+## Error handling
+
+Most features are used through a GUI. Any errors on the website side produce warning boxes. Usually, the user gets options to retry or cancel (either adding a site or trying to class one). When redownloading, the options are to skip the URL (writing its data to an error log, removing it from the database), substitute an alternative immediately, or continue recklessly (if the error is a program-generated one, such as not accepting RSS)
+
 # Speed
 
 fast-substr-check is rought twice as fast as a full substring check in the average case
@@ -141,9 +145,11 @@ Drakma (https://github.com/edicl/drakma) for downloading page data.
 
 LTK (http://www.peter-herth.de/ltk/index.html) for the window GUI.
 
-QURI (https://github.com/fukamachi/quri) for dealing with URL character issues (example.com/B%C3%A1g%C5%99i -> example.com/Bágři)
+QURI (https://github.com/fukamachi/quri) for dealing with URL character issues (example.com/B%C3%A1g%C5%99i -> example.com/Bágři) and for following links.
 
-Plump (https://github.com/Shinmera/plump) for something similar inside the HTML (XML escape: \&rsquo; -> ' (with a little help))
+Plump (https://github.com/Shinmera/plump) for something similar inside the HTML (XML escape: \&rsquo; -> ' (with a little help)).
+
+Trivial-timeout (https://common-lisp.net/project/trivial-timeout/) to timeout if a site is unreachable or otherwise broken.
 
 cl-strings (https://github.com/diogoalexandrefranco/cl-strings) for string manipulation utilities.
 
@@ -160,4 +166,4 @@ The algorithm for overlap detection was adapted from https://neil.fraser.name/ne
 
 # Other sources
 
-Plenty of content I have little personal experience with was taken from the DMOZ directory (with additional filtering to suit the categories used here). Some aspects of the program are the result of consultations with the project advisor (Šimon Schierreich) and @simonbrecher.
+Plenty of content I have little personal experience with was taken from the DMOZ directory (with additional filtering to suit the categories used here). Some aspects of the program result from consultations with the project advisor (Šimon Schierreich) and @simonbrecher.

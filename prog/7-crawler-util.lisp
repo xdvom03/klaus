@@ -1,4 +1,5 @@
 (defun remove-fragment (url)
+  ;; TBD: QURI
   (do ((i 0 (1+ i)))
       ((or (>= i (length url))
            (equal (char "#" 0) (char url i))
@@ -45,7 +46,7 @@
          (equal key (subseq str start (+ start key-len))))))
 
 (defun robots-txt (site)
-  (let* ((file (safe-fetch-html (concat (find-domain site) "/robots.txt")))
+  (let* ((file (html (concat (find-domain site) "/robots.txt")))
          (user-agents nil)
          (rules nil)
          (accepting-new-agents? t)
@@ -77,13 +78,13 @@
 (defun extension (url)
   (last1 (cl-strings:split url #\.)))
 
-(defun filter-links (raw-links)
+(defun filter-urls (raw-urls)
   (remove-if #'(lambda (url)
                  (member (extension url)
                          *forbidden-extensions*
                          :test #'equal))
              (remove-duplicates (mapcar #'remove-fragment
-                                        raw-links))))
+                                        raw-urls))))
 
 (defun comprehensible? (vocab)
   (let ((total-corp (add-corpuses (get-recursive-corpus "/")

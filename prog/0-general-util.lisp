@@ -2,7 +2,7 @@
 
 ;;; IMPORTS
 ;;;----------------------------------------------------------------------------------------------
-;;;  CONFIG VARIABLE INIT
+;;; CONFIG VARIABLE INIT
 
 (defun concat (&rest strings)
   ;; Writes numbers out, but leaves the rest be to signal errors if something VERY wrong is supplied
@@ -35,7 +35,7 @@
 (defparameter *boilerplate-threshold* 4)
 (defparameter *evidence-length* 6)
 (defparameter *smoothing-factor* 1)
-(defparameter *allowed-characters* (cl-strings:chars "0123456789 abcdefghijklmnopqrstuvwxyz"))
+(defparameter *allowed-characters* (cl-strings:chars "0123456789 abcdefghijklmnopqrstuvwxyz'"))
 
 ;; crawler
 (defparameter *crawler-name* "botelaire")
@@ -44,7 +44,7 @@
 (defparameter *min-character-comprehensibility* 0.8)
 (defparameter *min-word-comprehensibility* 0.6)
 (defparameter *forbidden-extensions* (list "css" "png" "mp4" "ico" "svg" "webmanifest" "js" "json" "xml" "jpg" "mp3" "scss" "jsp" "xsl"))
-(defparameter *timeout* 10)
+(defparameter *timeout* 20)
 
 ;; display
 (defparameter *entries-per-page* 10)
@@ -88,15 +88,6 @@
 (defun remove-last (lst)
   (reverse (cdr (reverse lst))))
 
-(defun replace-last (lst elem)
-  ;; If list is NIL, returns NIL
-  (if (null lst)
-      nil
-      (if (null (cdr lst))
-          (list elem)
-          (cons (car lst)
-                (replace-last (cdr lst) elem)))))
-
 (defun slash? (char)
   (equal char (char "/" 0)))
 
@@ -106,16 +97,16 @@
 (defun convert-to-str (list)
   (concatenate 'string list))
 
-(defun list-hashes (hashtable) ;; TBD: Check usage
+(defun list-keys (hashtable)
   (let ((acc nil))
-    (maphash #'(lambda (a b) (push (cons a b) acc))
+    (maphash #'(lambda (a b) (declare (ignore b)) (push a acc))
              hashtable)
     acc))
 
-(defun list-keys (hashtable)
+(defun list-values (hashtable)
+  ;; not used, but logical to have
   (let ((acc nil))
-    ;; Stop the warning by adding a useless b
-    (maphash #'(lambda (a b) b (push a acc))
+    (maphash #'(lambda (a b) (declare (ignore a)) (push b acc))
              hashtable)
     acc))
 
@@ -127,7 +118,7 @@
 
 (defun ln-add (num)
   "Computes ln(1+exp(num)) for ln formulation purposes."
-  (if (> num 80)
+  (if (> num 80) ; avoid floating point overflow (TBD: use constant?)
       num
       (ln (1+ (exp num)))))
 
@@ -145,8 +136,7 @@
                          (cdr (cdr numbers))))))
 
 (defun ln (a)
-  ;; Ln formulation requires high float precision
-  ;; TBD: Does it still?
+  ;; TBD: Check efficiency and whether double is really needed
   (log (coerce a 'double-float)))
 
 (defun map-to-hash (fun list &key key-fun)
@@ -169,17 +159,6 @@
                  (funcall (apply #'compose (cdr functions))
                           param)))))
 
-(defun cut (lst size)
-  (let ((acc nil)
-        (acc2 nil))
-    (dotimes (i (length lst))
-      (push (nth i lst) acc2)
-      (if (zerop (mod (1+ i) size))
-          (progn
-            (push (reverse acc2) acc)
-            (setf acc2 nil))))
-    (append1 (reverse acc) (reverse acc2))))
-
 (defun assoc-to-hashtable (list)
   ;; Converts from the assoc list format to the hash table format
   (map-to-hash #'cdr list :key-fun #'car))
@@ -191,19 +170,36 @@
       (push (cons word (gethash word hashtable)) corpus))
     corpus))
 
+;; only used in debugging crawler results
 (defun open-url (url)
   "Open the URL in the browser. Waits a bit for it to load."
   (uiop:run-program (format nil "xdg-open ~S" url))
   (sleep 1))
 
-(defun safe-fetch-html (url)
-  "Gets HTML data from a URL, but if it 404's, it returns nothing found."
-  (let ((unsafe (ignore-errors ;; BUG: Errors if the site contains any invalid UTF-8 characters.
-                 (drakma:http-request url :user-agent *user-agent* :connection-timeout *timeout*))))
-    ;; an image link, or anything that isn't a string, is considered a 404
-    (if (or (null unsafe) (not (stringp unsafe)))
-        "nothingfound"
-        (coerce unsafe 'simple-string))))
+(defun html (url)
+  "Gets HTML data from a URL, but calls an error if it doesn't contain useable text. Error should be resolved within GUI."
+  (trivial-timeout:with-timeout (*timeout*)
+    ;; connection-timeout does not catch server-side timeouts
+    (multiple-value-bind (response status-code headers actual-uri)
+        (drakma:http-request url :user-agent *user-agent*)
+      ;; There is some additional data returned, but it is safe to ignore
+      (let ((content-type (gethash :content-type (assoc-to-hashtable headers))))
+        (assert (or (search "text/html" content-type :test #'equal)
+                    (search "text/plain" content-type :test #'equal)
+                    (search "text/vtt" content-type :test #'equal))
+                ;; TBD: Check other text types, maybe just rejecting XML & RSS is okay
+                nil
+                (concat "No HTML text found. Content type: " content-type))
+        (assert (>= 299 status-code 200)
+                nil
+                (concat "Unsuccessful request. HTTP status code: " status-code))
+        (assert (stringp response)
+                nil
+                (concat "Content not a string. Type: " content-type))
+        (values response
+                (with-output-to-string (str)
+                  ;; The PURI library only lets you print an URI to a stream, not just return it. (which is why we use quri instead!)
+                  (puri:render-uri actual-uri str)))))))
 
 
 
@@ -239,5 +235,4 @@
     `(let ((,name ,obj))
        (if ,name
            ,name
-           (progn ;; TBD: Is this needed?
-             ,if-nil)))))
+           ,if-nil))))

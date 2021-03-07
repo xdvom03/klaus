@@ -1,7 +1,7 @@
 #|
-TBD: Speed up
-TBD: Load title for links
+TBD: Load title for urls
 TBD: Autoclose explainers when a thing is classed.
+TBD: Remove a file from the downloaded stuffs when removed
 
 Some sites use scripts to deliver boilerplate. While this is not a problem for classification (just ignore them or input manually), it might mess up the crawler.
 
@@ -18,51 +18,23 @@ Naming convention: 'class' is simplified path, 'folder' is actual folder.
   (fallback (second (member mode *modes-cycle* :test #'equal))
             (first *modes-cycle*)))
 
-(defun remove-link (link class)
-  (overwrite-file class "links"
-                  (remove-if #'(lambda (checked-url)
-                                 (equal checked-url link))
-                             (read-from-file (concat (full-path class) "links")))))
-
-(defun add-link (link class)
-  ;; Avoiding double insert
-  (if (not (member link (class-links class) :test #'equal))
-      (let* ((links-file (concat (full-path class) "links"))
-             (existing-links (read-from-file links-file)))
-        (redownload-file link)
-        (overwrite-direct-file links-file (append1 existing-links link)))
-      (warning-box "File already in class." "nice try")))
-
-(defun action (link origin class mode)
+(defun action (url origin class mode)
   (case mode
     (add
-     (add-link link class))
+     (add-url url class))
     (move
-     (remove-link link origin)
-     (add-link link class))
+     ;; needlessly checks for continued existence of file
+     (remove-url url origin)
+     (add-url url class))
     (remove
-     (remove-link link origin))
+     (remove-url url origin))
     (nothing
      nil)))
 
-(defun copy (var)
-  ;; Rebinds a variable to pass it by value
-  (let ((acc var))
-    acc))
-
-(defun get-weight (class)
-  (fallback (ignore-errors
-             (read-from-file (concat (full-path class) "weight")))
-            1))
-
-(defun set-weight (class weight)
-  ;; TBD: Try using setf? Better style?
-  (overwrite-file class "weight" weight))
-
 (defun db ()
   #|
-  TBD: Abstract all the GUI stuff elsewhere ; ;
-  TBD: This is a mess. Read up on C2 Wiki GUI design, see if this can be done more functionally. ; ;
+  TBD: Abstract all the GUI stuff elsewhere
+  TBD: This is a mess. Read up on C2 Wiki GUI design, see if this can be done more functionally.
   |#
   (ltk:with-ltk ()
     (ltk:withdraw ltk:*tk*)
@@ -70,8 +42,8 @@ Naming convention: 'class' is simplified path, 'folder' is actual folder.
       (ltk:on-close W #'(lambda () (ltk:destroy ltk:*tk*)))
       (let* ((fr (frame 0 0 W))
              (current-class "/")
-             ;; Conses: (link . original-path)
-             (bucket-links nil)
+             ;; Conses: (url . original-path)
+             (bucket-urls nil)
              (subclass-buttons nil)
              (bucket-buttons nil)
              
@@ -129,21 +101,24 @@ Naming convention: 'class' is simplified path, 'folder' is actual folder.
                    (dolist (w list)
                      (ltk:destroy w)))
 
-                 (new-bucket-button (link origin)
+                 (new-bucket-button (url origin)
                    (let ((index (length bucket-buttons)))
                      (button (+ 3 index)
                              0
                              bucket-frame
-                             (cons link origin)
+                             (cons url origin)
                              #'(lambda ()
-                                 (action link origin current-class mode)
-                                 (setf bucket-links (remove-nth index bucket-links))
+                                 (handler-case (action url origin current-class mode)
+                                   (error (err-text)
+                                     (warning-box err-text "Website error")
+                                     (abort)))
+                                 (setf bucket-urls (remove-nth index bucket-urls))
                                  (redraw-bucket)
                                  (redraw-files)))))
                  
-                 (add-to-bucket (link origin)
-                   (setf bucket-links (append1 bucket-links (cons link origin)))
-                   (push (new-bucket-button link origin)
+                 (add-to-bucket (url origin)
+                   (setf bucket-urls (append1 bucket-urls (cons url origin)))
+                   (push (new-bucket-button url origin)
                          bucket-buttons))
 
                  (change-class-confirmed (new-path)
@@ -185,17 +160,17 @@ Naming convention: 'class' is simplified path, 'folder' is actual folder.
                                subclass-buttons)))))
 
                  (redraw-files ()
-                   (let ((links (class-links current-class)))
+                   (let ((urls (class-urls current-class)))
                      (ltk:destroy file-list)
                      (if show-files?
                          (setf file-list
-                               (scrollable-list 1 0 file-frame *entries-per-page* links (mapcar #'(lambda (link) (lambda () (add-to-bucket link current-class))) links))))))
+                               (scrollable-list 1 0 file-frame *entries-per-page* urls (mapcar #'(lambda (url) (lambda () (add-to-bucket url current-class))) urls))))))
                  
                  (redraw-bucket ()
                    (destroy-widgets bucket-buttons)
                    (setf bucket-buttons nil)
-                   (dolist (link bucket-links)
-                     (push (new-bucket-button (car link) (cdr link))
+                   (dolist (url bucket-urls)
+                     (push (new-bucket-button (car url) (cdr url))
                            bucket-buttons))))
           
           (letrec ((b (button 0 0 options-frame mode #'(lambda () (setf (ltk:text b) (setf mode (next-mode mode))))))
@@ -232,8 +207,8 @@ Naming convention: 'class' is simplified path, 'folder' is actual folder.
                                                                (warning-box "Empty class names are a BAD IDEA." "NOPE")
                                                                (let ((new-class (concat current-class txt "/")))
                                                                  (ensure-directories-exist (full-path new-class))
-                                                                 (overwrite-file new-class "links" nil)
-                                                                 (overwrite-file new-class "comment" "")
+                                                                 (overwrite-class-file new-class "urls" nil)
+                                                                 (overwrite-class-file new-class "comment" "")
                                                                  (rebuild-corpus new-class)
                                                                  (setf (ltk:text e3) "")
                                                                  (change-current-class (concat current-class txt "/")))))))
@@ -248,10 +223,8 @@ Naming convention: 'class' is simplified path, 'folder' is actual folder.
           (label 0 0 class-frame "CLASSES")    
           (button 1 0 comment-frame "Save comment" #'(lambda ()
                                                        (setf old-comment (read-text-widget tex))
-                                                       (overwrite-file current-class "comment" (read-text-widget tex))))
+                                                       (overwrite-class-file current-class "comment" (read-text-widget tex))))
           (setf parent-button (button 1 0 class-frame ".." #'(lambda () (change-current-class (parent-class current-class)))))
           (change-class-confirmed current-class)
           (redraw-files)
           fr)))))
-
-;; TBD: Show blind checks in the regular interface

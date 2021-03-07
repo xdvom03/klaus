@@ -16,51 +16,9 @@
                                              (1+ i)))))))
     acc))
 
-(defun display-path (start)
-  ;; wow that is ugly & slow
-  (let ((hst (read-from-file "../DATA/crawlers/classbot-path"))
-        (queue (list "https://waitbutwhy.com"))
-        (reconstructed nil))
-    (dolist (elem hst)
-      (push queue reconstructed)
-      (setf queue (swap queue (car elem) (cdr elem))))
-    (ltk:with-ltk ()
-      (ltk:withdraw ltk:*tk*)
-      (let ((W (window ".")))
-        (ltk:on-close W #'(lambda () (ltk:destroy ltk:*tk*)))
-        (let ((aliases (make-hash-table :test #'equal))
-              (counter 0))
-          (dotimes (i (- (length reconstructed) start))
-            (dotimes (j (length (nth i (reverse reconstructed))))
-              (let* ((x (+ start i))
-                     (y j)
-                     (link (nth y (nth x (reverse reconstructed))))
-                     (b (if link
-                            (button x y W
-                                    (write-to-string (fallback (gethash link aliases)
-                                                               (setf (gethash link aliases) (incf counter))))
-                                    #'(lambda () (info-box link "baf"))))))
-                (if link
-                    (ltk:configure b :foreground "#ffffff"))
-                (if link
-                    (ltk:configure b :background ; "#000000"
-                                   (if (member (nth y (nth x (reverse reconstructed)))
-                                               (nth (min (length reconstructed) (1+ x)) (reverse reconstructed))
-                                               :test #'equal)
-                                       (if (member (nth y (nth x (reverse reconstructed)))
-                                                   (nth (max 0 (1- x)) (reverse reconstructed))
-                                                   :test #'equal)
-                                           "#000000"
-                                           "#008800")
-                                       (if (member (nth y (nth x (reverse reconstructed)))
-                                                   (nth (max 0 (1- x)) (reverse reconstructed))
-                                                   :test #'equal)
-                                           "#880088"
-                                           "#444444"))))))))))))
-
 #|
-TBD: Properly cut off trailing section hashtags and other useless link fluff
-TBD: Properly cache link scores, profile
+TBD: Properly cut off trailing section hashtags and other useless url fluff
+TBD: Properly cache url scores, profile
 Not using a robots.txt library because is has no license.
 TBD: Cache robots.txt (or a sensible format thereof)
 BUG: Can get stuck on: "Open too many files" or scoring "http://lightspeed.sourceforge.net/". Make it fail gracefully in these cases, releasing the queue AND acc with each major visited file (not just scored, but actually taken).
@@ -75,16 +33,14 @@ Crawl 40 from:
 
 (defun prob (vocab class)
   (let* ((sibling-classes (subclasses (parent-class class)))
-         (path-scores (map-to-hash #'cdr
-                                   (list-hashes (scores vocab
-                                                        sibling-classes
-                                                        (map-to-hash #'get-recursive-corpus sibling-classes)
-                                                        (map-to-hash #'get-word-count sibling-classes)
-                                                        nil))
-                                   :key-fun #'car)))
+         (path-scores (scores vocab
+                              sibling-classes
+                              (map-to-hash #'get-recursive-corpus sibling-classes)
+                              (map-to-hash #'get-word-count sibling-classes)
+                              nil)))
     (gethash class path-scores)))
 
-(defun link-score (url target-class)
+(defun url-score (url target-class)
   (vocab-score (remove-duplicates (wordlist (url-text url))) target-class))
 
 (defun vocab-score (vocab target-class)
@@ -137,30 +93,27 @@ Crawl 40 from:
                                                       (map-to-hash #'get-recursive-corpus subclasses)
                                                       (map-to-hash #'get-word-count subclasses)
                                                       nil)
-          (let ((simple-path-scores (map-to-hash #'cdr
-                                                 (list-hashes scores)
-                                                 :key-fun #'car)))
-            (multiple-value-bind (best-path best-score) (best-key simple-path-scores #'>)
-              ;; TBD: Why is score returning non-ln'd values?
-              (if (> #|(+ probsum (if (<= best-score 0)
-                                    -1000 ;; TEMP
-                                    (ln best-score)))|# ; TEMP: Probsum fails because of tiny classes!
-                     (if (<= best-score 0)
-                         -1000 ;; TEMP
-                         (ln best-score))
-                     (ln 1/5))
-                  (place-vocab vocab best-path)
-                  class))))
+          (multiple-value-bind (best-path best-score) (best-key scores #'>)
+            ;; TBD: Why is score returning non-ln'd values?
+            (if (> #|(+ probsum (if (<= best-score 0)
+                 -1000 ;; TEMP
+                 (ln best-score)))|# ; TEMP: Probsum fails because of tiny classes!
+                 (if (<= best-score 0)
+                     -1000 ;; TEMP
+                     (ln best-score))
+                 (ln 1/5))
+                (place-vocab vocab best-path)
+                class)))
         class)))
 
-(defun place-discovered (link)
-  (redownload-file link)
-  (let* ((folder (concat *discovered-folder* (place-vocab (remove-duplicates (wordlist (read-text link))))))
-         (path (concat folder "links")))
+(defun place-discovered (url)
+  (redownload-file url)
+  (let* ((folder (concat *discovered-folder* (place-vocab (remove-duplicates (wordlist (read-text url))))))
+         (path (concat folder "urls")))
     (ensure-directories-exist path)
-    (overwrite-direct-file (concat folder "comment") "auto-generated class")
-    (redownload-file link)
-    (overwrite-direct-file path (append1 (fallback (ignore-errors (read-from-file path)) nil) link))))
+    (overwrite-file (concat folder "comment") "auto-generated class")
+    (redownload-file url)
+    (overwrite-file path (append1 (fallback (ignore-errors (read-from-file path)) nil) url))))
 
 (defun pick-the-best (queue)
   (let ((item (best-element queue #'> #'third)))
@@ -186,7 +139,7 @@ Crawl 40 from:
       (let ((choice (nth (random (length queue)) queue)))
         (values (car choice)
                 (cdr choice)))
-      ;; If we ran out of queue, do a Hail Mary and start over from a random point visited.
+      ;; If we ran out of queue, do a Hail Mary and start over from a random point visited. TBD: Terrible!
       (progn
         (print "Hailmary")
         (values (nth (random (length acc)) acc)
@@ -209,8 +162,8 @@ Crawl 40 from:
   (setf *random-state* (make-random-state t))
   
   (let ((acc nil)
-        (visited-domains (map-to-hash #'(lambda (link) (declare (ignore link)) t)
-                                      (aliases)
+        (visited-domains (map-to-hash #'(lambda (pair) (declare (ignore pair)) t)
+                                      (url-aliases)
                                       :key-fun (compose #'core-domain #'find-domain #'car)))
         (current-url seed)
         (domain-limit domain-steps)
@@ -230,28 +183,28 @@ Crawl 40 from:
             (redownload-file current-url)
             (discover current-url)))
 
-      ;; find links
+      ;; find linked urls
       (let* ((domain (core-domain (find-domain current-url)))
-             (links (remove-if #'(lambda (link) (or (find link acc :test #'equal)
-                                                    (equal link current-url)
-                                                    (equal (subseq link 0 (min 7 (length link))) "mailto:")))
-                               (filter-links (vetted-links current-url))))
-             (domain-links (shuffle (if (zerop domain-limit)
-                                        (remove-if #'(lambda (link) (gethash (core-domain (find-domain link)) visited-domains))
-                                                   links)
-                                        (remove-if-not #'(lambda (link) (equal (core-domain (find-domain link))
+             (urls (remove-if #'(lambda (url) (or (find url acc :test #'equal)
+                                                    (equal url current-url)
+                                                    (equal (subseq url 0 (min 7 (length url))) "mailto:")))
+                               (filter-urls (vetted-links current-url))))
+             (domain-urls (shuffle (if (zerop domain-limit)
+                                        (remove-if #'(lambda (url) (gethash (core-domain (find-domain url)) visited-domains))
+                                                   urls)
+                                        (remove-if-not #'(lambda (url) (equal (core-domain (find-domain url))
                                                                                domain))
-                                                       links))))
+                                                       urls))))
              
-             (chosen-link (do ((counter 0 (1+ counter)))
-                              ((or (>= counter (length domain-links))
-                                   (allowed-url? (nth counter domain-links)))
-                               (nth counter domain-links)))))
-        (if chosen-link
+             (chosen-url (do ((counter 0 (1+ counter)))
+                              ((or (>= counter (length domain-urls))
+                                   (allowed-url? (nth counter domain-urls)))
+                               (nth counter domain-urls)))))
+        (if chosen-url
             (progn
               (setf domain-limit (mod (1- domain-limit)
                                       domain-steps))
-              (setf current-url chosen-link)
+              (setf current-url chosen-url)
               (incf score))
             (if (zerop domain-limit)
                 (progn
@@ -275,10 +228,10 @@ Crawl 40 from:
 
 (defun discover (url)
   (let* ((folder (concat *discovered-folder* (place-vocab (remove-duplicates (wordlist (read-text url))))))
-         (path (concat folder "links")))
+         (path (concat folder "urls")))
     (ensure-directories-exist path)
-    (overwrite-direct-file (concat folder "comment") "auto-generated class")
-    (overwrite-direct-file path (append1 (ignore-errors (read-from-file path)) url))))
+    (overwrite-file (concat folder "comment") "auto-generated class")
+    (overwrite-file path (append1 (ignore-errors (read-from-file path)) url))))
 
 (defun rediscover ()
   (let ((counter 0)
@@ -287,14 +240,14 @@ Crawl 40 from:
       (print (concat (incf counter) "/" (length urls)))
       (discover (print url)))))
 
-(defun sorted-bot-links ()
+(defun sorted-bot-urls ()
   (let ((urls (read-from-file "../DATA/bot-path")))
     (sort (copy-seq urls) #'< :key #'(lambda (url) (length (wordlist (read-text url)))))))
 
 
 
 
-;; (apply-to-all-classes #'(lambda (path) (if (not (directory (concat (full-path path) "links"))) (overwrite-file path "links" nil))))
+;; (apply-to-all-classes #'(lambda (path) (if (not (directory (concat (full-path path) "urls"))) (overwrite-file path "urls" nil))))
 ;; (apply-to-all-classes #'(lambda (path) (if (not (directory (concat (full-path path) "comment"))) (overwrite-file path "comment" "placeholder"))))
 ;; TBD: Call error if file has no alias!
 
@@ -316,7 +269,7 @@ Crawl 40 from:
     (print (length lst))
     (remove-duplicates lst :test #'(lambda (url1 url2) (if (zerop (random 1000000)) (princ ".")) (equal (raw-url url1) (raw-url url2))))))
 
-(defun nonredundant-bot-links ()
+(defun nonredundant-bot-urls ()
   (let ((lst (read-from-file "../DATA/bot-viewed")))
     (print (length lst))
     (remove-duplicates lst :test #'(lambda (url1 url2) (if (zerop (random 1000000)) (princ ".")) (equal (raw-url url1) (raw-url url2))))))
