@@ -103,14 +103,14 @@
   (gethash file-name (url-aliases)))
 
 (defun domain-alias (domain)
-  (gethash domain (assoc-to-hashtable (domain-aliases))))
+  (gethash domain (domain-aliases)))
 
 
 (defun url-aliases ()
   (assoc-to-hashtable (read-from-file *aliases-file*)))
 
 (defun domain-aliases ()
-  (read-from-file *domain-aliases-file*))
+  (assoc-to-hashtable (read-from-file *domain-aliases-file*)))
 
 
 (defun read-core-text (url)
@@ -131,7 +131,7 @@
 
 (defun add-domain-alias (domain)
   (if (null (domain-alias domain))
-      (overwrite-file *domain-aliases-file* (add-to-aliases domain (domain-aliases))))
+      (overwrite-file *domain-aliases-file* (hashtable-to-assoc (add-to-aliases domain (domain-aliases)))))
   (domain-alias domain))
 
 (defun add-alias (url)

@@ -129,8 +129,7 @@
                               (setf widget-list nil)
                               (setf (ltk:text class-label) current-class)
                               (let ((subclasses (subclasses current-class))
-                                    (excluded-data (mapcar #'(lambda (class) (cons current-url class))
-                                                           (location current-url))))
+                                    (excluded-data (list (cons current-url (location current-url))))) ;; TEMP: Vestige of when multi-place data was still possible
                                 (multiple-value-bind (scores probsum pair-scores pair-words pair-word-details)
                                     (scores vocab
                                             subclasses
