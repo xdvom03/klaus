@@ -81,7 +81,7 @@
 ;;; FOLDER NAVIGATION
 
 (defun subclasses (class)
-  (mapcar #'simplified-path (remove-if-not #'folder? (mapcar #'namestring (directory (concat (full-path class) "*"))))))
+  (mapcar #'simplified-path (mapcar #'namestring (directory (concat (full-path class) "*/")))))
 
 (defun parent-class (class)
   (concat (cl-strings:join (remove-last (remove-last (cl-strings:split class #\/))) :separator "/") "/"))
