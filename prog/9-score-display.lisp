@@ -67,117 +67,159 @@
         (t "#f00")                      ; under -3.5 sigma
         ))
 
-(defun run ()
-  (ltk:with-ltk ()
-    (ltk:withdraw ltk:*tk*)
+(defun database-window (r c master vocab explain?)
+  (let* ((fr (frame r c master))
+         (current-class "/")
+         (widget-list nil)
+                        
+         (class-frame (frame 0 0 fr))
+         (comment-frame (frame 0 2 fr))
+
+         ;; variable stuff
+         (tex (text 0 0 comment-frame "" 10 20 "NotoSans 10"))
+         (class-label (label 0 0 class-frame ""))
+         parent-button)
+    (labels ((redraw (new-path)
+               (setf current-class new-path)
+               (if (equal new-path "/")
+                   (ltk:configure parent-button :state :disabled)
+                   (ltk:configure parent-button :state :normal))
+               (setf (ltk:text tex) (read-comment current-class))
+               (dolist (i widget-list)
+                 (ltk:destroy i))
+               (setf widget-list nil)
+               (setf (ltk:text class-label) current-class)
+               (let ((subclasses (subclasses current-class)))
+                 (multiple-value-bind (scores probsum pair-scores pair-words pair-word-details)
+                     (scores vocab
+                             subclasses
+                             (map-to-hash #'get-recursive-corpus subclasses)
+                             (map-to-hash #'get-word-count subclasses))
+                   (declare (ignore probsum))
+                   (if (and (> (length subclasses) 1) explain?)
+                       ;; TBD: Instead of scores, provide more details!
+                       (pair-scores-explainer 0 0 (window "HUJAJA") subclasses pair-scores pair-words pair-word-details))
+                   (let ((counter 1)
+                         (sorted-subclasses (sort (copy-seq subclasses) #'> :key #'(lambda (class) (fallback (gethash class scores) (/ (length subclasses)))))))
+                     (dolist (i sorted-subclasses)
+                       (incf counter)
+                       (push (button counter
+                                     0
+                                     class-frame
+                                     (concat (folder-name i) " score: " (my-round (fallback (gethash i scores) (/ (length subclasses)))))
+                                     #'(lambda ()
+                                         (redraw i)))
+                             widget-list)))))))
+                     
+      (setf parent-button (button 1 0 class-frame ".." #'(lambda () (redraw (parent-class current-class)))))
+      (redraw current-class)
+      fr)))
+
+(let ((explain? nil))
+  (defun database-window (r c master vocab)
+    (let* ((fr (frame r c master))
+           (current-class "/")
+           (widget-list nil)
+           
+           (class-frame (frame 0 0 fr))
+           (comment-frame (frame 0 2 fr))
+
+           ;; variable stuff
+           (tex (text 0 0 comment-frame "" 10 20 "NotoSans 10"))
+           (class-label (label 0 0 class-frame ""))
+           parent-button)
+      (labels ((redraw (new-path)
+                 (setf current-class new-path)
+                 (if (equal new-path "/")
+                     (ltk:configure parent-button :state :disabled)
+                     (ltk:configure parent-button :state :normal))
+                 (setf (ltk:text tex) (read-comment current-class))
+                 (dolist (i widget-list)
+                   (ltk:destroy i))
+                 (setf widget-list nil)
+                 (setf (ltk:text class-label) current-class)
+                 (let ((subclasses (subclasses current-class)))
+                   (multiple-value-bind (scores probsum pair-scores pair-words pair-word-details)
+                       (scores vocab
+                               subclasses
+                               (map-to-hash #'get-recursive-corpus subclasses)
+                               (map-to-hash #'get-word-count subclasses))
+                     (declare (ignore probsum))
+                     (if (and (> (length subclasses) 1) explain?)
+                         ;; TBD: Instead of scores, provide more details!
+                         (pair-scores-explainer 0 0 (window "HUJAJA") subclasses pair-scores pair-words pair-word-details))
+                     (let ((counter 1)
+                           (sorted-subclasses (sort (copy-seq subclasses) #'> :key #'(lambda (class) (fallback (gethash class scores) (/ (length subclasses)))))))
+                       (dolist (i sorted-subclasses)
+                         (incf counter)
+                         (push (button counter
+                                       0
+                                       class-frame
+                                       (concat (folder-name i) " score: " (my-round (fallback (gethash i scores) (/ (length subclasses)))))
+                                       #'(lambda ()
+                                           (redraw i)))
+                               widget-list)))))))
+        
+        (setf parent-button (button 1 0 class-frame ".." #'(lambda () (redraw (parent-class current-class)))))
+        (redraw current-class)
+        fr)))
+  
+  (defun classifier-window ()
     (let* ((W (window "klaus"))
            (displayed-frame nil)
            (current-url ""))
-      (ltk:on-close W #'(lambda () (ltk:destroy ltk:*tk*)))
       (labels ((change-screen (new-frame)
                  (if displayed-frame
                      (ltk:destroy displayed-frame))
                  (setf displayed-frame new-frame))
-               
+             
                (main-menu (r c master)
                  (letrec ((fr (frame r c master))
                           (e1 (entry 0 0 fr))
+                          (t1 (text 1 0 fr "" 20 20 "NotoSans 10"))
                           (ch (checkbox 0 2 fr "Explain classing?" #'(lambda (a)
                                                                        a
-                                                                       (setf *explain?* (ltk:value ch))
-                                                                       (setf (ltk:value ch) *explain?*))))
-                          (ch2 (checkbox 0 3 fr "Blind?" #'(lambda (a)
-                                                             a
-                                                             (setf *blind?* (ltk:value ch2))
-                                                             (setf (ltk:value ch2) *blind?*)))))
+                                                                       (setf explain? (ltk:value ch))
+                                                                       (setf (ltk:value ch) explain?)))))
                    (setf (ltk:text e1) current-url)
                    (button 0 1 fr "Open database" #'(lambda ()
                                                       (setf current-url (ltk:text e1))
                                                       (ltk:wm-title W current-url)
-                                                      (change-screen (database-window 0 1 master current-url))))
-                   (setf (ltk:value ch) *explain?*)
-                   (setf (ltk:value ch2) *blind?*)
+                                                      (handler-case (change-screen (database-window 0 1 master (hashtable-to-count-list ;;remove-duplicates
+                                                                                                                (tokens (url-text current-url))
+                                                                                                                )))
+                                                        (error (err-text)
+                                                          (warning-box err-text "Website error")
+                                                          (back-to-main)
+                                                          (abort)))))
+                   (button 1 1 fr "Open database with text"
+                           #'(lambda ()
+                               (setf current-url (ltk:text e1))
+                               (ltk:wm-title W current-url)
+                               (change-screen (database-window 0 1 master (remove-duplicates (wordlist (clean-text (ltk:text t1))))))))
+                   (setf (ltk:value ch) explain?)
                    fr))
-               
-               (database-window (r c master url)
-                 (let* ((fr (frame r c master))
-                        (current-class "/")
-                        (widget-list nil)
-                        
-                        (class-frame (frame 0 0 fr))
-                        (comment-frame (frame 0 2 fr))
-
-                        ;; TBD: Error abstraction?
-                        (vocab (remove-duplicates (wordlist (handler-case (url-text url)
-                                                              (error (err-text)
-                                                                (warning-box err-text "Website error")
-                                                                (back-to-main)
-                                                                (abort))))))
-
-                        ;; variable stuff
-                        (tex (text 0 0 comment-frame "" 10 20 "NotoSans 10"))
-                        (class-label (label 0 0 class-frame ""))
-                        parent-button)
-                   (labels ((redraw (new-path)
-                              (setf current-class new-path)
-                              (if (equal new-path "/")
-                                  (ltk:configure parent-button :state :disabled)
-                                  (ltk:configure parent-button :state :normal))
-                              (setf (ltk:text tex) (read-comment current-class))
-                              (dolist (i widget-list)
-                                (ltk:destroy i))
-                              (setf widget-list nil)
-                              (setf (ltk:text class-label) current-class)
-                              (let ((subclasses (subclasses current-class))
-                                    (excluded-data (list (cons current-url (location current-url))))) ;; TEMP: Vestige of when multi-place data was still possible
-                                (multiple-value-bind (scores probsum pair-scores pair-words pair-word-details)
-                                    (scores vocab
-                                            subclasses
-                                            (if *blind?*
-                                                (map-to-hash #'(lambda (class)
-                                                                 (reduce #'add-corpuses
-                                                                         (append1 (remove-if #'null
-                                                                                             (mapcar #'(lambda (excludee)
-                                                                                                         (if (equal (cdr excludee) class)
-                                                                                                             (scale-corpus (downloaded-url-corpus (car excludee)) -1)))
-                                                                                                     excluded-data))
-                                                                                  (get-recursive-corpus class))))
-                                                             subclasses)
-                                                (map-to-hash #'get-recursive-corpus subclasses))
-                                            (if *blind?*
-                                                (map-to-hash #'(lambda (class)
-                                                                 (apply #'+
-                                                                        (append1 (remove-if #'null
-                                                                                            (mapcar #'(lambda (excludee)
-                                                                                                        (if (equal (cdr excludee) class)
-                                                                                                            (- (length (list-keys (downloaded-url-corpus (car excludee)))))))
-                                                                                                    excluded-data))
-                                                                                 (get-word-count class))))
-                                                             subclasses)
-                                                (map-to-hash #'get-word-count subclasses)))
-                                  (declare (ignore probsum))
-                                  (if (and (> (length subclasses) 1) *explain?*)
-                                      ;; TBD: Instead of scores, provide more details!
-                                      (pair-scores-explainer 0 0 (window "HUJAJA") subclasses pair-scores pair-words pair-word-details))
-                                  (let ((counter 1)
-                                        (sorted-subclasses (sort (copy-seq subclasses) #'> :key #'(lambda (class) (fallback (gethash class scores) (/ (length subclasses)))))))
-                                    (dolist (i sorted-subclasses)
-                                      (incf counter)
-                                      (push (button counter
-                                                    0
-                                                    class-frame
-                                                    (concat (folder-name i) " score: " (my-round (fallback (gethash i scores) (/ (length subclasses)))))
-                                                    #'(lambda ()
-                                                        (redraw i)))
-                                            widget-list)))))))
-                     
-                     (setf parent-button (button 1 0 class-frame ".." #'(lambda () (redraw (parent-class current-class)))))
-                     (redraw current-class)
-                     fr)))
-               
+             
                (back-to-main ()
                  (change-screen (main-menu 0 1 W))))
         (let ((X (frame 2 1 W)))
           (button 0 0 X "X" #'(lambda ()
-                                (back-to-main))))
-        (back-to-main)))))
+                                (back-to-main)))
+          (button 1 0 X "Go to database" #'(lambda ()
+                                             (ltk:destroy W)
+                                             (db-window))))
+        (back-to-main)
+        (ltk:on-close W #'(lambda () (ltk:destroy ltk:*tk*)))
+        W))))
+
+(defun run ()
+  (ltk:with-ltk ()
+    (ltk:withdraw ltk:*tk*)
+    (classifier-window)))
+
+(defun hashtable-to-count-list (hashtable)
+  ;; TEMP: This is a quick hack to consider text volume and not just a list of keywords - do it in a math-normal multiplying way!
+  (let ((corpus nil))
+    (dolist (word (list-keys hashtable))
+      (push (make-list (gethash word hashtable) :initial-element word) corpus))
+    (reduce #'append corpus)))

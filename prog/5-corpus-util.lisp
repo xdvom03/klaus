@@ -36,8 +36,7 @@
     
       (let ((subclasses (subclasses class))
             (url-count 0)
-            (corpus (make-hash-table :test #'equal))
-            (timer (get-internal-real-time)))
+            (corpus (make-hash-table :test #'equal)))
       
         (dolist (subclass subclasses)
           (multiple-value-bind (subfolder-corpus subfolder-url-count) (rebuild-corpus subclass)
@@ -53,8 +52,6 @@
                        (word-count corpus))
         (print-to-file "corpus" (sort-corpus (hashtable-to-assoc corpus)))
         (print (concat "rebuilt: " class))
-        (if (equal class "/")
-            (show-time timer "Rebuilt the corpus."))
         (values corpus url-count)))))
 
 (defun get-corpus (class)
@@ -84,26 +81,23 @@
   (fallback (get-generated-data class "file-count") 0))
 
 (defun get-word-count (class)
-  (fallback (get-generated-data class "word-count") 0))
+  (fallback (floor (get-generated-data class "word-count")) 0))
 
 (defun downloaded-url-corpus (url)
   ;; Looks into the downloaded & processed file of the url
   (tokens (read-core-text url)))
 
 (defun build-text-database ()
-  (let ((timer (get-internal-real-time)))
-    (dolist (num (list-values (url-aliases)))
-      (overwrite-file (concat *text-folder* num) 
-                      (extract-text (read-from-file (concat *html-folder* num)))))
-    (show-time timer "Rebuilt the text database.")))
+  (dolist (num (list-values (url-aliases)))
+    (overwrite-file (concat *text-folder* num) 
+                    (extract-text (read-from-file (concat *html-folder* num))))))
 
 (defun build-core-text-database ()
   (ensure-directories-exist *domain-lists-folder*)
   (ensure-directories-exist *boilerplate-folder*)
   (if (not (directory *domain-aliases-file*))
       (overwrite-file *domain-aliases-file* nil))
-  (let* ((timer (get-internal-real-time))
-         (urls (class-urls "/" t))
+  (let* ((urls (class-urls "/" t))
          (domains (remove-duplicates (mapcar #'find-domain urls) :test #'equal))
          (domain-lists (map-to-hash #'(lambda (domain) (remove-if-not #'(lambda (url) (equal (find-domain url) domain))
                                                                       urls))
@@ -123,6 +117,4 @@
                 
                 (overwrite-file (concat *core-text-folder* num)
                                 (reduce #'remove-substr (append (list (read-text url))
-                                                                boilerplate))))))))
-    
-    (show-time timer "Rebuilt the core text database.")))
+                                                                boilerplate))))))))))

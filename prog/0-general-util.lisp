@@ -31,7 +31,7 @@
 
 ;; core engine
 (defparameter *score-threshold* 1/5)
-(defparameter *word-group-size* 1000)
+(defparameter *word-group-size* 400)
 (defparameter *boilerplate-threshold* 4)
 (defparameter *evidence-length* 6)
 (defparameter *smoothing-factor* 1)
@@ -52,10 +52,6 @@
 (defparameter *button-col* "#e0e0e0")
 (defparameter *active-col* "#a0a0a0")
 (defparameter *text-col* "#000000")
-
-;; TBD: Should not be global!
-(defparameter *explain?* nil)
-(defparameter *blind?* nil)
 
 ;;; CONFIG VARIABLE INIT
 ;;;----------------------------------------------------------------------------------------------
@@ -97,6 +93,13 @@
 (defun convert-to-str (list)
   (concatenate 'string list))
 
+(defun list-hashes (hashtable)
+  ;; TBD: Analogical to hashtable-to-assoc?
+  (let ((acc nil))
+    (maphash #'(lambda (a b) (push (cons a b) acc))
+             hashtable)
+    acc))
+
 (defun list-keys (hashtable)
   (let ((acc nil))
     (maphash #'(lambda (a b) (declare (ignore b)) (push a acc))
@@ -104,7 +107,6 @@
     acc))
 
 (defun list-values (hashtable)
-  ;; not used, but logical to have
   (let ((acc nil))
     (maphash #'(lambda (a b) (declare (ignore a)) (push b acc))
              hashtable)
@@ -204,6 +206,7 @@
 
 
 (defmacro letrec (bindings &body decls/forms)
+  ;; beware that this macro by its very nature cannot show unused variables
   (assert (and (listp bindings)
                (every #'(lambda (b)
                           (or (symbolp b)
