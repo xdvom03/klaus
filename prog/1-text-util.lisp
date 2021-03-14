@@ -1,28 +1,21 @@
 ;; TBD: Unite link/url/uri(?). Since we cannot use URNs, URL seems the best choice.
 
 (defun wordlist (text)
-  (mapcar #'intern (cl-strings:split text)))
+  (remove-if #'(lambda (sym) (equal sym '||))
+             (mapcar #'intern (cl-strings:split text))))
 
 (defun tokens (text)
-  ;; Takes up about 10 % of corpus rebuilding time, 
-  ;; TBD: Profile, check if speed actually needed
-  ;; Kinda is - 10 % of total time.
   (let* ((raw (wordlist text))
          (corp (make-hash-table :test #'eq))
          (acc (make-array *word-group-size* :initial-element nil))
          (counter 0))
-    (declare (type fixnum counter)
-             (type fixnum *word-group-size*)
-             (optimize (speed 3)))
     (dolist (word raw)
-      (if (not (some #'(lambda (a) (eq a word)) acc))
-          (let ((count (occurrences word corp)))
-            (declare (type fixnum count))
-            (if (zerop count)
-                (setf (gethash word corp) 1)
-                (setf (gethash word corp) (1+ count)))))
-      (setf (aref acc (mod counter *word-group-size*)) word)
-      (incf counter))
+      (if (not (find word (subseq acc 0 counter)))
+          (if (zerop (occurrences word corp))
+              (setf (gethash word corp) 1)
+              (incf (gethash word corp))))
+      (setf (aref acc counter) word)
+      (setf counter (mod (1+ counter) *word-group-size*)))
     corp))
 
 ;;; TOKENISATION
