@@ -34,6 +34,10 @@
 ;;; FROM MAIN
 
 (defun chosen-words (vocab word-scores)
+  (declare (type list vocab)
+           (type fixnum *evidence-length*)
+           (type ratio *score-threshold*)
+           (optimize (speed 3)))
   (let* ((ordered-words (sort (copy-seq vocab)
                               #'<
                               :key #'(lambda (word) (gethash word word-scores))))

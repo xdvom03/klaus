@@ -72,10 +72,15 @@
 (defun get-generated-data (class data-name)
   (read-from-file (concat (generated-folder class) data-name)))
 
-(defun get-recursive-corpus (class)
-  ;; Looks into the corpus file and converts to the hash-table formulation
-  ;; The vast majority of time is spent here, loading the corpus files.
-  (assoc-to-hashtable (get-generated-data class "corpus")))
+(let ((corpora (map-to-hash #'(lambda (class)
+                                (assoc-to-hashtable (get-generated-data class "corpus")))
+                            (let ((acc nil))
+                              (apply-to-all-classes #'(lambda (cl) (push cl acc)))
+                              acc))))
+  (defun get-recursive-corpus (class)
+    ;; Looks into the corpus file and converts to the hash-table formulation
+    ;; The vast majority of time is spent here, loading the corpus files.
+    (gethash class corpora)))
 
 (defun get-file-count (class)
   (fallback (get-generated-data class "file-count") 0))
@@ -102,7 +107,10 @@
          (domain-lists (map-to-hash #'(lambda (domain) (remove-if-not #'(lambda (url) (equal (find-domain url) domain))
                                                                       urls))
                                     domains)))
+    (princ (make-string (length domains) :initial-element #\.))
+    (terpri)
     (dolist (domain domains)
+      (princ ".")
       (add-domain-alias domain)
       (if (not (equal (read-domain-urls domain)
                       (gethash domain domain-lists)))

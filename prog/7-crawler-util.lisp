@@ -23,20 +23,25 @@
                                 robots-txt :key #'car))))
 
 (defun url-allowed? (bot-name url)
-  (let* ((robots-txt (robots-txt url))
-         (specific-rules (rules robots-txt #'(lambda (agent) (search (string-downcase bot-name)
-                                                                     (string-downcase agent)))))
-         (rules (fallback specific-rules (rules robots-txt #'(lambda (agents)
-                                                               (some #'(lambda (agent)
-                                                                         (equal "*" agent))
-                                                                     agents)))))
-         ;; Default to allowed
-         (result t))
-    ;; The first rule takes precedence
-    (dolist (rule (reverse rules))
-      (if (matching-rule? (cdr rule) url)
-          (setf result (equal (car rule) "Allow"))))
-    result))
+  (handler-case (progn
+                  (redownload-file (follow-link url "/robots.txt"))
+                  (let* ((robots-txt (robots-txt url))
+                         (specific-rules (rules robots-txt #'(lambda (agent) (search (string-downcase bot-name)
+                                                                                     (string-downcase agent)))))
+                         (rules (fallback specific-rules (rules robots-txt #'(lambda (agents)
+                                                                               (some #'(lambda (agent)
+                                                                                         (equal "*" agent))
+                                                                                     agents)))))
+                         ;; Default to allowed
+                         (result t))
+                    ;; The first rule takes precedence
+                    (dolist (rule (reverse rules))
+                      (if (matching-rule? (cdr rule) url)
+                          (setf result (equal (car rule) "Allow"))))
+                    result))
+    (error (err-text)
+      (declare (ignore err-text))
+      t)))
 
 (defun safe-check-substr (str key &optional (start 0))
   "Returns T if the string contains the key starting at start. If it is too short or doesn't contain the key, returns NIL."
@@ -46,7 +51,7 @@
          (equal key (subseq str start (+ start key-len))))))
 
 (defun robots-txt (site)
-  (let* ((file (html (concat (find-domain site) "/robots.txt")))
+  (let* ((file (read-html (follow-link site "/robots.txt")))
          (user-agents nil)
          (rules nil)
          (accepting-new-agents? t)
@@ -83,15 +88,14 @@
                  (member (extension url)
                          *forbidden-extensions*
                          :test #'equal))
-             (remove-duplicates (mapcar #'remove-fragment
-                                        raw-urls))))
+             (remove-duplicates raw-urls :test #'equal)))
 
-(defun comprehensible? (vocab)
-  (let ((total-corp (add-corpuses (get-recursive-corpus "/")
-                                  (scale-corpus (get-recursive-corpus "/non-english/") -1))))
-    (/ (1+ (length (remove-if #'(lambda (word) (zerop (occurrences word total-corp)))
-                              vocab)))
-       (1+ (length vocab)))))
+(let ((total-corp (add-corpuses (get-recursive-corpus "/")
+                                (scale-corpus (get-recursive-corpus "/non-english/") -1))))
+  (defun comprehensible? (vocab)
+   (/ (1+ (length (remove-if #'(lambda (word) (zerop (occurrences word total-corp)))
+                             vocab)))
+      (1+ (length vocab)))))
 
 (defun comprehensible-text? (raw clean)
   ;; send txt for speed

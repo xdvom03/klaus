@@ -21,6 +21,7 @@
 (defparameter *files-folder* "../DATA/files/")
 (defparameter *html-folder* (concat *files-folder* "html/"))
 (defparameter *text-folder* (concat *files-folder* "text/"))
+(defparameter *raw-folder* (concat *files-folder* "raw/"))
 (defparameter *core-text-folder* (concat *files-folder* "core/"))
 (defparameter *domain-lists-folder* (concat *files-folder* "domain-lists/"))
 (defparameter *boilerplate-folder* (concat *files-folder* "boilerplate/"))

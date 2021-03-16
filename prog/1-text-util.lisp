@@ -1,5 +1,3 @@
-;; TBD: Unite link/url/uri(?). Since we cannot use URNs, URL seems the best choice.
-
 (defun wordlist (text)
   (remove-if #'(lambda (sym) (equal sym '||))
              (mapcar #'intern (cl-strings:split text))))
@@ -143,8 +141,17 @@ Example: (quri:render-uri (quri:merge-uris "/wiki/Astraea" "https://en.wikipedia
   (and (> (length link) 0)
        (equal (char link 0) #\#)))
 
+(defun follow-link (origin link)
+  (quri:render-uri (quri:merge-uris link origin)))
+
+(defun downloaded-vetted-links (url)
+  (remove-duplicates (mapcar #'(lambda (link) (follow-link url link))
+                             (remove-if #'anchor-link?
+                                        (find-links (read-html url))))
+                     :test #'equal))
+
 (defun vetted-links (url)
-  (remove-duplicates (mapcar #'(lambda (link) (quri:render-uri (quri:merge-uris link url)))
+  (remove-duplicates (mapcar #'(lambda (link) (follow-link url link))
                              (remove-if #'anchor-link?
                                         (find-links (html url))))
                      :test #'equal))
@@ -165,3 +172,5 @@ Example: (quri:render-uri (quri:merge-uris "/wiki/Astraea" "https://en.wikipedia
        (if (slash? (char url (1- i)))
            (subseq url (1- i))
            (subseq url i)))))
+
+;; TBD: Introduce a settable cap on link count

@@ -185,7 +185,8 @@
                    (button 0 1 fr "Open database" #'(lambda ()
                                                       (setf current-url (ltk:text e1))
                                                       (ltk:wm-title W current-url)
-                                                      (handler-case (change-screen (database-window 0 1 master (hashtable-to-count-list ;;remove-duplicates
+                                                      (handler-case (change-screen (database-window 0 1 master (;;hashtable-to-count-list ;;
+                                                                                                                list-keys
                                                                                                                 (tokens (url-text current-url))
                                                                                                                 )))
                                                         (error (err-text)
@@ -196,7 +197,7 @@
                            #'(lambda ()
                                (setf current-url (ltk:text e1))
                                (ltk:wm-title W current-url)
-                               (change-screen (database-window 0 1 master (remove-duplicates (wordlist (clean-text (ltk:text t1))))))))
+                               (change-screen (database-window 0 1 master (remove-duplicates (wordlist (extract-text (ltk:text t1))))))))
                    (setf (ltk:value ch) explain?)
                    fr))
              

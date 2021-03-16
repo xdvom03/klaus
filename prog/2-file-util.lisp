@@ -122,6 +122,9 @@
 (defun read-html (url)
   (read-from-file (concat *html-folder* (file-alias url))))
 
+(defun read-raw (url)
+  (read-from-file (concat *raw-folder* (file-alias url))))
+
 (defun read-domain-urls (domain)
   (read-from-file (concat *domain-lists-folder* (domain-alias domain))))
 
@@ -158,10 +161,13 @@
 
 (defun redownload-file (file-name)
   (if (not (file-alias file-name))
-      (let ((html (html file-name))
-            (new-alias (add-alias file-name)))
+      (let* ((html (html file-name))
+             ;(raw (extract-raw-text html))
+             (text (extract-text html))
+             (new-alias (add-alias file-name)))
         (overwrite-file (concat *html-folder* new-alias) html)
-        (overwrite-file (concat *text-folder* new-alias) (extract-text html))))
+        ;(overwrite-file (concat *raw-folder* new-alias) raw)
+        (overwrite-file (concat *text-folder* new-alias) text)))
   (file-alias file-name))
 
 ;;; DOWNLOADING FILES
