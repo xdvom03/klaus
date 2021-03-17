@@ -141,8 +141,12 @@ Example: (quri:render-uri (quri:merge-uris "/wiki/Astraea" "https://en.wikipedia
   (and (> (length link) 0)
        (equal (char link 0) #\#)))
 
+(defun remove-fragment (url)
+  (subseq url 0 (search (concat "#" (fallback (quri:uri-fragment (quri:uri url)) "")) url)))
+
 (defun follow-link (origin link)
-  (quri:render-uri (quri:merge-uris link origin)))
+  ;; This program can treat fragments as entirely irrelevant in URLs
+  (remove-fragment (quri:render-uri (quri:merge-uris link origin))))
 
 (defun downloaded-vetted-links (url)
   (remove-duplicates (mapcar #'(lambda (link) (follow-link url link))
