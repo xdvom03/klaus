@@ -1,26 +1,40 @@
-(defun words-explainer (r c master words word-details page-length)
-  ;; TBD: Move the exps to a more reasonable place
+(defun words-explainer (r c master class-1 class-2 words1 words2 word-details-1 word-details-2 page-length)
   (let* ((f (frame r c master)))
-    (button 0 0 f "words for" #'pass)
-    (button 0 1 f "words against" #'pass)
+    (button 0 0 f class-2 #'pass)
+    (button 0 1 f class-1 #'pass)
     (scrollable-list 1 0 f page-length (mapcar #'list
-                                               words
-                                               (mapcar #'(lambda (word) (gethash word word-details)) words)))))
+                                               words1
+                                               (mapcar #'(lambda (word) (gethash word word-details-1)) words1)))
+    (scrollable-list 1 1 f page-length (mapcar #'list
+                                               words2
+                                               (mapcar #'(lambda (word) (gethash word word-details-2)) words2)))))
 
 (defun pair-scores-explainer (r c master classes pair-scores pair-words pair-word-details) ; TBD: Fix names
-  ;; The scores FOR a given class are in its rows. TBD: Make that clear from the window
   (let* ((f (frame r c master)))
     (dotimes (i (length classes))
       (let ((class (nth i classes)))
         (button 0 (1+ i) f (folder-name class) #'pass)
         (button (1+ i) 0 f (folder-name class) #'pass)
+        (let* ((total-score (apply #'+ (mapcar #'(lambda (opponent)
+                                                   (if (equal class opponent)
+                                                       0
+                                                       (gethash (cons class opponent) pair-scores)))
+                                               classes))))
+          (button (1+ i)
+                  (1+ (length classes))
+                  f
+                  (write-to-string (my-round total-score))
+                  #'pass))
         
         (dotimes (j (length classes))
           (let* ((opponent (nth j classes))
-                 (pair (cons class opponent))
-                 (chosen-words (gethash pair pair-words))
-                 (word-details (gethash pair pair-word-details))
-                 (score (gethash pair pair-scores)))
+                 (pair-1 (cons class opponent))
+                 (chosen-words-1 (gethash pair-1 pair-words))
+                 (word-details-1 (gethash pair-1 pair-word-details))
+                 (pair-2 (cons opponent class))
+                 (chosen-words-2 (gethash pair-2 pair-words))
+                 (word-details-2 (gethash pair-2 pair-word-details))
+                 (score (gethash pair-1 pair-scores)))
             (button (1+ i)
                     (1+ j)
                     f
@@ -30,31 +44,13 @@
                     (if (= i j)
                         #'pass
                         #'(lambda () (words-explainer 100 100
-                                                      (window (concat (folder-name class)
-                                                                      " over "
-                                                                      (folder-name opponent)))
-                                                      chosen-words word-details *entries-per-page*))))))))
+                                                      (window "hujaja")
+                                                      (folder-name class)
+                                                      (folder-name opponent)
+                                                      chosen-words-1 chosen-words-2
+                                                      word-details-1 word-details-2
+                                                      *entries-per-page*))))))))
     f))
-
-(defun color-code (score)
-  ;; divided by standard deviations, coded in because the error function would require a separate library
-  (cond ((> score (ln 0.99977)) "#0f0") ; over 3.5
-        ((> score (ln 0.99865)) "#1e0") ; 3 to 3.5
-        ((> score (ln 0.99379)) "#2d0") ; 2.5 to 3
-        ((> score (ln 0.97725)) "#3c0") ; 2 to 2.5 sigma
-        ((> score (ln 0.93319)) "#4b0") ; 1.5 to 2
-        ((> score (ln 0.84134)) "#5a0") ; 1 to 1.5 sigma
-        ((> score (ln 0.69146)) "#690") ; 0.5 to 1
-        ((> score (ln 0.5)) "#780")     ; 0 to 0.5 sigma
-        ((> score (ln 0.30854)) "#870") ; -0.5 to 0
-        ((> score (ln 0.15866)) "#960") ; -1 to -0.5 sigma
-        ((> score (ln 0.06681)) "#a50") ; -1.5 to -1
-        ((> score (ln 0.02275)) "#b40") ; -2 to -1.5 sigma
-        ((> score (ln 0.00621)) "#c30") ; -2.5 to -2
-        ((> score (ln 0.00135)) "#d20") ; -3 to -2.5 sigma
-        ((> score (ln 0.00023)) "#e10") ; -3.5 to -3
-        (t "#f00")                      ; under -3.5 sigma
-        ))
 
 (defun database-window (r c master vocab explain?)
   (let* ((fr (frame r c master))
