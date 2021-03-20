@@ -31,6 +31,15 @@ Naming convention: 'class' is simplified path, 'folder' is actual folder.
       :disabled
       :normal))
 
+(defun existing-class? (class)
+  (directory (full-path class)))
+
+(defun recursive-create-class (class)
+  (if (not (existing-class? class))
+      (let ((parent (parent-class class)))
+        (recursive-create-class parent)
+        (create-class class))))
+
 (defun create-class (class)
   (ensure-directories-exist (full-path class))
   (overwrite-class-file class "urls" nil)
@@ -63,7 +72,8 @@ Naming convention: 'class' is simplified path, 'folder' is actual folder.
       (refresh-classes #'pass)
       (refresh-comment #'pass)
       (save-description #'pass)
-      (bucket-urls nil))
+      (bucket-urls nil)
+      (W nil))
   ;; shared environment variables for parts of GUI
 
   ;; utils
@@ -76,6 +86,7 @@ Naming convention: 'class' is simplified path, 'folder' is actual folder.
   (defun change-current-class (new-class)
     (funcall save-description)
     (setf current-class new-class)
+    (ltk:wm-title W new-class)
     (funcall refresh-classes)
     (funcall refresh-files)
     (funcall refresh-comment))
@@ -231,14 +242,22 @@ Naming convention: 'class' is simplified path, 'folder' is actual folder.
 
   (defun rebuild-frame (r c master)
     (let ((fr (frame r c master)))
-      (button 0 0 fr "Rebuild corpus" #'rebuild-corpus)
+      (button 0 0 fr "Rebuild corpus" #'(lambda ()
+                                          (let ((timer (get-internal-real-time)))
+                                            (build-core-text-database)
+                                            (rebuild-corpus)
+                                            (show-time timer "Rebuilt the corpus.")
+                                            (funcall refresh-classes))))
       (button 1 0 fr "Rebuild text" #'build-text-database)
-      (button 2 0 fr "Rebuild core text" #'build-core-text-database)
+      (button 2 0 fr "Rebuild core text" #'(lambda ()
+                                             (let ((timer (get-internal-real-time)))
+                                               (build-core-text-database)
+                                               (show-time timer "Rebuilt the core text database."))))
       fr))
 
   (defun db-window ()
-    (let* ((W (window "klaus"))
-           (class-frame (frame 0 0 W)))
+    (setf W (window "/"))
+    (let ((class-frame (frame 0 0 W)))
       (ltk:on-close W #'(lambda () (ltk:destroy ltk:*tk*)))
 
       (multiple-value-bind (comment-refresher description-saver)

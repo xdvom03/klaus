@@ -14,37 +14,26 @@
       (let ((class (nth i classes)))
         (button 0 (1+ i) f (folder-name class) #'pass)
         (button (1+ i) 0 f (folder-name class) #'pass)
-        (let* ((total-score (apply #'+ (mapcar #'(lambda (opponent)
-                                                   (if (equal class opponent)
-                                                       0
-                                                       (gethash (cons class opponent) pair-scores)))
-                                               classes)))
-               (total-score-button (button (1+ i)
-                                           (1+ (length classes))
-                                           f
-                                           (write-to-string (my-round total-score))
-                                           #'pass)))
-          (ltk:configure total-score-button :background (color-code total-score)))
+        
         (dotimes (j (length classes))
           (let* ((opponent (nth j classes))
                  (pair (cons class opponent))
                  (chosen-words (gethash pair pair-words))
                  (word-details (gethash pair pair-word-details))
-                 (score (gethash pair pair-scores))
-                 (b (button (1+ i)
-                            (1+ j)
-                            f
-                            (if (= i j)
-                                ""
-                                (write-to-string (my-round score)))
-                            (if (= i j)
-                                #'pass
-                                #'(lambda () (words-explainer 100 100
-                                                              (window (concat (folder-name class)
-                                                                              " over "
-                                                                              (folder-name opponent)))
-                                                              chosen-words word-details *entries-per-page*))))))
-            (if score (ltk:configure b :background (color-code score)))))))
+                 (score (gethash pair pair-scores)))
+            (button (1+ i)
+                    (1+ j)
+                    f
+                    (if (= i j)
+                        ""
+                        (write-to-string (my-round score)))
+                    (if (= i j)
+                        #'pass
+                        #'(lambda () (words-explainer 100 100
+                                                      (window (concat (folder-name class)
+                                                                      " over "
+                                                                      (folder-name opponent)))
+                                                      chosen-words word-details *entries-per-page*))))))))
     f))
 
 (defun color-code (score)

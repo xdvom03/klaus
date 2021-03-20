@@ -1,4 +1,6 @@
 (defun main ()
+  (print "Creating imported classes...")
+  (create-all-import-classes)
   (print "Downloading missing files...")
   (redownload "/")
   (print "Building core text database...")

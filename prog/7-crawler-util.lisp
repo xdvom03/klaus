@@ -23,22 +23,20 @@
                                 robots-txt :key #'car))))
 
 (defun url-allowed? (bot-name url)
-  (handler-case (progn
-                  (redownload-file (follow-link url "/robots.txt"))
-                  (let* ((robots-txt (robots-txt url))
-                         (specific-rules (rules robots-txt #'(lambda (agent) (search (string-downcase bot-name)
-                                                                                     (string-downcase agent)))))
-                         (rules (fallback specific-rules (rules robots-txt #'(lambda (agents)
-                                                                               (some #'(lambda (agent)
-                                                                                         (equal "*" agent))
-                                                                                     agents)))))
-                         ;; Default to allowed
-                         (result t))
-                    ;; The first rule takes precedence
-                    (dolist (rule (reverse rules))
-                      (if (matching-rule? (cdr rule) url)
-                          (setf result (equal (car rule) "Allow"))))
-                    result))
+  (handler-case (let* ((robots-txt (robots-txt url))
+                       (specific-rules (rules robots-txt #'(lambda (agent) (search (string-downcase bot-name)
+                                                                                   (string-downcase agent)))))
+                       (rules (fallback specific-rules (rules robots-txt #'(lambda (agents)
+                                                                             (some #'(lambda (agent)
+                                                                                       (equal "*" agent))
+                                                                                   agents)))))
+                       ;; Default to allowed
+                       (result t))
+                  ;; The first rule takes precedence
+                  (dolist (rule (reverse rules))
+                    (if (matching-rule? (cdr rule) url)
+                        (setf result (equal (car rule) "Allow"))))
+                  result)
     (error (err-text)
       (declare (ignore err-text))
       t)))
@@ -51,34 +49,37 @@
          (equal key (subseq str start (+ start key-len))))))
 
 (defun robots-txt (site)
-  (let* ((file (read-html (follow-link site "/robots.txt")))
-         (user-agents nil)
-         (rules nil)
-         (accepting-new-agents? t)
-         (acc nil))
-    (dolist (line (cl-strings:split file #\Newline))
-      (let* ((agent? (safe-check-substr line "User-agent: "))
-             (allow? (safe-check-substr line "Allow: "))
-             (disallow? (safe-check-substr line "Disallow: "))
-             (line-body (subseq line (length (cond (agent? "User-agent: ")
-                                                   (allow? "Allow: ")
-                                                   (disallow? "Disallow: ")
-                                                   (t ""))))))
-        (cond (agent?
-               (if accepting-new-agents?
-                   (push line-body user-agents)
-                   (progn
-                     (if user-agents
-                         (push (cons user-agents rules) acc))
-                     (setf user-agents (list line-body))
-                     (setf rules nil))))
-              (allow?
-               (push (cons "Allow" line-body) rules))
-              (disallow?
-               (push (cons "Disallow" line-body) rules)))
-        (setf accepting-new-agents? agent?)))
-    (push (cons user-agents rules) acc)
-    (reverse acc)))
+  ;; this link follow cannot cause an error if the site itself is OK
+  (let ((robots-txt-url (follow-link site "/robots.txt")))
+    (redownload-file robots-txt-url)
+    (let* ((file (read-html robots-txt-url))
+           (user-agents nil)
+           (rules nil)
+           (accepting-new-agents? t)
+           (acc nil))
+      (dolist (line (cl-strings:split file #\Newline))
+        (let* ((agent? (safe-check-substr line "User-agent: "))
+               (allow? (safe-check-substr line "Allow: "))
+               (disallow? (safe-check-substr line "Disallow: "))
+               (line-body (subseq line (length (cond (agent? "User-agent: ")
+                                                     (allow? "Allow: ")
+                                                     (disallow? "Disallow: ")
+                                                     (t ""))))))
+          (cond (agent?
+                 (if accepting-new-agents?
+                     (push line-body user-agents)
+                     (progn
+                       (if user-agents
+                           (push (cons user-agents rules) acc))
+                       (setf user-agents (list line-body))
+                       (setf rules nil))))
+                (allow?
+                 (push (cons "Allow" line-body) rules))
+                (disallow?
+                 (push (cons "Disallow" line-body) rules)))
+          (setf accepting-new-agents? agent?)))
+      (push (cons user-agents rules) acc)
+      (reverse acc))))
 
 (defun extension (url)
   (last1 (cl-strings:split url #\.)))

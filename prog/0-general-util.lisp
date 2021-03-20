@@ -18,10 +18,12 @@
 ;; paths
 (defparameter *classes-folder* "../DATA/classes/")
 (defparameter *generated-data-folder* "../DATA/generated-data/")
+(defparameter *imports-folder* "../DATA/imports/")
 (defparameter *files-folder* "../DATA/files/")
 (defparameter *html-folder* (concat *files-folder* "html/"))
 (defparameter *text-folder* (concat *files-folder* "text/"))
 (defparameter *raw-folder* (concat *files-folder* "raw/"))
+(defparameter *loc-folder* (concat *files-folder* "loc/"))
 (defparameter *core-text-folder* (concat *files-folder* "core/"))
 (defparameter *domain-lists-folder* (concat *files-folder* "domain-lists/"))
 (defparameter *boilerplate-folder* (concat *files-folder* "boilerplate/"))
@@ -49,10 +51,6 @@
 
 ;; display
 (defparameter *entries-per-page* 10)
-(defparameter *bg-col* "#f0f0f0")
-(defparameter *button-col* "#e0e0e0")
-(defparameter *active-col* "#a0a0a0")
-(defparameter *text-col* "#000000")
 
 ;;; CONFIG VARIABLE INIT
 ;;;----------------------------------------------------------------------------------------------

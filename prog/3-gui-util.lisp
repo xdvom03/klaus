@@ -20,9 +20,6 @@
   (let ((b (widget r c 'ltk:button master)))
     (setf (ltk:text b) txt)
     (setf (ltk:command b) command)
-    (ltk:configure b :background *button-col*)
-    (ltk:configure b :foreground *text-col*)
-    (ltk:configure b :activebackground *active-col*)
     b))
 
 (defun button-column (window column page-length &optional (starting-row 0))
@@ -62,19 +59,15 @@
   (let ((l (widget r c 'ltk:label master)))
     (setf (ltk:text l) txt)
     (ltk:configure l :anchor :center)
-    (ltk:configure l :background *bg-col*)
-    (ltk:configure l :foreground *text-col*)
     l))
 
 (defun frame (r c master)
   ;; Ugly hack: LTK does not support backround colours of frames, but it works for canvases, and they seem to work serviceably as frames. 
   (let ((f (widget r c 'ltk:canvas master)))
-    (ltk:configure f :background *bg-col*)
     f))
 
 (defun window (title)
   (let ((W (make-instance 'ltk:toplevel :title title)))
-    (ltk:configure W :background *bg-col*)
     W))
 
 (defun scrollable-list (r c master page-length lst &optional function-lst)

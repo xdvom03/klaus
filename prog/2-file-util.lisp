@@ -70,8 +70,8 @@
   (let* ((path-parts (cl-strings:split path #\/))
          (varying-part (cdr (member "classes" path-parts :test #'equal))))
     (reduce #'(lambda (a b) (concat a "/" b))
-            ;; Prepend an empty string in case of the home folder, otherwise reduce would not know what to return for an empty list
-            (cons "" varying-part))))
+            varying-part
+            :initial-value "")))
 
 (defun full-path (simple-path)
   (concat *classes-folder* (subseq simple-path 1)))
@@ -119,6 +119,9 @@
 (defun read-text (url)
   (read-from-file (concat *text-folder* (file-alias url))))
 
+(defun read-origin (url)
+  (read-from-file (concat *loc-folder* (file-alias url))))
+
 (defun read-html (url)
   (read-from-file (concat *html-folder* (file-alias url))))
 
@@ -159,15 +162,18 @@
       (redownload subclass)))
   (print (concat "redownloaded " class)))
 
+;; TBD: Rename
 (defun redownload-file (file-name)
   (if (not (file-alias file-name))
-      (let* ((html (html file-name))
-             ;(raw (extract-raw-text html))
-             (text (extract-text html))
-             (new-alias (add-alias file-name)))
-        (overwrite-file (concat *html-folder* new-alias) html)
-        ;(overwrite-file (concat *raw-folder* new-alias) raw)
-        (overwrite-file (concat *text-folder* new-alias) text)))
+      (multiple-value-bind (html response-origin)
+          (html file-name)
+        (let* (                         ;(raw (extract-raw-text html))
+               (text (extract-text html))
+               (new-alias (add-alias file-name)))
+          (overwrite-file (concat *loc-folder* new-alias) response-origin)
+          (overwrite-file (concat *html-folder* new-alias) html)
+                                        ;(overwrite-file (concat *raw-folder* new-alias) raw)
+          (overwrite-file (concat *text-folder* new-alias) text))))
   (file-alias file-name))
 
 ;;; DOWNLOADING FILES

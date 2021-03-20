@@ -9,9 +9,9 @@
          (counter 0))
     (dolist (word raw)
       (if (not (find word (subseq acc 0 counter)))
-          (if (zerop (occurrences word corp))
-              (setf (gethash word corp) 1)
-              (incf (gethash word corp))))
+          (if (gethash word corp)
+              (incf (gethash word corp))
+              (setf (gethash word corp) 1)))
       (setf (aref acc counter) word)
       (setf counter (mod (1+ counter) *word-group-size*)))
     corp))
@@ -108,11 +108,7 @@
 ;;;----------------------------------------------------------------------------------------------
 ;;; LINKS
 
-;; TBD: Let QURI do this! Also check URI resolution! (quri:render-uri (quri:merge-uris "https://en.wikipedia.org/wiki/URL" "https://en.wikipedia.org/wiki/URL"))
-
-#|
-Example: (quri:render-uri (quri:merge-uris "/wiki/Astraea" "https://en.wikipedia.org/wiki/URL"))
-|#
+;; QURI can call an error on (quri:uri "https://support.ted.com ") - note the space. Anything from QURI must be considered error-capable.
 
 (defun find-enclosed-text (text delim1 delim2) 
   "Lists things between delim1 and delim2 found in text. Does not include the delimiters."
@@ -149,15 +145,11 @@ Example: (quri:render-uri (quri:merge-uris "/wiki/Astraea" "https://en.wikipedia
   (remove-fragment (quri:render-uri (quri:merge-uris link origin))))
 
 (defun downloaded-vetted-links (url)
-  (remove-duplicates (mapcar #'(lambda (link) (follow-link url link))
-                             (remove-if #'anchor-link?
-                                        (find-links (read-html url))))
-                     :test #'equal))
-
-(defun vetted-links (url)
-  (remove-duplicates (mapcar #'(lambda (link) (follow-link url link))
-                             (remove-if #'anchor-link?
-                                        (find-links (html url))))
+  ;; links may contain invalid characters, this is the cheapest way of handling that
+  (remove-duplicates (remove-if #'null
+                                (mapcar #'(lambda (link) (ignore-errors (follow-link url link)))
+                                        (remove-if #'anchor-link?
+                                                   (find-links (read-html url)))))
                      :test #'equal))
 
 (defun find-domain (url)

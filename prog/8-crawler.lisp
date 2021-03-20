@@ -76,8 +76,25 @@ Crawl 40 from:
 (defun place-known (url &optional (class "/"))
   (place-vocab (remove-duplicates (wordlist (read-text url))) class))
 
+(defun targeted-place (url target &optional (class "/"))
+  (targeted-place-vocab (remove-duplicates (wordlist (url-text url))) target class))
+
 (defun place (url &optional (class "/"))
   (place-vocab (remove-duplicates (wordlist (url-text url))) class))
+
+(defun targeted-place-vocab (vocab target &optional (class "/"))
+  (let ((subclasses (subclasses class)))
+    (if (subclasses class)
+        (let* ((scores (scores vocab
+                               subclasses
+                               (map-to-hash #'get-recursive-corpus subclasses)
+                               (map-to-hash #'get-word-count subclasses)
+                               nil))
+               (best-path (best-key scores #'>)))
+          (if (equal 0 (search best-path target))
+              (place-vocab vocab best-path)
+              class))
+        class)))
 
 (defun place-vocab (vocab &optional (class "/"))
   (let ((subclasses (subclasses class)))
@@ -97,12 +114,11 @@ Crawl 40 from:
          (path (concat folder "urls")))
     (ensure-directories-exist path)
     (overwrite-file (concat folder "comment") "auto-generated class")
-    (redownload-file url)
     (overwrite-file path (append1 (fallback (ignore-errors (read-from-file path)) nil) url))))
 
 (defun zoombot-valuation (vocab target)
   (princ ".")
-  (let* ((actual-place (place-vocab vocab))
+  (let* ((actual-place (targeted-place-vocab vocab target))
          (overlap-length (overlap-length (cl-strings:split actual-place #\/)
                                          (cl-strings:split target #\/)))
          (final-folder (concat (cl-strings:join (subseq (cl-strings:split target #\/)
@@ -111,7 +127,12 @@ Crawl 40 from:
                                                              (1+ overlap-length)))
                                      :separator "/")
                                "/")))
-    (+ overlap-length (vocab-score vocab final-folder))))
+    (+ (1- overlap-length) (vocab-score vocab final-folder))))
+
+(defun zoombot-url-value (url target)
+  (redownload-file url)
+  (discover url)
+  (zoombot-valuation (remove-duplicates (wordlist (read-text url))) target)) ; tady mazeme duplikaty. holt to bude chtit byt chytrejsi
 
 (defun allowed-url? (url)
   (if (url-allowed? *crawler-name* url)
@@ -130,89 +151,99 @@ Crawl 40 from:
         ;; Any error will cause the system to refuse the link (typically because the site is unreachable or contains invalid content)
         (error (err-text)
           (declare (ignore err-text))
+          (princ "E")
           nil))
       (princ "X")))
 
-(defun zoombot-url-value (url target)
-  (redownload-file url)
-  (zoombot-valuation (remove-duplicates (wordlist (read-text url))) target)) ; tady mazeme duplikaty. holt to bude chtit byt chytrejsi
-
-(defun zoombot (seed steps domain-steps target)
-  (setf *random-state* (make-random-state t))
-  
-  (let* ((acc nil)
-         (visited-domains (map-to-hash #'(lambda (pair) (declare (ignore pair)) t)
-                                       (list-keys (url-aliases))
-                                       :key-fun #'find-domain))
-         (current-url seed)
-         (current-url-score (zoombot-url-value current-url target))
-         (domain-limit domain-steps)
-         (blacklist (make-hash-table :test #'equal))
-         (score 0))
-    
-    (dotimes (i steps)
-      (terpri)
-      (terpri)
-      (princ (concat domain-limit " " i " " (length acc) " " (- (length acc) (length (list-keys blacklist))) " " ))
-      (princ current-url)
-      (terpri)
-
-      (redownload-file current-url)
-
-      ;; save url
-      (if (not (find current-url acc :test #'equal))
-          (progn
-            (push current-url acc)
-            (setf (gethash (find-domain current-url) visited-domains) t)
-            (discover current-url)
-            (append-to-file "../DATA/scores" (concat (my-round current-url-score) " " current-url))))
-
-      (print "file saved")
-
-      ;; find linked urls
-      (let* ((domain (find-domain current-url))
-             (raw-urls (filter-urls (downloaded-vetted-links current-url)))
-             (urls (progn (print (concat "Raw: " (length raw-urls)))
-                          (remove-if #'(lambda (url) (or (find url acc :test #'equal)
-                                                         (equal url current-url)
-                                                         (equal (quri:uri-scheme (quri:uri url)) "mailto")))
-                                     raw-urls)))
-             (domain-urls (progn (print (concat "Step 1: " (length urls)))
-                                 (shuffle (if (zerop domain-limit)
-                                              (remove-if #'(lambda (url) (gethash (find-domain url) visited-domains))
+(defun chosen-links (starting-url visited-urls visited-domains same-domain?)
+  (redownload starting-url)
+  (let* ((domain (find-domain starting-url))
+         (raw-urls (filter-urls (downloaded-vetted-links starting-url)))
+         (urls (progn (print (concat "Raw: " (length raw-urls)))
+                      (remove-if #'(lambda (url) (or (find url visited-urls :test #'equivalent-urls)
+                                                     (not (or (equal (quri:uri-scheme (quri:uri url)) "http")
+                                                              (equal (quri:uri-scheme (quri:uri url)) "https")))))
+                                 raw-urls)))
+         (domain-urls (progn (print (concat "Step 1: " (length urls)))
+                             (shuffle (if same-domain?
+                                          (remove-if-not #'(lambda (url)
+                                                             (princ "!")
+                                                             (equal (find-domain url)
+                                                                    domain))
                                                          urls)
-                                              (remove-if-not #'(lambda (url) (equal (find-domain url)
-                                                                                    domain))
-                                                             urls)))))
+                                          (remove-if #'(lambda (url) (gethash (find-domain url) visited-domains))
+                                                     urls)))))
+         (allowed-urls (progn (print (concat "Valid domain: " (length domain-urls)))
+                              (remove-if-not #'allowed-url? (subseq domain-urls 0 (min (length domain-urls) 25)))))
+         
+         ;; TEMP: Redundakitties galore!
+         (origin-urls (progn (print (concat "Allowed: " (length allowed-urls)))
+                             (remove-if #'(lambda (origin-url)
+                                            (or (find origin-url visited-urls :test #'equivalent-urls)
+                                                (not (or (equal (quri:uri-scheme (quri:uri origin-url)) "http")
+                                                         (equal (quri:uri-scheme (quri:uri origin-url)) "https")))
+                                                (if same-domain?
+                                                    (not (equal (find-domain origin-url) domain))
+                                                    (gethash (find-domain origin-url) visited-domains))
+                                                (not (allowed-url? origin-url))))
+                                        (remove-duplicates (mapcar #'read-origin
+                                                                   allowed-urls)
+                                                           :test #'equivalent-urls)))))
+    (print (concat "Valid origin: " (length origin-urls)))
+    origin-urls))
 
-             (allowed-urls (progn (print (concat "Valid domain: " (length domain-urls)))
-                                  (remove-if-not #'allowed-url? (subseq domain-urls 0 (min (length domain-urls) 25))))))
+(defun domain-links (seed target count)
+  ;; visits links in succession (different from interdomain, may change) to get wider site coverage
+  ;; if it finds no valid links, it keeps trying again (maybe getting other links)
+  (let ((scores (make-hash-table :test #'equal))
+        (visited (list seed))
+        (current-url seed))
+    (dotimes (i count)
+      (setf (gethash current-url scores)
+            (zoombot-url-value current-url target))
+      (append-to-file "../DATA/scores" (concat (my-round (gethash current-url scores)) " " current-url))
+      (let* ((links (chosen-links current-url visited (make-hash-table :test #'equal) t))
+             (link-scores (map-to-hash #'(lambda (url) (zoombot-url-value url target))
+                                       links)))
+        (if links
+            (multiple-value-bind (url score)
+                (best-element links #'> #'(lambda (url) (gethash url link-scores)))
+              (setf (gethash url scores) score)
+              (setf current-url url)
+              (push url visited)))))
+    (values visited scores)))
 
-        (print (concat "Allowed: " (length allowed-urls)))
-        
-        (let ((scores (map-to-hash #'(lambda (url) (zoombot-url-value url target))
-                                   allowed-urls)))
-          (multiple-value-bind (chosen-url chosen-score)
-              (best-element allowed-urls #'> #'(lambda (url) (gethash url scores)))
-            (setf current-url-score chosen-score)
-            (if chosen-url
-                (progn
-                  (setf domain-limit (mod (1- domain-limit)
-                                          domain-steps))
-                  (setf current-url chosen-url)
-                  (incf score))
-                (progn
-                  (print "retreat!")
-                  (terpri)
-                  (terpri)
-                  (decf score)
-                  (setf (gethash current-url blacklist) t)
-                  (setf current-url (first (remove-if #'(lambda (url) (gethash url blacklist))
-                                                      acc)))))))))
-    (print (concat "score: " score "/" steps))
-    (print (reverse acc))
-    (reverse (remove-if #'(lambda (url) (gethash url blacklist))
-                        acc))))
+(defun zoombot (seed domains per-domain target)
+  (setf *random-state* (make-random-state t))
+  (let* ((visited-urls (list seed))
+         (followed-urls nil)
+         (url-scores (make-hash-table :test #'equal))
+         (visited-domains (make-hash-table :test #'equal)))
+    (setf (gethash seed url-scores) (zoombot-url-value seed target))
+
+    (dotimes (i domains)
+      (let* ((starting-url (best-element (set-difference visited-urls followed-urls) #'> #'(lambda (url) (gethash url url-scores))))
+             (links (chosen-links starting-url visited-urls visited-domains nil))
+             (link-scores (map-to-hash #'(lambda (url) (zoombot-url-value url target))
+                                       links)))
+        (print "starting from: ")
+        (print starting-url)
+        ;(print "links:")
+                                        ;(print links)
+        ;; crashes if no interdomain links are found
+        (push starting-url followed-urls)
+        (if links
+            (multiple-value-bind (chosen-url chosen-score)
+                (best-element links #'> #'(lambda (url) (gethash url link-scores)))
+              (print (concat "Best URL: " chosen-url " score: " chosen-score))
+              (setf (gethash (find-domain chosen-url) visited-domains) t)
+              (multiple-value-bind (domain-links domain-scores)
+                  (domain-links chosen-url target per-domain)
+                (dolist (link domain-links)
+                  (push link visited-urls)
+                  (setf (gethash link url-scores)
+                        (gethash link domain-scores)))))
+            (print "No intradomain links found."))))))
 
 
 
@@ -254,30 +285,37 @@ Crawl 40 from:
 ;; (apply-to-all-classes #'(lambda (path) (if (not (directory (concat (full-path path) "urls"))) (overwrite-file path "urls" nil))))
 ;; (apply-to-all-classes #'(lambda (path) (if (not (directory (concat (full-path path) "comment"))) (overwrite-file path "comment" "placeholder"))))
 ;; TBD: Call error if file has no alias!
+;; TBD: Let us see URL places without building an entire corpus (through a minimal view)
 
 
 
+(defun equivalent-urls (url1 url2)
+  (equal (raw-url url1)
+         (raw-url url2)))
 
-
-(defun raw-url (url)
-  (let* ((step1 (subseq url (+ 2 (search "//" url))))
-         (step2 (reverse (subseq (reverse step1)
-                                 (position-if #'(lambda (character) (not (equal character #\/)))
-                                              (reverse step1))))))
-    (if (equal (subseq step2 0 4) "www.")
-        (subseq step2 4)
-        step2)))
+(defun raw-url (url) ;; TBD: QURI
+  (if (search "//" url)
+      (let* ((step1 (subseq url (+ 2 (search "//" url))))
+             (step2 (reverse (subseq (reverse step1)
+                                     (position-if #'(lambda (character) (not (equal character #\/)))
+                                                  (reverse step1))))))
+        (if (equal 0 (search "www." step2))
+            (subseq step2 4)
+            step2))
+      url))
 
 (defun nonredundant-bot-path ()
   (let ((lst (read-from-file "../DATA/bot-path")))
     (print (length lst))
-    (remove-duplicates lst :test #'(lambda (url1 url2) (if (zerop (random 1000000)) (princ ".")) (equal (raw-url url1) (raw-url url2))))))
+    (remove-duplicates lst :test #'equivalent-urls)))
 
 (defun nonredundant-bot-urls ()
   (let ((lst (read-from-file "../DATA/bot-viewed")))
     (print (length lst))
-    (remove-duplicates lst :test #'(lambda (url1 url2) (if (zerop (random 1000000)) (princ ".")) (equal (raw-url url1) (raw-url url2))))))
+    (remove-duplicates lst :test #'equivalent-urls)))
 
+
+#|
 (defun backbot (seed steps domain-steps)
   (setf *random-state* (make-random-state t))
   
@@ -308,7 +346,8 @@ Crawl 40 from:
       (let* ((domain (find-domain current-url))
              (urls (remove-if #'(lambda (url) (or (find url acc :test #'equal)
                                                   (equal url current-url)
-                                                  (equal (quri:uri-scheme (quri:uri url)) "mailto")))
+                                                  (not (or (equal (quri:uri-scheme (quri:uri url)) "http")
+                                                           (equal (quri:uri-scheme (quri:uri url)) "https")))))
                               (filter-urls (downloaded-vetted-links current-url))))
              (domain-urls (shuffle (if (zerop domain-limit)
                                        (remove-if #'(lambda (url) (gethash (find-domain url) visited-domains))
@@ -339,5 +378,4 @@ Crawl 40 from:
     (print (reverse acc))
     (reverse (remove-if #'(lambda (url) (gethash url blacklist))
                         acc))))
-
-;; BUG: Yeeting into a place with no internal links, then backtracking, then getting a bunch of new internal links. Sounds like a good way to get stuck in a loop.
+|#
