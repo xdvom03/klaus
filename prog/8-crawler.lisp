@@ -17,7 +17,6 @@
     acc))
 
 #|
-TBD: Properly cut off trailing section hashtags and other useless url fluff
 TBD: Properly cache url scores, profile
 Not using a robots.txt library because is has no license.
 TBD: Cache robots.txt (or a sensible format thereof)
@@ -116,23 +115,18 @@ Crawl 40 from:
     (overwrite-file (concat folder "comment") "auto-generated class")
     (overwrite-file path (append1 (fallback (ignore-errors (read-from-file path)) nil) url))))
 
-(defun zoombot-valuation (vocab target)
+(defun zoombot-url-value (url target)
   (princ ".")
-  (let* ((actual-place (targeted-place-vocab vocab target))
+  (let* ((actual-place (discover url))
          (overlap-length (overlap-length (cl-strings:split actual-place #\/)
                                          (cl-strings:split target #\/)))
          (final-folder (concat (cl-strings:join (subseq (cl-strings:split target #\/)
                                                         0
                                                         (min (length (cl-strings:split target #\/))
                                                              (1+ overlap-length)))
-                                     :separator "/")
+                                                :separator "/")
                                "/")))
-    (+ (1- overlap-length) (vocab-score vocab final-folder))))
-
-(defun zoombot-url-value (url target)
-  (redownload-file url)
-  (discover url)
-  (zoombot-valuation (remove-duplicates (wordlist (read-text url))) target)) ; tady mazeme duplikaty. holt to bude chtit byt chytrejsi
+    (+ (1- overlap-length) (vocab-score (remove-duplicates (wordlist (read-text url))) final-folder))))
 
 (defun allowed-url? (url)
   (if (url-allowed? *crawler-name* url)
@@ -155,14 +149,17 @@ Crawl 40 from:
           nil))
       (princ "X")))
 
+(defun valid-scheme? (url)
+  (ignore-errors (or (equal (quri:uri-scheme (quri:uri url)) "http")
+                     (equal (quri:uri-scheme (quri:uri url)) "https"))))
+
 (defun chosen-links (starting-url visited-urls visited-domains same-domain?)
   (redownload starting-url)
   (let* ((domain (find-domain starting-url))
          (raw-urls (filter-urls (downloaded-vetted-links starting-url)))
          (urls (progn (print (concat "Raw: " (length raw-urls)))
                       (remove-if #'(lambda (url) (or (find url visited-urls :test #'equivalent-urls)
-                                                     (not (or (equal (quri:uri-scheme (quri:uri url)) "http")
-                                                              (equal (quri:uri-scheme (quri:uri url)) "https")))))
+                                                     (not (valid-scheme? url))))
                                  raw-urls)))
          (domain-urls (progn (print (concat "Step 1: " (length urls)))
                              (shuffle (if same-domain?
@@ -174,14 +171,13 @@ Crawl 40 from:
                                           (remove-if #'(lambda (url) (gethash (find-domain url) visited-domains))
                                                      urls)))))
          (allowed-urls (progn (print (concat "Valid domain: " (length domain-urls)))
-                              (remove-if-not #'allowed-url? (subseq domain-urls 0 (min (length domain-urls) 25)))))
+                              (remove-if-not #'allowed-url? (subseq domain-urls 0 (min (length domain-urls) *link-cap*)))))
          
          ;; TEMP: Redundakitties galore!
          (origin-urls (progn (print (concat "Allowed: " (length allowed-urls)))
                              (remove-if #'(lambda (origin-url)
                                             (or (find origin-url visited-urls :test #'equivalent-urls)
-                                                (not (or (equal (quri:uri-scheme (quri:uri origin-url)) "http")
-                                                         (equal (quri:uri-scheme (quri:uri origin-url)) "https")))
+                                                (not (valid-scheme? origin-url))
                                                 (if same-domain?
                                                     (not (equal (find-domain origin-url) domain))
                                                     (gethash (find-domain origin-url) visited-domains))
@@ -262,18 +258,16 @@ Crawl 40 from:
 
 
 (defun discover (url)
-  (let* ((folder (concat *discovered-folder* (place-vocab (remove-duplicates (wordlist (read-text url))))))
+  ;; TBD: Is taking each word once the right thing here?
+  ;; roughly 50% of time is spent classing, 25% reading files (to see if we should write). TBD: Work in memory.
+  (redownload-file url)
+  (let* ((class (place-vocab (remove-duplicates (wordlist (read-text url)))))
+         (folder (concat *discovered-folder* class))
          (path (concat folder "urls")))
     (ensure-directories-exist path)
-    (overwrite-file (concat folder "comment") "auto-generated class")
-    (overwrite-file path (append1 (ignore-errors (read-from-file path)) url))))
-
-(defun rediscover ()
-  (let ((counter 0)
-        (urls (read-from-file "../DATA/viewed-once")))
-    (dolist (url urls)
-      (print (concat (incf counter) "/" (length urls)))
-      (discover (print url)))))
+    (if (not (member url (discovered-urls class) :test #'equal))
+        (overwrite-file path (append1 (ignore-errors (read-from-file path)) url)))
+    class))
 
 (defun sorted-bot-urls ()
   (let ((urls (read-from-file "../DATA/bot-path")))

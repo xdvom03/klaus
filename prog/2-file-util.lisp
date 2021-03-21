@@ -35,6 +35,10 @@
                   (read stream)))
             exists?)))
 
+(defun read-comment (class)
+  (read-from-file (concat (full-path class) "comment")))
+
+;; TBD: Abstractions! (TBD together with corpus export changes)
 (defun location (url &optional (class "/"))
   ;; returns the class where the url is to be found
   (if (member url (class-urls class) :test #'equal)
@@ -43,9 +47,6 @@
                           (subclasses class))))
         (if sub
             (location url sub)))))
-
-(defun read-comment (class)
-  (read-from-file (concat (full-path class) "comment")))
 
 (defun class-urls (class &optional recursive?)
   (labels ((helper (class)
@@ -56,10 +57,27 @@
                        (mapcar #'(lambda (class) (class-urls class t))
                                (subclasses class)))))))
 
+(defun discovered-location (url &optional (class "/"))
+  ;; returns the class where the url is to be found
+  (if (member url (discovered-urls class) :test #'equal)
+      class
+      (let ((sub (find-if #'(lambda (subclass) (member url (discovered-urls subclass t) :test #'equal))
+                          (subclasses class))))
+        (if sub
+            (discovered-location url sub)))))
+
+(defun discovered-urls (class &optional recursive?)
+  (labels ((helper (class)
+             (read-from-file (concat (discovered-path class) "urls"))))
+    (append (helper class)
+            (if recursive?
+                (apply #'append
+                       (mapcar #'(lambda (class) (discovered-urls class t))
+                               (subclasses class)))))))
+
 (defun get-weight (class)
   (fallback (read-from-file (concat (full-path class) "weight"))
             1))
-
 
 ;;; READING FILES
 ;;;----------------------------------------------------------------------------------------------
@@ -75,6 +93,9 @@
 
 (defun full-path (simple-path)
   (concat *classes-folder* (subseq simple-path 1)))
+
+(defun discovered-path (simple-path)
+  (concat *discovered-folder* simple-path))
 
 ;;; CONVERTORS
 ;;;----------------------------------------------------------------------------------------------

@@ -30,7 +30,7 @@
 (defparameter *aliases-file* (concat *files-folder* "file-aliases"))
 (defparameter *domain-aliases-file* (concat *files-folder* "domain-aliases"))
 (defparameter *crawl-data-folder* "../DATA/crawlers/")
-(defparameter *discovered-folder* "../DATA/discovered") ;; without terminating slash because of place results
+(defparameter *discovered-folder* "../DATA/discovered") ;; without terminating slash because of place results (TBD: Inconsistent with other folders)
 
 ;; core engine
 (defparameter *score-threshold* 1/5)
@@ -48,6 +48,7 @@
 (defparameter *min-word-comprehensibility* 0.6)
 (defparameter *forbidden-extensions* (list "css" "png" "mp4" "ico" "svg" "webmanifest" "js" "json" "xml" "jpg" "mp3" "scss" "jsp" "xsl"))
 (defparameter *timeout* 20)
+(defparameter *link-cap* 40)
 
 ;; display
 (defparameter *entries-per-page* 10)
