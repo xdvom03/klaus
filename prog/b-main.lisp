@@ -80,10 +80,10 @@ Naming convention: 'class' is simplified path, 'folder' is actual folder.
   ;; utils
   (defun add-here (entry)
     (warn-on-error ("Website error")
+      (add-url (ltk:text entry) current-class)
       (let ((words (word-count (tokens (read-text (ltk:text entry))))))
         (if (< words *min-word-count*)
             (warning-box (concat "This file is very short! Word count: " words ". File will be added, remove it if you consider this an error.") "Few words!")))
-      (add-url (ltk:text entry) current-class)
       (setf (ltk:text entry) "")
       (funcall refresh-files)))
 

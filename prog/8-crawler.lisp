@@ -203,7 +203,7 @@ Crawl 40 from:
                                        links)))
         (if links
             (multiple-value-bind (url score)
-                (best-element links #'> #'(lambda (url) (gethash url link-scores)))
+                (best-element (reverse links) #'> #'(lambda (url) (gethash url link-scores)))
               (setf (gethash url scores) score)
               (setf current-url url)
               (push url visited)))))
