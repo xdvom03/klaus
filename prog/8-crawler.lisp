@@ -107,14 +107,6 @@ Crawl 40 from:
           (place-vocab vocab best-path))
         class)))
 
-(defun place-discovered (url)
-  (redownload-file url)
-  (let* ((folder (concat *discovered-folder* (place-vocab (remove-duplicates (wordlist (read-text url))))))
-         (path (concat folder "urls")))
-    (ensure-directories-exist path)
-    (overwrite-file (concat folder "comment") "auto-generated class")
-    (overwrite-file path (append1 (fallback (ignore-errors (read-from-file path)) nil) url))))
-
 (defun zoombot-url-value (url target)
   (princ ".")
   (let* ((actual-place (discover url))
@@ -131,9 +123,8 @@ Crawl 40 from:
 (defun allowed-url? (url)
   (if (url-allowed? *crawler-name* url)
       (handler-case (progn
-                      (redownload-file url)
-                      (let* (;(raw (read-raw url))
-                             (text (read-text url))
+                      (redownload-url url)
+                      (let* ((text (read-text url))
                              (vocab (wordlist text)))
                         (if (and (> (length vocab) *min-word-count*) ;; way too short websites aren't classifiable
                                  ;; let's just assume that these sites might not contain invalid chars anyway, right? (> (comprehensible-text? raw text) *min-character-comprehensibility*) ;; avoiding lots of unknown characters
@@ -211,6 +202,7 @@ Crawl 40 from:
 
 (defun zoombot (seed domains per-domain target)
   (setf *random-state* (make-random-state t))
+  (refresh-comprehensible-corp)
   (let* ((visited-urls (list seed))
          (followed-urls nil)
          (url-scores (make-hash-table :test #'equal))
@@ -260,7 +252,7 @@ Crawl 40 from:
 (defun discover (url)
   ;; TBD: Is taking each word once the right thing here?
   ;; roughly 50% of time is spent classing, 25% reading files (to see if we should write). TBD: Work in memory.
-  (redownload-file url)
+  (redownload-url url)
   (let* ((class (place-vocab (remove-duplicates (wordlist (read-text url)))))
          (folder (concat *discovered-folder* class))
          (path (concat folder "urls")))
@@ -298,78 +290,10 @@ Crawl 40 from:
             step2))
       url))
 
-(defun nonredundant-bot-path ()
-  (let ((lst (read-from-file "../DATA/bot-path")))
-    (print (length lst))
-    (remove-duplicates lst :test #'equivalent-urls)))
-
-(defun nonredundant-bot-urls ()
-  (let ((lst (read-from-file "../DATA/bot-viewed")))
-    (print (length lst))
-    (remove-duplicates lst :test #'equivalent-urls)))
-
-
-#|
-(defun backbot (seed steps domain-steps)
-  (setf *random-state* (make-random-state t))
-  
-  (let ((acc nil)
-        (visited-domains (map-to-hash #'(lambda (pair) (declare (ignore pair)) t)
-                                      (list-keys (url-aliases))
-                                      :key-fun #'find-domain))
-        (current-url seed)
-        (domain-limit domain-steps)
-        (blacklist (make-hash-table :test #'equal))
-        (score 0))
-    
-    (dotimes (i steps)
-      (princ (concat domain-limit " " i " " (length acc) " " (- (length acc) (length (list-keys blacklist))) " " ))
-      (princ current-url)
-      (terpri)
-
-      (redownload-file current-url)
-
-      ;; save url
-      (if (not (find current-url acc :test #'equal))
-          (progn
-            (push current-url acc)
-            (setf (gethash (find-domain current-url) visited-domains) t)
-            (discover current-url)))
-
-      ;; find linked urls
-      (let* ((domain (find-domain current-url))
-             (urls (remove-if #'(lambda (url) (or (find url acc :test #'equal)
-                                                  (equal url current-url)
-                                                  (not (or (equal (quri:uri-scheme (quri:uri url)) "http")
-                                                           (equal (quri:uri-scheme (quri:uri url)) "https")))))
-                              (filter-urls (downloaded-vetted-links current-url))))
-             (domain-urls (shuffle (if (zerop domain-limit)
-                                       (remove-if #'(lambda (url) (gethash (find-domain url) visited-domains))
-                                                  urls)
-                                       (remove-if-not #'(lambda (url) (equal (find-domain url)
-                                                                             domain))
-                                                      urls))))
-             
-             (chosen-url (do ((counter 0 (1+ counter)))
-                             ((or (>= counter (length domain-urls))
-                                  (allowed-url? (nth counter domain-urls)))
-                              (nth counter domain-urls)))))
-        (if chosen-url
-            (progn
-              (setf domain-limit (mod (1- domain-limit)
-                                      domain-steps))
-              (setf current-url chosen-url)
-              (incf score))
-            (progn
-              (print "retreat!")
-              (terpri)
-              (terpri)
-              (decf score)
-              (setf (gethash current-url blacklist) t)
-              (setf current-url (first (remove-if #'(lambda (url) (gethash url blacklist))
-                                                  acc)))))))
-    (print (concat "score: " score "/" steps))
-    (print (reverse acc))
-    (reverse (remove-if #'(lambda (url) (gethash url blacklist))
-                        acc))))
-|#
+(defun place-discovered (url)
+  (redownload-url url)
+  (let* ((folder (concat *discovered-folder* (place-vocab (remove-duplicates (wordlist (read-text url))))))
+         (path (concat folder "urls")))
+    (ensure-directories-exist path)
+    (overwrite-file (concat folder "comment") "auto-generated class")
+    (overwrite-file path (append1 (fallback (ignore-errors (read-from-file path)) nil) url))))

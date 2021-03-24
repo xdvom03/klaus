@@ -17,9 +17,16 @@
     w))
 
 (defun button (r c master txt command)
+  ;; Prevents double clicking while the command is being executed
   (let ((b (widget r c 'ltk:button master)))
     (setf (ltk:text b) txt)
-    (setf (ltk:command b) command)
+    (setf (ltk:command b) (let ((on? nil))
+                            (lambda ()
+                              (if (not on?)
+                                  (progn
+                                    (setf on? t)
+                                    (funcall command)
+                                    (ltk:after 10 #'(lambda () (setf on? nil))))))))
     b))
 
 (defun button-column (window column page-length &optional (starting-row 0))
@@ -68,6 +75,7 @@
 
 (defun window (title)
   (let ((W (make-instance 'ltk:toplevel :title title)))
+    (ltk:set-geometry-xy W 0 0)
     W))
 
 (defun scrollable-list (r c master page-length lst &optional function-lst)
@@ -113,3 +121,25 @@
 (defun show-time (timer message)
   ;; gets the time of start
   (info-box (concat message " Time taken: " (my-round (/ (- (get-internal-real-time) timer) internal-time-units-per-second))) "success!"))
+
+#|
+funky window
+(ltk:with-ltk ()
+(ltk:withdraw ltk:*tk*)
+(let* ((W (window "ahoj"))
+(b (button 0 0 W "1" #'(lambda ()
+)))
+(bb (button 1 0 W "2" #'(lambda ()
+(print (ltk:wm-state W)))))
+(bbb (button 2 0 W "3" #'(lambda ()
+(ltk:set-geometry-xy W 20 20 ))))
+(tx (text 0 2 W "nejaky texta projistotu vic textu jeden nikdy nevi" 15 24 "NotoSans 10")))
+(ltk:force-focus b)
+(ltk:grid (ltk:make-scrollbar W) 2 2)
+
+(ltk:grid (make-instance 'ltk:paned-window) 3 3)
+(ltk:on-close W #'(lambda ()
+(warning-box "Save some shit?" "yeehaw")
+(ltk:destroy W)
+(ltk:destroy ltk:*tk*)))))
+|#

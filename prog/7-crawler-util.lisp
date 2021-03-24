@@ -51,7 +51,7 @@
 (defun robots-txt (site)
   ;; this link follow cannot cause an error if the site itself is OK
   (let ((robots-txt-url (follow-link site "/robots.txt")))
-    (redownload-file robots-txt-url)
+    (redownload-url robots-txt-url)
     (let* ((file (read-html robots-txt-url))
            (user-agents nil)
            (rules nil)
@@ -91,8 +91,11 @@
                          :test #'equal))
              (remove-duplicates raw-urls :test #'equal)))
 
-(let ((total-corp (add-corpuses (get-recursive-corpus "/")
-                                (scale-corpus (get-recursive-corpus "/non-english/") -1))))
+(let ((total-corp (make-hash-table :test #'equal)))
+  (defun refresh-comprehensible-corp ()
+    (setf total-corp (add-corpuses (get-recursive-corpus "/")
+                                   (scale-corpus (get-recursive-corpus "/non-english/") -1))))
+  
   (defun comprehensible? (vocab)
    (/ (1+ (length (remove-if #'(lambda (word) (zerop (occurrences word total-corp)))
                              vocab)))

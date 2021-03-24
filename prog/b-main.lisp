@@ -31,27 +31,11 @@ Naming convention: 'class' is simplified path, 'folder' is actual folder.
       :disabled
       :normal))
 
-(defun existing-class? (class)
-  (directory (full-path class)))
-
-(defun recursive-create-class (class)
-  (if (not (existing-class? class))
-      (let ((parent (parent-class class)))
-        (recursive-create-class parent)
-        (create-class class))))
-
-(defun create-class (class)
-  (ensure-directories-exist (full-path class))
-  (overwrite-class-file class "urls" nil)
-  (overwrite-class-file class "comment" "")
-  (rebuild-corpus class))
-
 (defun action (url origin class mode)
   (case mode
     (move
      ;; needlessly checks for continued existence of file
      (remove-url url origin)
-     (redownload-file url)
      (add-url url class))
     (remove
      (remove-url url origin))
@@ -103,10 +87,10 @@ Naming convention: 'class' is simplified path, 'folder' is actual folder.
       (button 1 1 fr "Reload saved class description" #'(lambda () (funcall refresh-comment)))
       (labels ((refresh ()
                  (setf (ltk:text comment) (read-comment current-class))
-                 (setf (ltk:text weight-entry) (get-weight current-class)))
+                 (setf (ltk:text weight-entry) (read-weight current-class)))
 
                (save-description ()
-                 (overwrite-class-file current-class "comment" (read-text-widget comment))
+                 (set-comment current-class (read-text-widget comment))
                  (warn-on-error ("Invalid weight, not saved")
                    (let ((new-weight (read-from-string (ltk:text weight-entry))))
                      (assert (typep new-weight 'number))
@@ -249,14 +233,12 @@ Naming convention: 'class' is simplified path, 'folder' is actual folder.
       (button 0 0 fr "Rebuild corpus" #'(lambda ()
                                           (let ((timer (get-internal-real-time)))
                                             (build-core-text-database)
+                                            (refresh-imports)
                                             (rebuild-corpus)
                                             (show-time timer "Rebuilt the corpus.")
-                                            (funcall refresh-classes))))
-      (button 1 0 fr "Rebuild text" #'build-text-database)
-      (button 2 0 fr "Rebuild core text" #'(lambda ()
-                                             (let ((timer (get-internal-real-time)))
-                                               (build-core-text-database)
-                                               (show-time timer "Rebuilt the core text database."))))
+                                            (funcall refresh-classes)
+                                            (set-cache)
+                                            (save-corpora))))
       fr))
 
   (defun db-window ()

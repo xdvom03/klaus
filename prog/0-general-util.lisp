@@ -17,7 +17,6 @@
 
 ;; paths
 (defparameter *classes-folder* "../DATA/classes/")
-(defparameter *generated-data-folder* "../DATA/generated-data/")
 (defparameter *imports-folder* "../DATA/imports/")
 (defparameter *files-folder* "../DATA/files/")
 (defparameter *html-folder* (concat *files-folder* "html/"))
@@ -29,6 +28,14 @@
 (defparameter *boilerplate-folder* (concat *files-folder* "boilerplate/"))
 (defparameter *aliases-file* (concat *files-folder* "file-aliases"))
 (defparameter *domain-aliases-file* (concat *files-folder* "domain-aliases"))
+
+
+(defparameter *comments-file* "../DATA/comments")
+(defparameter *weights-file* "../DATA/weights")
+(defparameter *corpora-file* "../DATA/corpora")
+(defparameter *urls-file* "../DATA/urls")
+
+
 (defparameter *crawl-data-folder* "../DATA/crawlers/")
 (defparameter *discovered-folder* "../DATA/discovered") ;; without terminating slash because of place results (TBD: Inconsistent with other folders)
 

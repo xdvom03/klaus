@@ -1,0 +1,323 @@
+
+(("/" . "The top class, where, naturally, we don't place anything.")
+ ("/articles/"
+  . "Any text meant as information, not, e.g., to navigate some other task.
+
+This class itself serves files that are either multicategorical or don't have a more specific place.")
+ ("/articles/humanities/" . "")
+ ("/articles/humanities/education/"
+  . "Considering the transfer of knowledge. Excludes self-learning. Excludes questions of memory, which have their own class.
+")
+ ("/articles/humanities/education/lessons/" . "pedagogy, college life")
+ ("/articles/humanities/education/memory/"
+  . "Matters of long-term memory (working memory presumably belongs elsewhere, though no precedent exists). Spaced repetition.
+")
+ ("/articles/humanities/education/parenting/" . "")
+ ("/articles/humanities/fallacies/" . "")
+ ("/articles/humanities/history/" . "Not limited to political history.
+
+Anything documenting events that are already complete (and cannot be affected anymore, though their consequences may continue into today) within their chronological context.
+
+We currently only have ancient history classed.
+
+http://www.fsmitha.com/h1/phil17.htm is the start if an infrastructure class... one day.")
+ ("/articles/humanities/history/economics/"
+  . "also general prosperity, growth, trade, exploration, and the resulting issues")
+ ("/articles/humanities/history/empire/"
+  . "The fall of empires (rise generally falls under economics or war), dark ages.")
+ ("/articles/humanities/history/geological/" . "ňyc")
+ ("/articles/humanities/history/philosophy/"
+  . "Philosophy is about what the world is or ought to be, I guess. For now, I apply the \"know it when you see it\" theory, since most of this cannot be reasonably classed anywhere else.")
+ ("/articles/humanities/history/politics/" . "ňyc")
+ ("/articles/humanities/history/religion/" . "ňyc")
+ ("/articles/humanities/history/religion/china/" . "")
+ ("/articles/humanities/history/religion/christianity/" . "")
+ ("/articles/humanities/history/religion/greek/" . "")
+ ("/articles/humanities/history/religion/islam/" . "")
+ ("/articles/humanities/history/religion/jewish/" . "")
+ ("/articles/humanities/history/religion/rome/" . "")
+ ("/articles/humanities/history/science/" . "ňyc")
+ ("/articles/humanities/history/society/"
+  . "Closest to \"daily life\" - structure of society, who lived how, what people ate, how they made a living...")
+ ("/articles/humanities/history/war/" . "wars")
+ ("/articles/humanities/history/war/crusades/" . "Overlaps with religion")
+ ("/articles/humanities/language/" . "")
+ ("/articles/humanities/philosophy/" . "Matters of existence, purpose, ethics.
+Probably much wider and narrower and confusing, but you know it when you see it and it doesn't fit neatly anywhere else.
+")
+ ("/articles/humanities/philosophy/ethics/"
+  . "Right/wrong et al. Morality and ethics.
+")
+ ("/articles/life/" . "")
+ ("/articles/life/food/"
+  . "Recipes, cooking tips, eating habits, anything to do with preparing and eating food.
+Excludes medical matters.
+")
+ ("/articles/life/food/alcohol/" . "") ("/articles/life/food/gardening/" . "")
+ ("/articles/life/food/recipes/" . "")
+ ("/articles/life/food/safety/" . "Recommendations for safe food handling.")
+ ("/articles/life/money/" . "Business, finance, economics.")
+ ("/articles/life/recreation/" . "Sport!")
+ ("/articles/life/recreation/art/"
+  . "This WILL require more subfolders with techniques, personal pages, discussion...
+
+I added a link (https://autotranslucence.wordpress.com/2018/03/30/becoming-a-magician/) that is somewhat more about \"outliers\", because while it would be awesome to have a class for them, there won't be much in it, and most of them are art-y anyway.")
+ ("/articles/life/recreation/art/fiction/" . "")
+ ("/articles/life/recreation/art/fiction/literature/"
+  . "Anything considering the writing/reading process, existing works, literary science.
+")
+ ("/articles/life/recreation/art/fiction/literature/agatha-christie/"
+  . "Maybe mystery in general?")
+ ("/articles/life/recreation/art/fiction/literature/ohyos/"
+  . "Anything about One Hundred Years Of Solitude. Partly created in hopes of supporting a wider outlier class, characterised by turns of phrase of surprise.
+
+Ah, screw it, it's the past now.")
+ ("/articles/life/recreation/art/fiction/literature/writing/"
+  . "This will need some further division to separate out some of the content mill-y stuff.
+
+Includes nonfiction? Separated into a class in case it needs moving.")
+ ("/articles/life/recreation/art/fiction/literature/writing/guides/"
+  . "\"Best practices\", writing in theory. Somewhat poorly sourced.")
+ ("/articles/life/recreation/art/fiction/literature/writing/practice/"
+  . "Instances where somebody actually wrote something and wrote about that.")
+ ("/articles/life/recreation/art/visual/"
+  . "Traditional notion of art, as opposed to the more general creative work.
+
+Closer to \"non-textual\"")
+ ("/articles/life/recreation/art/visual/artists/"
+  . "About the people behind art")
+ ("/articles/life/recreation/art/visual/design/" . "")
+ ("/articles/life/recreation/art/visual/general/"
+  . "About general art, not particular styles or techniques")
+ ("/articles/life/recreation/games/" . "")
+ ("/articles/life/recreation/games/d-and-d/"
+  . "Dungeons and Dragons. Probably gets subclassed under games. I believe this has been included at some point in the past.")
+ ("/articles/life/recreation/travel/" . "")
+ ("/articles/life/self-help/"
+  . "If somebody else writes it for you, it's not self-help. But the term has caught on for \"how to live a better life\", which is quite a useful thing to exist.")
+ ("/articles/life/self-help/motivation/"
+  . "Often content-mill sites about success.")
+ ("/articles/life/self-help/mystical/"
+  . "Self-help horoscopes and other popular versions of superstitions. Not for anthropology-grade stuff.")
+ ("/articles/life/self-help/procrastination/" . "")
+ ("/articles/life/society/" . "social justice is missing now")
+ ("/articles/life/society/law-crime-order/"
+  . "Information on *how* we might go about establishing these.")
+ ("/articles/life/society/politics/"
+  . "Matters of elections, existing political parties, contentious topics. Even election systems, but probably not election math. Really, let's not make our life complicated with that kind of topic yet.
+")
+ ("/articles/stem/" . "Science: Studying the world as it is.
+Technology, Engineering: The technical side of making things, as opposed to the purpose they are used for.
+Mathematics: The abstract.
+
+Additional topics: Computers (& associated technology) and weather, the ultimate artefact of the world.")
+ ("/articles/stem/life/" . "Life sciences")
+ ("/articles/stem/life/biology/" . "")
+ ("/articles/stem/life/biology/evolution/" . "")
+ ("/articles/stem/life/health/"
+  . "Originally created to house findings misclassed as dreams. Subclasses present here are most common in crawls.")
+ ("/articles/stem/life/health/covid-19/"
+  . "Not from a news perspective. Mostly sourced from Wikipedia article references.")
+ ("/articles/stem/life/health/mental/"
+  . "Originally created to house findings misclassed as dreams. Subclasses present here are most common in crawls.")
+ ("/articles/stem/life/health/mental/dreams/"
+  . "Anything related to dream analysis, experience, scientific study, etc.
+Esoteric ideas excluded, to be placed under self-help.
+
+Lucid dreaming considered dubious except where uncontroversially studied.
+
+")
+ ("/articles/stem/life/health/mental/dreams/research/"
+  . "Findings in the name of science, and so without an axe to grind.")
+ ("/articles/stem/life/health/mental/dreams/various/"
+  . "Primarily a control group for research. More focus on a popular culture view.")
+ ("/articles/stem/math/" . "Pure mathematics not classed as applied elsewhere.
+
+http://blog.hostilefork.com/clocks-that-run-backwards/ should be split, as only part of it refers to tau. Tau should get its own class.
+")
+ ("/articles/stem/math/complexity-theory/"
+  . "The mathematical theory, discussing the models, not (primarily) the applications. P versus NP discussions, algorithms, etc.")
+ ("/articles/stem/math/googology/"
+  . "The study of large numbers and the structures encountered along the way. ")
+ ("/articles/stem/math/googology/ordinal-numbers/"
+  . "As encountered within googology. On their own, they belong in the main math class, perhaps under set theory.")
+ ("/articles/stem/math/topology/" . "")
+ ("/articles/stem/nature/" . "Non-living natural things: study of the world.")
+ ("/articles/stem/nature/physics/"
+  . "Problem of this class: Broken bits of LaTeX in the corpus.")
+ ("/articles/stem/nature/physics/electromagnetism/" . "")
+ ("/articles/stem/nature/physics/mechanics/"
+  . "Excluding the theory of relativity. Classical Newtonian mechanics.")
+ ("/articles/stem/nature/physics/relativity/" . "")
+ ("/articles/stem/nature/physics/relativity/special/"
+  . "Everything that is not explicitly general relativity.")
+ ("/articles/stem/nature/space/"
+  . "Space technology, the contents of space (astronomical objects), space travel.")
+ ("/articles/stem/nature/space/NoD/"
+  . "Normalisation of Deviance, as related to the most well-known examples of Space Shuttle Challenger and Columbia.")
+ ("/articles/stem/nature/space/debris/"
+  . "Orbital debris state and proposed solutions (not covered by tethers).")
+ ("/articles/stem/nature/space/exploration/"
+  . "The endpoint of going into space. The science done on other planets and the plans for space expansion.")
+ ("/articles/stem/nature/space/observation/" . "Viewing space from the Earth.")
+ ("/articles/stem/nature/space/rocket-science/"
+  . "The technology and theory behind rocket science.")
+ ("/articles/stem/nature/space/tethers/"
+  . "Space tethers: an idea which more or less got shelved after 2004, but which might be about to come back. Historical tether flights and tether physics.")
+ ("/articles/stem/nature/weather/"
+  . "Weather, climate. Measurement, preparation, study.")
+ ("/articles/stem/nature/weather/climate/" . "")
+ ("/articles/stem/nature/weather/climate/climate-change/" . "")
+ ("/articles/stem/nature/weather/climate/climate-change/solutions/" . "")
+ ("/articles/stem/nature/weather/climate/climate-change/solutions/carbon-capture/"
+  . "")
+ ("/articles/stem/nature/weather/climate/climate-change/solutions/energetics/"
+  . "Electric cars, hydrogen, fossil fuels.")
+ ("/articles/stem/nature/weather/climate/climate-change/solutions/energetics/hydrogen-power/"
+  . "Beware: This entire folder might be based on a single thing. Definitely does not cover the issue. Check it.")
+ ("/articles/stem/nature/weather/climate/climate-change/solutions/geoengineering/"
+  . "")
+ ("/articles/stem/nature/weather/climate/climate-change/state/" . "")
+ ("/articles/stem/nature/weather/hurricanes/"
+  . "Given the safety class, dubious.")
+ ("/articles/stem/nature/weather/meteorology/"
+  . "Predicting and measuring weather.")
+ ("/articles/stem/nature/weather/safety/"
+  . "Prevention and damage control of natural disasters.
+
+Earthquakes and fire count as weather for these purposes :)")
+ ("/articles/stem/technology/" . "")
+ ("/articles/stem/technology/bionics/" . "Human-machine interfaces.")
+ ("/articles/stem/technology/computer-technology/"
+  . "Any aspect of designing or making software.")
+ ("/articles/stem/technology/computer-technology/AI/"
+  . "Anything related to artificial intelligence. May be worth splitting into singularity-type (with discussions of Friendly AI, etc.) and artificial intelligence for more mundane tasks (primarily in games). Some AI, such as self-driving cars, however, exists in the middle.
+
+Note: Games tend to be put here by the classifier, likely because of game theory & video game AI.")
+ ("/articles/stem/technology/computer-technology/AI/game-ai/"
+  . "A specific application of AI: any NPC with nontrivial behaviour. Also AIs as the players.")
+ ("/articles/stem/technology/computer-technology/AI/long-term/"
+  . "Singularity opinions. AI long-term safety.")
+ ("/articles/stem/technology/computer-technology/AI/mechanisms/"
+  . "Neural networks, machine learning, geneticv algorithms, and other specific techniques that can make narrow AI happen.")
+ ("/articles/stem/technology/computer-technology/cryptocurrency/"
+  . "The mechanics of blockchain, rather than the finance & design philosophy aspects.")
+ ("/articles/stem/technology/computer-technology/git/"
+  . "Complete git tutorial with low weight. The book should cover Git from all sides.")
+ ("/articles/stem/technology/computer-technology/git/general/"
+  . "About version control, history, and founding principles.")
+ ("/articles/stem/technology/computer-technology/git/internals/"
+  . "The inner workings of Git under the hood.")
+ ("/articles/stem/technology/computer-technology/git/setup/"
+  . "Git installation tutorials")
+ ("/articles/stem/technology/computer-technology/git/setup/server/" . "")
+ ("/articles/stem/technology/computer-technology/git/usage/"
+  . "Interacting with Git: a manual")
+ ("/articles/stem/technology/computer-technology/interaction/"
+  . "User experience, user interfaces")
+ ("/articles/stem/technology/computer-technology/internet/"
+  . "Includes opinions on how the Internet is being used, if they are connected to its potential (and not treated from a news-y perspective as just \"another thing\")")
+ ("/articles/stem/technology/computer-technology/internet/hosting/"
+  . "Reviews of hosting companies")
+ ("/articles/stem/technology/computer-technology/internet/infrastructure/"
+  . "Not technology that *uses* the internet, but the actual workings and standards of the internet/World Wide Web (and related technology) itself.")
+ ("/articles/stem/technology/computer-technology/linux/"
+  . "Linux in colloquial use, and by extension, GNU/Linux and associated.")
+ ("/articles/stem/technology/computer-technology/programming/"
+  . "Programming style, languages, models, etc. Intended to be closer to practice than theory, with project management included.
+
+TBD: This may go against the general principle used in STEM.")
+ ("/articles/stem/technology/computer-technology/programming/programming-languages/"
+  . "Self-explanatory. Discussions of the finer points of various programming languages.
+")
+ ("/articles/stem/technology/computer-technology/search/"
+  . "Anything related to search engine technology. Excludes privacy concerns. Instead, explicitly includes crawling (for search purposes), PageRank-like systems, and text search algorithms.")
+ ("/articles/stem/technology/computer-technology/search/keyword/"
+  . "The \"traditional\" problem of finding matching documents for queries.")
+ ("/articles/stem/technology/computer-technology/search/semantic/"
+  . "Semantic Web, even though it failed.")
+ ("/articles/stem/technology/computer-technology/search/semantic/classification/"
+  . "Notes on classification, whether manual or automatic.")
+ ("/articles/stem/technology/computer-technology/search/semantic/classification/automatic-classification/"
+  . "Natural Language Processing or other ways of finding the meaning of sites to be found.")
+ ("/articles/stem/technology/computer-technology/search/semantic/semantic-web/"
+  . "The Semantic Web attempt at making the Internet machine-readable.")
+ ("/articles/stem/technology/computer-technology/search/semantic/semantic-web/criticism/"
+  . "The problems with the Semantic Web protocol")
+ ("/articles/stem/technology/computer-technology/search/semantic/semantic-web/mechanism/"
+  . "Specification and advocacy for Semantic Web")
+ ("/articles/stem/technology/computer-technology/security/" . "")
+ ("/articles/stem/technology/infrastructure/" . "City planning, projects,")
+ ("/fiction/"
+  . "Fiction itself, not text *about* fiction. This class may pick up on true stories with similar language.")
+ ("/fiction/books/" . "") ("/fiction/books/mystery/" . "")
+ ("/fiction/books/sci-fi/" . "")
+ ("/fiction/parables/"
+  . "Speculative class, primarily a to-be-WIP-labeled one.")
+ ("/fiction/scripts/" . "Movie or theatre scripts")
+ ("/fiction/short-stories/" . "")
+ ("/fiction/transcripts/" . "Scripts without the scene notes.")
+ ("/legal/"
+  . "Boilerplate that either serves a mandated-by-law purpose (like privacy policies) or boilerplate that gives the service some power over its users or visitors.")
+ ("/legal/cookies/"
+  . "Cookie statements separate from other legal boilerplate (typically privacy policies).")
+ ("/legal/copyright/"
+  . "Instructions on intellectual property, trademarks, and patents.")
+ ("/legal/privacy/"
+  . "Legal boilerplate concerning private data of users and ways it may become less private.")
+ ("/legal/refunds/" . "To be labeled WIP.")
+ ("/legal/terms-of-use/"
+  . "Also occasionally called (acceptable) use policies, agreements, etc. Anything that covers restrictions on user behaviour goes here.
+")
+ ("/news/"
+  . "Various content that can be found on news sites. It will require periodic additions of new data as news events change.")
+ ("/news/news-reports/"
+  . "Articles on news sites about events, as opposed to opinions or culture.
+
+The subclasses are not here for classification purposes, but instead to have roughly equal representation of various sources. They will be labeled WIP as soon as that feature is added.")
+ ("/news/news-reports/aljazeera/" . "") ("/news/news-reports/bbc/" . "")
+ ("/news/news-reports/guardian/" . "") ("/news/news-reports/la-times/" . "")
+ ("/news/news-reports/reuters/" . "") ("/news/opinions/" . "Opinion columns.")
+ ("/news/opinions/aljazeera/" . "") ("/news/opinions/guardian/" . "")
+ ("/news/opinions/la-times/" . "") ("/news/sports/" . "Sports news.")
+ ("/news/sports/aljazeera/" . "") ("/news/sports/bbc/" . "")
+ ("/news/sports/guardian/" . "") ("/news/sports/la-times/" . "")
+ ("/news/sports/reuters/" . "")
+ ("/non-english/"
+  . "A few links for a few languages to catch some accidentally slipped foreign sites.")
+ ("/non-english/CZ/" . "Czech") ("/non-english/DE/" . "German")
+ ("/non-english/ES/" . "Spanish") ("/non-english/FR/" . "French")
+ ("/non-english/PT/" . "Portuguese")
+ ("/utility/"
+  . "Sites that have text, but it serves for navigation primarily. Sites related to an organisation, service, or store.")
+ ("/utility/dictionaries/"
+  . "Dictionaries often turn up when one searches for phrases or unusual words. While useful for their stated purpose, once one does know what the word or phrase means, they make it useless for search.
+")
+ ("/utility/profit/"
+  . "For-profit services. Places where you can send them money.")
+ ("/utility/profit/stores/"
+  . "Anywhere that products are directly presented in exchange for money.")
+ ("/utility/profit/stores/pricing/" . "For services.")
+ ("/utility/profit/stores/product-pages/"
+  . "For sites like Amazon, where lots of stuff is sold through fairly straightforward interfaces.
+
+Technically also includes similarly-structured royalty-free music.")
+ ("/utility/profit/stores/product-pages/books/" . "")
+ ("/utility/profit/stores/product-pages/tech/" . "")
+ ("/utility/profit/write-your-paper/"
+  . "Services that offer to write academic text for you. This class is separate because the crawler found it several independent times. I do not condone these services.")
+ ("/utility/science/" . "")
+ ("/utility/science/journals/"
+  . "By extension, science funding & looking for researchers.")
+ ("/utility/science/universities/" . "")
+ ("/utility/society/"
+  . "Sites that don't sell, but are still connected to an entity's interests.")
+ ("/utility/society/art/" . "Galleries, exhibitions.")
+ ("/utility/society/charity/"
+  . "Organisations dedicated to helping people in need. Includes non-profits, NGOs, or even government-sponsored organisations, the point is the help for people in need.")
+ ("/utility/society/environment/" . "")
+ ("/utility/society/government/"
+  . "Government structure, governmental organisations for standards, safety, (inter)national security, etc.")
+ ("/utility/society/social-justice/" . "")
+ ("/utility/society/sport/" . "Sport clubs, places to do sport, etc.")
+ ("/utility/society/sport/tennis/" . "")) 

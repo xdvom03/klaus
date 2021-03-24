@@ -4,39 +4,9 @@
     (dolist (thing things)
       (print thing stream))))
 
-(defun overwrite-class-file (class file-name &rest things)
-  (apply #'overwrite-file (concat (full-path class) file-name) things))
-
-(defun add-url (url class)
-  (if (member url (class-urls "/" t) :test #'equal)
-      (error (concat "File already in " (location url)))
-      (let* ((urls-file (concat (full-path class) "urls"))
-             (existing-urls (read-from-file urls-file)))
-        (redownload-file url)
-        (overwrite-file urls-file (append1 existing-urls url)))))
-
-(defun remove-url (url class)
-  (overwrite-class-file class "urls"
-                        (remove-if #'(lambda (checked-url)
-                                       (equal checked-url url))
-                                   (read-from-file (concat (full-path class) "urls")))))
-
-(defun set-weight (class weight)
-  (overwrite-class-file class "weight" weight))
-
 ;;; MODIFYING FILES
 ;;;----------------------------------------------------------------------------------------------
 ;;; READING FILES
-
-(defun read-from-file (path)
-  (let ((exists? (directory path)))
-    (values (if exists?
-                (with-open-file (stream path :direction :input :if-does-not-exist :error)
-                  (read stream)))
-            exists?)))
-
-(defun read-comment (class)
-  (read-from-file (concat (full-path class) "comment")))
 
 ;; TBD: Abstractions! (TBD together with corpus export changes)
 (defun location (url &optional (class "/"))
@@ -47,15 +17,6 @@
                           (subclasses class))))
         (if sub
             (location url sub)))))
-
-(defun class-urls (class &optional recursive?)
-  (labels ((helper (class)
-             (read-from-file (concat (full-path class) "urls"))))
-    (append (helper class)
-            (if recursive?
-                (apply #'append
-                       (mapcar #'(lambda (class) (class-urls class t))
-                               (subclasses class)))))))
 
 (defun discovered-location (url &optional (class "/"))
   ;; returns the class where the url is to be found
@@ -75,24 +36,16 @@
                        (mapcar #'(lambda (class) (discovered-urls class t))
                                (subclasses class)))))))
 
-(defun get-weight (class)
-  (fallback (read-from-file (concat (full-path class) "weight"))
-            1))
+(defun read-from-file (path)
+  (let ((exists? (directory path)))
+    (values (if exists?
+                (with-open-file (stream path :direction :input :if-does-not-exist :error)
+                  (read stream)))
+            exists?)))
 
 ;;; READING FILES
 ;;;----------------------------------------------------------------------------------------------
 ;;; CONVERTORS
-
-(defun simplified-path (path)
-  ;; BUG: fails if the classes folder contains "classes" twice in it (remove the whole thing!)
-  (let* ((path-parts (cl-strings:split path #\/))
-         (varying-part (cdr (member "classes" path-parts :test #'equal))))
-    (reduce #'(lambda (a b) (concat a "/" b))
-            varying-part
-            :initial-value "")))
-
-(defun full-path (simple-path)
-  (concat *classes-folder* (subseq simple-path 1)))
 
 (defun discovered-path (simple-path)
   (concat *discovered-folder* simple-path))
@@ -101,11 +54,9 @@
 ;;;----------------------------------------------------------------------------------------------
 ;;; FOLDER NAVIGATION
 
-(defun subclasses (class)
-  (mapcar #'simplified-path (mapcar #'namestring (directory (concat (full-path class) "*/")))))
-
 (defun parent-class (class)
-  (concat (cl-strings:join (remove-last (remove-last (cl-strings:split class #\/))) :separator "/") "/"))
+  (if (not (equal class "/"))
+      (concat (cl-strings:join (remove-last (remove-last (cl-strings:split class #\/))) :separator "/") "/")))
 
 (defun folder-name (path)
   (second (reverse (cl-strings:split path #\/))))
@@ -178,34 +129,19 @@
       (overwrite-file *aliases-file* nil))
   (let ((files (class-urls class)))
     (dolist (file files)
-      (redownload-file file))
+      (redownload-url file))
     (dolist (subclass (subclasses class))
       (redownload subclass)))
   (print (concat "redownloaded " class)))
 
 ;; TBD: Rename
-(defun redownload-file (file-name)
-  (if (not (file-alias file-name))
+(defun redownload-url (url)
+  (if (not (file-alias url))
       (multiple-value-bind (html response-origin)
-          (html file-name)
-        (let* (                         ;(raw (extract-raw-text html))
-               (text (extract-text html))
-               (new-alias (add-alias file-name)))
+          (html url)
+        (let* ((text (extract-text html))
+               (new-alias (add-alias url)))
           (overwrite-file (concat *loc-folder* new-alias) response-origin)
           (overwrite-file (concat *html-folder* new-alias) html)
-                                        ;(overwrite-file (concat *raw-folder* new-alias) raw)
           (overwrite-file (concat *text-folder* new-alias) text))))
-  (file-alias file-name))
-
-;;; DOWNLOADING FILES
-;;;----------------------------------------------------------------------------------------------
-;;; UTIL
-
-(defun apply-to-all-classes (fun)
-  ;; not used in code, but useful to reset weights or stuff
-  ;; TBD: Add to a better crawler testing suite
-  (labels ((res (class)
-             (funcall fun class)
-             (dolist (subclass (subclasses class))
-               (res subclass))))
-    (res "/")))
+  (file-alias url))
