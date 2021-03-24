@@ -66,9 +66,13 @@
 
 (defun pass ())
 
+
 (defun one-elem? (lst)
   (and (car lst)
        (null (cdr lst))))
+
+(defun ht () ; useful alias
+  (make-hash-table :test #'equal))
 
 (defun append1 (lst elem)
   (append lst (list elem)))
@@ -150,7 +154,7 @@
 
 (defun map-to-hash (fun list &key key-fun)
   ;; key-fun is applied to the list to produce keys.
-  (let ((acc (make-hash-table :test #'equal)))
+  (let ((acc (ht)))
     (dolist (elem list)
       (setf (gethash (if key-fun
                          (funcall key-fun elem)

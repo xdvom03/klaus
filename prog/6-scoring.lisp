@@ -55,9 +55,9 @@
   ;; Already gets normalised corpuses
   ;; TBD: Make this two-class. It's ridiculous.
   (let* ((class-count (length (list-keys corpuses)))
-         (scores (make-hash-table :test #'equal))
-         (evidence-words (make-hash-table :test #'equal))
-         (evidence-details (make-hash-table :test #'equal)))
+         (scores (ht))
+         (evidence-words (ht))
+         (evidence-details (ht)))
     (dolist (path paths)
       ;; balance evidence for and against
       (let* ((corpus (gethash path corpuses))
@@ -93,9 +93,9 @@
   ;; excluded data is a cons of (url . class) used for blind checks
   ;; In classes without subclasses, we don't want to do anything
   (if classes
-      (let* ((pair-scores (make-hash-table :test #'equal))
-             (pair-words (make-hash-table :test #'equal))
-             (pair-word-details (make-hash-table :test #'equal)))
+      (let* ((pair-scores (ht))
+             (pair-words (ht))
+             (pair-word-details (ht)))
         (dolist (class classes)
           (dolist (opponent (cdr (member class classes :test #'equal))) ; only check classes coming after it
             (multiple-value-bind (scores evidence-words evidence-details) (let ((min-size (min (gethash class word-counts)
@@ -128,5 +128,4 @@
                   pair-scores
                   pair-words
                   pair-word-details)))
-      (values (make-hash-table :test #'equal)
-              0)))
+      (values (ht) 0)))

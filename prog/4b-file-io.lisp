@@ -1,7 +1,7 @@
 ;; all file input/output (and data storage)
 
 ;; TBD: The reading here (& below) is only needed when recompiling. Remove from final executable.
-(let ((comment-tree (make-hash-table :test #'equal)))
+(let ((comment-tree (ht)))
   (defun read-comments ()
     (setf comment-tree
           (assoc-to-hashtable (read-from-file *comments-file*))))
@@ -20,7 +20,7 @@
 
   (read-comments))
 
-(let ((weight-tree (make-hash-table :test #'equal)))
+(let ((weight-tree (ht)))
   (defun read-weights ()
     (setf weight-tree (assoc-to-hashtable (read-from-file *weights-file*))))
 
@@ -38,14 +38,14 @@
   (read-weights))
 
 
-(let ((url-tree (make-hash-table :test #'equal))
-      (corpus-tree (make-hash-table :test #'equal))
-      (recursive-corpus-tree (make-hash-table :test #'equal))
-      (word-count-tree (make-hash-table :test #'equal))
-      (url-count-tree (make-hash-table :test #'equal))
-      (saved-corpus-tree (make-hash-table :test #'equal))
-      (saved-url-tree (make-hash-table :test #'equal))
-      (subclasses (make-hash-table :test #'equal)))
+(let ((url-tree (ht))
+      (corpus-tree (ht))
+      (recursive-corpus-tree (ht))
+      (word-count-tree (ht))
+      (url-count-tree (ht))
+      (saved-corpus-tree (ht))
+      (saved-url-tree (ht))
+      (subclasses (ht)))
 
   (defun classes ()
     (remove-duplicates (append (list-keys url-tree)
@@ -110,7 +110,7 @@
     (add-corpuses (imported-corpus class)
                   (let ((current-urls (class-urls class)))
                     (if (null current-urls)
-                        (make-hash-table :test #'equal)
+                        (ht)
                         (if (equal current-urls
                                    (gethash class saved-url-tree))
                             (gethash class saved-corpus-tree)
@@ -141,8 +141,8 @@
     (setf saved-corpus-tree corpus-tree))
 
   (defun reset-cache ()
-    (setf saved-url-tree (make-hash-table :test #'equal))
-    (setf saved-corpus-tree (make-hash-table :test #'equal)))
+    (setf saved-url-tree (ht))
+    (setf saved-corpus-tree (ht)))
 
   (defun save-corpora ()
     ;; Must be saved so that it matches
@@ -191,7 +191,7 @@
     (res "/")))
 
 (defun classes-hashtable (fun)
-  (let ((acc (make-hash-table :test #'equal)))
+  (let ((acc (ht)))
     (apply-to-all-classes #'(lambda (class)
                               (setf (gethash class acc)
                                     (funcall fun class))))

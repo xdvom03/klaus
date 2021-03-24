@@ -91,7 +91,7 @@
                          :test #'equal))
              (remove-duplicates raw-urls :test #'equal)))
 
-(let ((total-corp (make-hash-table :test #'equal)))
+(let ((total-corp (ht)))
   (defun refresh-comprehensible-corp ()
     (setf total-corp (add-corpuses (get-recursive-corpus "/")
                                    (scale-corpus (get-recursive-corpus "/non-english/") -1))))

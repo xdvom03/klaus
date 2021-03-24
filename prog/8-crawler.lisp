@@ -182,14 +182,14 @@ Crawl 40 from:
 (defun domain-links (seed target count)
   ;; visits links in succession (different from interdomain, may change) to get wider site coverage
   ;; if it finds no valid links, it keeps trying again (maybe getting other links)
-  (let ((scores (make-hash-table :test #'equal))
+  (let ((scores (ht))
         (visited (list seed))
         (current-url seed))
     (dotimes (i count)
       (setf (gethash current-url scores)
             (zoombot-url-value current-url target))
       (append-to-file "../DATA/scores" (concat (my-round (gethash current-url scores)) " " current-url))
-      (let* ((links (chosen-links current-url visited (make-hash-table :test #'equal) t))
+      (let* ((links (chosen-links current-url visited (ht) t))
              (link-scores (map-to-hash #'(lambda (url) (zoombot-url-value url target))
                                        links)))
         (if links
@@ -205,8 +205,8 @@ Crawl 40 from:
   (refresh-comprehensible-corp)
   (let* ((visited-urls (list seed))
          (followed-urls nil)
-         (url-scores (make-hash-table :test #'equal))
-         (visited-domains (make-hash-table :test #'equal)))
+         (url-scores (ht))
+         (visited-domains (ht)))
     (setf (gethash seed url-scores) (zoombot-url-value seed target))
 
     (dotimes (i domains)

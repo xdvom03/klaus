@@ -56,9 +56,9 @@
   (defun imported-corpus (class)
     (reduce #'add-corpuses (mapcar #'(lambda (import)
                                        (fallback (gethash class import)
-                                                 (make-hash-table :test #'equal)))
+                                                 (ht)))
                                    import-corpora)
-            :initial-value (make-hash-table :test #'equal)))
+            :initial-value (ht)))
   
   (defun imported-file-count (class)
     (reduce #'+ (mapcar #'(lambda (tree)
@@ -75,7 +75,7 @@
   (defun recursive-imported-urls (class)
     (reduce #'add-corpuses (append1 (mapcar #'recursive-imported-urls (subclasses class))
                                     (imported-urls class))
-            :initial-value (make-hash-table :test #'equal)))
+            :initial-value (ht)))
 
   (defun imported-classes ()
     (remove-duplicates (reduce #'append (mapcar #'list-keys import-urls)
@@ -129,7 +129,7 @@
   (reduce #'add-corpuses
           (mapcar #'downloaded-url-corpus
                   (class-urls class))
-          :initial-value (make-hash-table :test #'equal)))
+          :initial-value (ht)))
 
 (defun downloaded-url-corpus (url)
   ;; Looks into the downloaded & processed file of the url
