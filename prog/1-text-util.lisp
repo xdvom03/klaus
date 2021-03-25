@@ -29,6 +29,13 @@
          (equal (char text start) (char key 0))
          (equal (subseq text start (+ start key-len)) key))))
 
+(defun safe-check-substr (str key &optional (start 0))
+  "Returns T if the string contains the key starting at start. If it is too short or doesn't contain the key, returns NIL."
+  (let ((key-len (length key)))
+    (and (>= (length str)
+             (+ start key-len))
+         (equal key (subseq str start (+ start key-len))))))
+
 ;;; 
 ;;;----------------------------------------------------------------------------------------------
 ;;; TEXT CLEANING
@@ -132,11 +139,6 @@
   (append (find-enclosed-text text "href=\"" "\"")
           (find-enclosed-text text "href='" "'")))
 
-(defun anchor-link? (link)
-  ;; TBD: Is this always valid? Are there other ways to link to self?
-  (and (> (length link) 0)
-       (equal (char link 0) #\#)))
-
 (defun remove-fragment (url)
   (subseq url 0 (search (concat "#" (fallback (quri:uri-fragment (quri:uri url)) "")) url)))
 
@@ -145,11 +147,10 @@
   (remove-fragment (quri:render-uri (quri:merge-uris link origin))))
 
 (defun downloaded-vetted-links (url)
-  ;; links may contain invalid characters, this is the cheapest way of handling that
+  ;; links may contain invalid characters, removing anything with errors is the cheapest way of handling that
   (remove-duplicates (remove-if #'null
                                 (mapcar #'(lambda (link) (ignore-errors (follow-link url link)))
-                                        (remove-if #'anchor-link?
-                                                   (find-links (read-html url)))))
+                                        (find-links (read-html url))))
                      :test #'equal))
 
 (defun find-domain (url)

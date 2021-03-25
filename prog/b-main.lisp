@@ -237,7 +237,6 @@ Naming convention: 'class' is simplified path, 'folder' is actual folder.
                                             (rebuild-corpus)
                                             (show-time timer "Rebuilt the corpus.")
                                             (funcall refresh-classes)
-                                            (set-cache)
                                             (save-corpora))))
       fr))
 

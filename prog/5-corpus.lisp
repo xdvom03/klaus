@@ -73,9 +73,9 @@
             :initial-value nil))
 
   (defun recursive-imported-urls (class)
-    (reduce #'add-corpuses (append1 (mapcar #'recursive-imported-urls (subclasses class))
-                                    (imported-urls class))
-            :initial-value (ht)))
+    (reduce #'append (append1 (mapcar #'recursive-imported-urls (subclasses class))
+                              (imported-urls class))
+            :initial-value nil))
 
   (defun imported-classes ()
     (remove-duplicates (reduce #'append (mapcar #'list-keys import-urls)

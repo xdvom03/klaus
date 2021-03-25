@@ -37,14 +37,37 @@
 
   (read-weights))
 
+(defun apply-to-all-classes (fun)
+  ;; TBD: Add to a better crawler testing suite
+  (labels ((res (class)
+             (funcall fun class)
+             (dolist (subclass (subclasses class))
+               (res subclass))))
+    (res "/")))
+
+(defun classes-hashtable (fun)
+  (let ((acc (ht)))
+    (apply-to-all-classes #'(lambda (class)
+                              (setf (gethash class acc)
+                                    (funcall fun class))))
+    acc))
+
+
+
+
+
+
+
+
+
+
+
 
 (let ((url-tree (ht))
       (corpus-tree (ht))
       (recursive-corpus-tree (ht))
       (word-count-tree (ht))
       (url-count-tree (ht))
-      (saved-corpus-tree (ht))
-      (saved-url-tree (ht))
       (subclasses (ht)))
 
   (defun classes ()
@@ -103,27 +126,19 @@
     (gethash class url-count-tree))
 
   (defun get-word-count (class)
-    (gethash class word-count-tree))
-
-  (defun get-class-corpus (class)
-    ;; unfortunately, we cannot make the saved corpus tree return an empty corpus tree as default value (if it has been saved empty and still is empty), so it must be a special case
-    (add-corpuses (imported-corpus class)
-                  (let ((current-urls (class-urls class)))
-                    (if (null current-urls)
-                        (ht)
-                        (if (equal current-urls
-                                   (gethash class saved-url-tree))
-                            (gethash class saved-corpus-tree)
-                            (get-corpus class))))))
+    (gethash class word-count-tree))  
 
   (defun rebuild-corpus (&optional (class "/"))
-    (let* ((corpus (get-class-corpus class))
+    (let* ((base-corpus (get-corpus class))
+           (corpus (add-corpuses (imported-corpus class)
+                                 base-corpus))
            (recursive-corpus (reduce #'add-corpuses
                                      (append1 (mapcar #'rebuild-corpus
                                                       (subclasses class))
-                                              corpus))))
+                                              corpus)
+                                     :initial-value (ht))))
       (setf (gethash class corpus-tree)
-            corpus)
+            base-corpus)
       (setf (gethash class recursive-corpus-tree)
             recursive-corpus)
       (setf (gethash class url-count-tree)
@@ -132,17 +147,10 @@
       (setf (gethash class word-count-tree)
             (word-count recursive-corpus))
       (print (concat "rebuilt: " class))
+      (if (equal class "/")
+          (save-corpora))
       
       (scale-corpus recursive-corpus (read-weight class))))
-
-  (defun set-cache ()
-    ;; MUST save URLs and corpus at the same time for the cache to work
-    (setf saved-url-tree url-tree)
-    (setf saved-corpus-tree corpus-tree))
-
-  (defun reset-cache ()
-    (setf saved-url-tree (ht))
-    (setf saved-corpus-tree (ht)))
 
   (defun save-corpora ()
     ;; Must be saved so that it matches
@@ -154,16 +162,14 @@
                                                               #'(lambda (class)
                                                                   (gethash class corpus-tree)))
                                                      (list-keys corpus-tree)))))
-  
-  (defun read-corpora ()
+
+  (defun read-saved ()
     (let ((assoc-corpus (assoc-to-hashtable (read-from-file *corpora-file*))))
       (setf corpus-tree
             (map-to-hash (compose #'assoc-to-hashtable
                                   #'(lambda (class)
                                       (gethash class assoc-corpus)))
-                         (list-keys assoc-corpus)))))
-
-  (defun read-urls ()
+                         (list-keys assoc-corpus))))
     (setf url-tree
           (assoc-to-hashtable (read-from-file *urls-file*))))
 
@@ -175,24 +181,3 @@
                                  (equal (parent-class class2)
                                         class))
                              classes))))))
-
-;; Hollow corpus won't be needed, just create a URL tree
-
-
-
-
-
-(defun apply-to-all-classes (fun)
-  ;; TBD: Add to a better crawler testing suite
-  (labels ((res (class)
-             (funcall fun class)
-             (dolist (subclass (subclasses class))
-               (res subclass))))
-    (res "/")))
-
-(defun classes-hashtable (fun)
-  (let ((acc (ht)))
-    (apply-to-all-classes #'(lambda (class)
-                              (setf (gethash class acc)
-                                    (funcall fun class))))
-    acc))

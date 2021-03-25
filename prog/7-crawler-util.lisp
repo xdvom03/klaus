@@ -41,13 +41,6 @@
       (declare (ignore err-text))
       t)))
 
-(defun safe-check-substr (str key &optional (start 0))
-  "Returns T if the string contains the key starting at start. If it is too short or doesn't contain the key, returns NIL."
-  (let ((key-len (length key)))
-    (and (>= (length str)
-             (+ start key-len))
-         (equal key (subseq str start (+ start key-len))))))
-
 (defun robots-txt (site)
   ;; this link follow cannot cause an error if the site itself is OK
   (let ((robots-txt-url (follow-link site "/robots.txt")))
