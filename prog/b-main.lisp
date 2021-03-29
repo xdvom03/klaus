@@ -46,9 +46,7 @@ Naming convention: 'class' is simplified path, 'folder' is actual folder.
                                               (show-time timer "Rebuilt the corpus.")
                                               (funcall refresh-classes)
                                               (save-corpora)
-                                              (save-weights)
-                                              (save-comments)
-                                              (save-imports)
+                                              (save-config)
                                               (refresh-imports))))
       fr))
 

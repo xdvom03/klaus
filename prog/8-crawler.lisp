@@ -16,21 +16,8 @@
                                              (1+ i)))))))
     acc))
 
-#|
-TBD: Properly cache url scores, profile
-Not using a robots.txt library because is has no license.
-TBD: Cache robots.txt (or a sensible format thereof)
-
-Crawl 40 from:
-
-"https://www.waitbutwhy.com"
-"https://en.wikipedia.org" (got stuck)
-"https://www.lifehack.org/891214/happiness-book"
-"https://www.jscc.edu/academics/programs/writing-center/writing-resources/five-paragraph-essay.html"
-|#
-
 (defun prob (vocab class)
-  (let* ((sibling-classes (subclasses (parent-class class)))
+  (let* ((sibling-classes (classifier-options (parent-class class)))
          (path-scores (scores vocab
                               sibling-classes
                               (map-to-hash #'get-recursive-corpus sibling-classes)
@@ -73,38 +60,28 @@ Crawl 40 from:
         (values acc max))))
 
 (defun place-known (url &optional (class "/"))
-  (place-vocab (remove-duplicates (wordlist (read-text url))) class))
+  (place-vocab (remove-duplicates (wordlist (read-text url))) :class class))
 
 (defun targeted-place (url target &optional (class "/"))
-  (targeted-place-vocab (remove-duplicates (wordlist (url-text url))) target class))
+  (place-vocab (remove-duplicates (wordlist (url-text url))) :class class :target target))
 
 (defun place (url &optional (class "/"))
-  (place-vocab (remove-duplicates (wordlist (url-text url))) class))
+  (place-vocab (remove-duplicates (wordlist (url-text url))) :class class))
 
-(defun targeted-place-vocab (vocab target &optional (class "/"))
-  (let ((subclasses (subclasses class)))
-    (if (subclasses class)
+(defun place-vocab (vocab &key (class "/") target)
+  (let ((options (classifier-options class)))
+    (if options
         (let* ((scores (scores vocab
-                               subclasses
-                               (map-to-hash #'get-recursive-corpus subclasses)
-                               (map-to-hash #'get-word-count subclasses)
+                               options
+                               (map-to-hash #'get-recursive-corpus options)
+                               (map-to-hash #'get-word-count options)
                                nil))
                (best-path (best-key scores #'>)))
-          (if (equal 0 (search best-path target))
-              (place-vocab vocab best-path)
-              class))
-        class)))
-
-(defun place-vocab (vocab &optional (class "/"))
-  (let ((subclasses (subclasses class)))
-    (if (subclasses class)
-        (let* ((scores (scores vocab
-                               subclasses
-                               (map-to-hash #'get-recursive-corpus subclasses)
-                               (map-to-hash #'get-word-count subclasses)
-                               nil))
-               (best-path (best-key scores #'>)))
-          (place-vocab vocab best-path))
+          (if target
+              (if (equal 0 (search best-path target))
+                  (place-vocab vocab :class best-path :target target)
+                  class)
+              (place-vocab vocab :class best-path)))
         class)))
 
 (defun zoombot-url-value (url target)

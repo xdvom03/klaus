@@ -1,3 +1,6 @@
+(defun classifier-options (class)
+  (remove-if #'read-tentative (subclasses class)))
+
 (defun pagerank (options scores-table)
   ;; Gets logarithmic formulation
   ;; Pageranking one or zero classes results in division 0/0
@@ -31,7 +34,7 @@
 
 ;;; SCORE MATH
 ;;;----------------------------------------------------------------------------------------------
-;;; FROM MAIN
+;;; 
 
 (defun chosen-words (vocab word-scores)
   (declare (type list vocab)

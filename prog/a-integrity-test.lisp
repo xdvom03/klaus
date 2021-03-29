@@ -1,6 +1,6 @@
 (defun blind-check (url class)
   (let* ((corp (downloaded-url-corpus url))
-         (sibling-classes (subclasses (parent-class class))))
+         (sibling-classes (classifier-options (parent-class class))))
     (multiple-value-bind (scores probsum) (scores (list-keys corp)
                                                   sibling-classes
                                                   (map-to-hash #'(lambda (option)
@@ -16,7 +16,7 @@
                                                                        (get-word-count option)))
                                                                sibling-classes)
                                                   nil)
-      (if (and (subclasses class)
+      (if (and (classifier-options class)
                (< probsum (ln 1/10)))
           (print (concat "Cannot sensibly class url: " url " within class: " (parent-class class) ". Probsum: " (exp probsum))))
       (gethash class scores))))

@@ -123,7 +123,7 @@
                    (ltk:destroy i))
                  (setf widget-list nil)
                  (setf (ltk:text class-label) current-class)
-                 (let ((subclasses (subclasses current-class)))
+                 (let ((subclasses (classifier-options current-class)))
                    (multiple-value-bind (scores probsum pair-scores pair-words pair-word-details)
                        (scores vocab
                                subclasses
@@ -162,10 +162,8 @@
                  (letrec ((fr (frame r c master))
                           (e1 (entry 0 0 fr))
                           (t1 (text 1 0 fr "" 20 20 "NotoSans 10"))
-                          (ch (checkbox 0 2 fr "Explain classing?" #'(lambda (a)
-                                                                       a
-                                                                       (setf explain? (ltk:value ch))
-                                                                       (setf (ltk:value ch) explain?)))))
+                          (ch (checkbox 0 2 fr "Explain classing?" #'(lambda ()
+                                                                       (setf explain? (ltk:value ch))))))
                    (setf (ltk:text e1) current-url)
                    (button 0 1 fr "Open database" #'(lambda ()
                                                       (setf current-url (ltk:text e1))

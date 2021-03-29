@@ -9,8 +9,7 @@
   (print "Reading data...")
   (refresh-imports)
   (read-saved)
-  (read-comments)
-  (read-weights)
+  (read-config)
   (build-subclasses)
   (print "Building corpora...")
   (rebuild-corpus) ; Is that needed?

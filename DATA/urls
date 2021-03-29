@@ -297,8 +297,7 @@
   "https://www.shamusyoung.com/shocked/faq.html")
  ("/articles/life/recreation/art/visual/"
   "https://tvtropes.org/pmwiki/pmwiki.php/UsefulNotes/GraphicalPerspective"
-  "https://tvtropes.org/pmwiki/pmwiki.php/Analysis/PurpleIsTheNewBlack"
-  "https://duncangrantartist.com/2020/08/16/stuckism-the-birth-of-an-international-art-non-movement/")
+  "https://tvtropes.org/pmwiki/pmwiki.php/Analysis/PurpleIsTheNewBlack")
  ("/articles/life/recreation/art/visual/artists/"
   "https://www.inprnt.com/blog/entry/artist-spotlight-megan-kott-and-justin-devine/")
  ("/articles/life/recreation/art/visual/design/"
@@ -652,47 +651,36 @@
   "https://www.pcmag.com/news/samsungs-jetbot-90-ai-plus-robot-vacuum-doubles-as-a-roving-security-camera"
   "https://physicscentral.com/buzz/blog/index.cfm"
   "https://bgr.com/2017/02/28/iphone-8-rumors-usb-c-vs-lightning/"
-  "https://www.freethink.com/articles/underwater-base")
+  "https://www.freethink.com/articles/underwater-base"
+  "https://tvtropes.org/pmwiki/pmwiki.php/UsefulNotes/Airships")
  ("/articles/stem/technology/bionics/"
   "https://www.technologyreview.com/2020/08/30/1007786/elon-musks-neuralink-demo-update-neuroscience-theater/"
   "https://www.technologyreview.com/2015/04/09/168424/paralyzed-again/")
- ("/articles/stem/technology/computer-technology/"
-  "https://idlewords.com/talks/website_obesity.htm"
-  "https://www.siteuptime.com/blog/2019/12/19/how-to-create-your-own-server-at-home-for-web-hosting/"
-  "http://tailsteak.com/archive.php?num=152" "http://paulgraham.com/road.html"
-  "http://ignorethecode.net/blog/2009/04/22/oberon/"
-  "https://www.tbray.org/ongoing/Tech"
-  "https://www.tbray.org/ongoing/misc/Software"
-  "https://levelup.gitconnected.com/6-things-you-need-to-know-about-kafka-before-using-it-in-a-system-design-interview-1fc31451732c"
-  "https://docs.sendwithses.com/random-stuff/feedback-noise"
-  "https://stackoverflow.blog/2021/01/07/open-source-has-a-funding-problem/")
- ("/articles/stem/technology/computer-technology/AI/"
-  "https://cs.nyu.edu/faculty/davise/papers/WinogradSchemas/WS.html")
- ("/articles/stem/technology/computer-technology/AI/game-ai/"
-  "https://arcengames.com/designing-emergent-ai-part-1-an-introduction/"
-  "https://arcengames.com/designing-emergent-ai-part-2-queries-and-code/"
-  "https://arcengames.com/designing-emergent-ai-part-3-limitations/"
-  "https://arcengames.com/designing-emergent-ai-part-4-asymetrical-goals/"
-  "https://arcengames.com/designing-emergent-ai-part-5-dont-squeeze-a-handful-of-sand/"
-  "https://arcengames.com/designing-emergent-ai-part-6-the-tempo-and-ai-vs-player-agency/")
- ("/articles/stem/technology/computer-technology/AI/long-term/"
+ ("/articles/stem/computer-technology/cryptocurrency/"
+  "https://skilled.dev/course/combine-blockchains"
+  "https://michaelnielsen.org/ddi/how-the-bitcoin-protocol-actually-works/")
+ ("/articles/stem/computer-technology/AI/long-term/"
   "https://waitbutwhy.com/2015/01/artificial-intelligence-revolution-1.html"
   "https://waitbutwhy.com/2015/01/artificial-intelligence-revolution-2.html"
   "https://web.archive.org/web/20180801084633/https://www.technologyreview.com/s/425733/paul-allen-the-singularity-isnt-near/"
   "https://futureoflife.org/background/benefits-risks-of-artificial-intelligence/")
- ("/articles/stem/technology/computer-technology/AI/mechanisms/"
+ ("/articles/stem/computer-technology/AI/mechanisms/"
   "http://www.genetic-programming.org/"
   "http://www0.cs.ucl.ac.uk/research/genprog/gp2faq/gp2faq2.html")
- ("/articles/stem/technology/computer-technology/cryptocurrency/"
-  "https://skilled.dev/course/combine-blockchains"
-  "https://michaelnielsen.org/ddi/how-the-bitcoin-protocol-actually-works/")
- ("/articles/stem/technology/computer-technology/git/"
-  "https://stackabuse.com/git-adding-a-commit-message/")
- ("/articles/stem/technology/computer-technology/git/general/"
+ ("/articles/stem/computer-technology/AI/"
+  "https://cs.nyu.edu/faculty/davise/papers/WinogradSchemas/WS.html")
+ ("/articles/stem/computer-technology/git/general/"
   "https://git-scm.com/book/en/v2/Getting-Started-What-is-Git%3F"
   "https://git-scm.com/book/en/v2/Getting-Started-A-Short-History-of-Git"
   "https://git-scm.com/book/en/v2/Getting-Started-About-Version-Control")
- ("/articles/stem/technology/computer-technology/git/internals/"
+ ("/articles/stem/computer-technology/interaction/"
+  "https://www.petarperovic.com/blog/friction/"
+  "http://rachelbythebay.com/w/2020/10/26/num/"
+  "https://www.nngroup.com/articles/stop-password-masking/"
+  "https://www.agconsult.com/en/usability-blog/passwords-to-hide-or-not-to-hide/"
+  "https://blog.plover.com/tech/ui.html"
+  "https://blog.plover.com/tech/ui-2.html")
+ ("/articles/stem/computer-technology/git/internals/"
   "https://git-scm.com/book/en/v2/Git-Internals-Plumbing-and-Porcelain"
   "https://git-scm.com/book/en/v2/Git-Internals-Git-Objects"
   "https://git-scm.com/book/en/v2/Git-Internals-Git-References"
@@ -701,12 +689,7 @@
   "https://git-scm.com/book/en/v2/Git-Internals-Transfer-Protocols"
   "https://git-scm.com/book/en/v2/Git-Internals-Maintenance-and-Data-Recovery"
   "https://git-scm.com/book/en/v2/Git-Internals-Environment-Variables")
- ("/articles/stem/technology/computer-technology/git/setup/"
-  "https://git-scm.com/book/en/v2/Getting-Started-Getting-Help"
-  "https://git-scm.com/book/en/v2/Getting-Started-First-Time-Git-Setup"
-  "https://git-scm.com/book/en/v2/Getting-Started-Installing-Git"
-  "https://git-scm.com/book/en/v2/Appendix-C%3A-Git-Commands-Setup-and-Config")
- ("/articles/stem/technology/computer-technology/git/setup/server/"
+ ("/articles/stem/computer-technology/git/setup/server/"
   "https://git-scm.com/book/en/v2/Git-on-the-Server-The-Protocols"
   "https://git-scm.com/book/en/v2/Git-on-the-Server-Getting-Git-on-a-Server"
   "https://git-scm.com/book/en/v2/Git-on-the-Server-Generating-Your-SSH-Public-Key"
@@ -716,7 +699,7 @@
   "https://git-scm.com/book/en/v2/Git-on-the-Server-GitWeb"
   "https://git-scm.com/book/en/v2/Git-on-the-Server-GitLab"
   "https://git-scm.com/book/en/v2/Git-on-the-Server-Third-Party-Hosted-Options")
- ("/articles/stem/technology/computer-technology/git/usage/"
+ ("/articles/stem/computer-technology/git/usage/"
   "https://git-scm.com/book/en/v2/Git-Basics-Getting-a-Git-Repository"
   "https://git-scm.com/book/en/v2/Git-Basics-Recording-Changes-to-the-Repository"
   "https://git-scm.com/book/en/v2/Git-Basics-Viewing-the-Commit-History"
@@ -777,18 +760,18 @@
   "https://git-scm.com/book/en/v2/Appendix-C%3A-Git-Commands-External-Systems"
   "https://git-scm.com/book/en/v2/Appendix-C%3A-Git-Commands-Administration"
   "https://git-scm.com/book/en/v2/Appendix-C%3A-Git-Commands-Plumbing-Commands")
- ("/articles/stem/technology/computer-technology/interaction/"
-  "https://www.petarperovic.com/blog/friction/"
-  "http://rachelbythebay.com/w/2020/10/26/num/"
-  "https://www.nngroup.com/articles/stop-password-masking/"
-  "https://www.agconsult.com/en/usability-blog/passwords-to-hide-or-not-to-hide/"
-  "https://blog.plover.com/tech/ui.html"
-  "https://blog.plover.com/tech/ui-2.html")
- ("/articles/stem/technology/computer-technology/internet/"
-  "https://docs.sendwithses.com/random-stuff/the-internet-is-an-seo-landfill")
- ("/articles/stem/technology/computer-technology/internet/hosting/"
+ ("/articles/stem/computer-technology/git/setup/"
+  "https://git-scm.com/book/en/v2/Getting-Started-Getting-Help"
+  "https://git-scm.com/book/en/v2/Getting-Started-First-Time-Git-Setup"
+  "https://git-scm.com/book/en/v2/Getting-Started-Installing-Git"
+  "https://git-scm.com/book/en/v2/Appendix-C%3A-Git-Commands-Setup-and-Config")
+ ("/articles/stem/computer-technology/git/"
+  "https://stackabuse.com/git-adding-a-commit-message/")
+ ("/articles/stem/computer-technology/internet/hosting/"
   "https://websitesetup.org/hosting-reviews/hostinger/")
- ("/articles/stem/technology/computer-technology/internet/infrastructure/"
+ ("/articles/stem/computer-technology/linux/" "http://fedoraplanet.org/"
+  "http://tailsteak.com/archive.php?num=133")
+ ("/articles/stem/computer-technology/internet/infrastructure/"
   "https://www.freesoft.org/CIE/Topics/10.htm"
   "https://www.freesoft.org/CIE/Topics/12.htm"
   "https://www.freesoft.org/CIE/Topics/13.htm"
@@ -806,11 +789,9 @@
   "https://www.freesoft.org/CIE/Topics/15.htm"
   "https://www.freesoft.org/CIE/Topics/16.htm"
   "https://tools.ietf.org/html/rfc3986")
- ("/articles/stem/technology/computer-technology/linux/"
-  "http://fedoraplanet.org/" "http://tailsteak.com/archive.php?num=133")
- ("/articles/stem/technology/computer-technology/programming/"
-  "https://mvanier.livejournal.com/2897.html")
- ("/articles/stem/technology/computer-technology/programming/programming-languages/"
+ ("/articles/stem/computer-technology/internet/"
+  "https://docs.sendwithses.com/random-stuff/the-internet-is-an-seo-landfill")
+ ("/articles/stem/computer-technology/programming/programming-languages/"
   "http://www.paulgraham.com/javacover.html"
   "http://www.paulgraham.com/avg.html" "http://www.paulgraham.com/icad.html"
   "http://www.paulgraham.com/power.html"
@@ -818,37 +799,49 @@
   "http://www.paulgraham.com/syntaxquestion.html"
   "http://www.paulgraham.com/thist.html"
   "https://markkarpov.com/post/lisp-and-haskell.html")
- ("/articles/stem/technology/computer-technology/search/"
-  "https://www.tbray.org/ongoing/When/200x/2003/05/08/OCLC"
-  "https://www.tbray.org/ongoing/When/200x/2003/02/21/Search")
- ("/articles/stem/technology/computer-technology/search/keyword/"
+ ("/articles/stem/computer-technology/search/keyword/"
   "http://infolab.stanford.edu/~backrub/google.html"
   "https://developers.google.com/search/docs/beginner/how-search-works"
   "https://www.elastic.co/guide/en/elasticsearch/reference/current/elasticsearch-intro.html")
- ("/articles/stem/technology/computer-technology/search/semantic/"
-  "https://www.traindex.io/blog/what-is-semantic-search-3612/")
- ("/articles/stem/technology/computer-technology/search/semantic/classification/"
-  "https://hritcu.wordpress.com/2005/04/08/folksonomies-vs-ontologies/"
-  "http://adammathes.com/academic/computer-mediated-communication/folksonomies.html"
-  "https://web.archive.org/web/20170306040107/http://www.shirky.com/writings/ontology_overrated.html")
- ("/articles/stem/technology/computer-technology/search/semantic/classification/automatic-classification/"
+ ("/articles/stem/computer-technology/programming/"
+  "https://mvanier.livejournal.com/2897.html")
+ ("/articles/stem/computer-technology/security/"
+  "https://hritcu.wordpress.com/2014/04/13/about-heartbleed-memory-safety-crashsafe-hardbountwatchdog-mitls-and-everything-else/"
+  "http://vblocalhost.com/conference/presentations/hidden-risks-of-advertisements"
+  "http://jibbering.com/blog/?p=514")
+ ("/articles/stem/computer-technology/search/semantic/classification/automatic-classification/"
   "http://www.paulgraham.com/spam.html" "http://www.paulgraham.com/better.html"
   "http://www.ra.ethz.ch/cdstore/www6/posters/725/web_search.html"
   "https://hangingtogether.org/?p=3534" "http://www.nltk.org/book/ch06.html")
- ("/articles/stem/technology/computer-technology/search/semantic/semantic-web/")
- ("/articles/stem/technology/computer-technology/search/semantic/semantic-web/criticism/"
+ ("/articles/stem/computer-technology/search/"
+  "https://www.tbray.org/ongoing/When/200x/2003/05/08/OCLC"
+  "https://www.tbray.org/ongoing/When/200x/2003/02/21/Search")
+ ("/articles/stem/computer-technology/search/semantic/semantic-web/criticism/"
   "https://people.well.com/user/doctorow/metacrap.htm"
   "https://web.archive.org/web/20130325232952/http://www.shirky.com/writings/semantic_syllogism.html")
- ("/articles/stem/technology/computer-technology/search/semantic/semantic-web/mechanism/"
+ ("/articles/stem/computer-technology/search/semantic/classification/"
+  "https://hritcu.wordpress.com/2005/04/08/folksonomies-vs-ontologies/"
+  "http://adammathes.com/academic/computer-mediated-communication/folksonomies.html"
+  "https://web.archive.org/web/20170306040107/http://www.shirky.com/writings/ontology_overrated.html")
+ ("/articles/stem/computer-technology/search/semantic/"
+  "https://www.traindex.io/blog/what-is-semantic-search-3612/")
+ ("/articles/stem/computer-technology/search/semantic/semantic-web/mechanism/"
   "https://www.tbray.org/ongoing/When/200x/2003/11/09/SemWebFirstStep"
   "https://www.tbray.org/ongoing/When/200x/2003/05/21/RDFNet"
   "https://www.xml.com/pub/a/2001/01/24/rdf.html"
   "https://web.archive.org/web/20130308021350/http://infomesh.net/2001/swintro/"
   "https://www.w3.org/2002/03/semweb/")
- ("/articles/stem/technology/computer-technology/security/"
-  "https://hritcu.wordpress.com/2014/04/13/about-heartbleed-memory-safety-crashsafe-hardbountwatchdog-mitls-and-everything-else/"
-  "http://vblocalhost.com/conference/presentations/hidden-risks-of-advertisements"
-  "http://jibbering.com/blog/?p=514")
+ ("/articles/stem/computer-technology/search/semantic/semantic-web/")
+ ("/articles/stem/computer-technology/"
+  "https://idlewords.com/talks/website_obesity.htm"
+  "https://www.siteuptime.com/blog/2019/12/19/how-to-create-your-own-server-at-home-for-web-hosting/"
+  "http://tailsteak.com/archive.php?num=152" "http://paulgraham.com/road.html"
+  "http://ignorethecode.net/blog/2009/04/22/oberon/"
+  "https://www.tbray.org/ongoing/Tech"
+  "https://www.tbray.org/ongoing/misc/Software"
+  "https://levelup.gitconnected.com/6-things-you-need-to-know-about-kafka-before-using-it-in-a-system-design-interview-1fc31451732c"
+  "https://docs.sendwithses.com/random-stuff/feedback-noise"
+  "https://stackoverflow.blog/2021/01/07/open-source-has-a-funding-problem/")
  ("/articles/stem/technology/infrastructure/"
   "https://www.fastcompany.com/90615861/this-inverted-building-saves-energy-because-its-300-feet-underground")
  ("/fiction/" "http://www.sshock2.com/fanworks/stories/story23.htm"
@@ -1075,63 +1068,6 @@
   "https://www.latimes.com/opinion/story/2021-03-17/asian-americans-coronavirus-hate-assaults-bigotry"
   "https://www.latimes.com/opinion/story/2021-03-17/history-st-patrick-day-fifth-grade"
   "https://www.latimes.com/opinion/story/2021-03-15/john-coltrane-one-year-pandemic-covid-love-supreme")
- ("/news/sports/"
-  "https://fivethirtyeight.com/features/yes-brady-is-the-goat-but-he-didnt-do-it-alone/"
-  "https://dodgers.mlblogs.com/remembering-don-sutton-59b31580a60b"
-  "https://bleacherreport.com/articles/1198425-a-retrospective-who-is-the-best-tennis-player-on-clay"
-  "https://projects.fivethirtyeight.com/2021-nba-player-projections/brad-wanamaker/")
- ("/news/sports/aljazeera/"
-  "https://www.aljazeera.com/economy/2021/2/5/the-super-bowl-ads-generating-big-buzz-before-sundays-big-game"
-  "https://www.aljazeera.com/news/2021/2/5/super-bowl-one-for-the-ages-despite-covid-politics"
-  "https://www.aljazeera.com/gallery/2021/2/4/mexicos-tigres-uanl-seal-progress-at-club-world-cup-in-qatar"
-  "https://www.aljazeera.com/news/2021/2/3/club-world-cup-kicks-off-in-qatar-against-covid-backdrop"
-  "https://www.aljazeera.com/news/2021/3/17/sex-abuse-inquiry-english-football-failed-children-for-35-years"
-  "https://www.aljazeera.com/news/2021/3/16/covid-forces-india-england-t20-cricket-matches-in-empty-stadium"
-  "https://www.aljazeera.com/news/2021/3/14/boxing-legend-marvelous-marvin-hagler-dies-aged-66"
-  "https://www.aljazeera.com/features/2021/3/14/south-african-ultramarathoner-on-the-road-to-overcome-rape")
- ("/news/sports/bbc/" "https://www.bbc.com/sport/rugby-union/55962483"
-  "https://www.bbc.com/sport/cricket/55960815"
-  "https://www.bbc.com/sport/football/55867137"
-  "https://www.bbc.com/sport/rugby-union/55964723"
-  "https://www.bbc.com/sport/football/56433776"
-  "https://www.bbc.com/sport/football/56433793"
-  "https://www.bbc.com/sport/cricket/56446341"
-  "https://www.bbc.com/sport/football/56433769")
- ("/news/sports/guardian/"
-  "https://www.theguardian.com/sport/2021/feb/06/england-scotland-six-nations-rugby-union-match-report"
-  "https://www.theguardian.com/sport/blog/2021/feb/06/a-tale-of-two-innings-how-joe-root-finally-learned-how-to-disappear"
-  "https://www.theguardian.com/football/2021/feb/06/fulham-west-ham-premier-league-match-report"
-  "https://www.theguardian.com/football/live/2021/feb/06/man-utd-v-everton-premier-league-live"
-  "https://www.theguardian.com/sport/live/2021/feb/21/australian-open-2021-mens-final-live-tennis-novak-djokovic-scores-melbourne-park-coverage-latest-news-updates"
-  "https://www.theguardian.com/football/2021/feb/20/good-news-for-ozan-kabak-liverpool-it-cannot-get-much-worse-than-this"
-  "https://www.theguardian.com/sport/2021/feb/20/ken-owens-wales-surprise-package-england-six-nations"
-  "https://www.theguardian.com/sport/blog/2021/feb/20/naomi-osaka-jigs-and-punches-her-way-to-glory-and-tennis-legend-status-australian-open"
-  "https://www.theguardian.com/sport/2007/apr/24/tennis"
-  "https://www.theguardian.com/football/2021/mar/18/dinamo-zagreb-tottenham-hotspur-europa-league-match-report"
-  "https://www.theguardian.com/football/2021/mar/18/milan-manchester-united-europa-league-match-report"
-  "https://www.theguardian.com/sport/2021/mar/18/eddie-jones-media-rat-poison-england-six-nations"
-  "https://www.theguardian.com/sport/2021/mar/18/cricket-india-england-twenty20-international-match-report"
-  "https://www.theguardian.com/sport/2021/mar/18/cheltenham-gold-cup-blackmore-one-race-from-festival-domination")
- ("/news/sports/la-times/"
-  "https://www.latimes.com/sports/dodgers/story/2021-02-06/trevor-bauer-dodgers-contract-salary-cap"
-  "https://www.latimes.com/sports/story/2021-02-05/evan-mobley-usc-ucla-basketball-rivalry-pac-12"
-  "https://www.latimes.com/sports/story/2021-02-06/chiefs-buccaneers-super-bowl-2021-teams-match-up"
-  "https://www.latimes.com/sports/story/2021-02-06/australian-open-preview-serena-williams-coronavirus-covid19"
-  "https://www.latimes.com/sports/story/2021-03-18/ball-family-big-baller-brand-chino-hills"
-  "https://www.latimes.com/sports/ucla/story/2021-03-17/ucla-basketball-ncaa-tournament-michigan-state-first-four"
-  "https://www.latimes.com/sports/story/2021-03-18/nfl-broadcast-rights-espn-directv"
-  "https://www.latimes.com/sports/story/2021-03-18/ncaa-california-baptist-womens-basketball-no-march-madness"
-  "https://www.latimes.com/sports/story/2021-03-18/ncaa-tournament-beat-times-experts")
- ("/news/sports/reuters/"
-  "https://www.reuters.com/article/us-tennis-tennis-roundup/atp-roundup-russia-italy-advance-to-atp-cup-final-idUSKBN2A60MU"
-  "https://www.reuters.com/article/us-football-nfl-superbowl-chiefs/chiefs-assistant-coach-will-not-make-trip-to-super-bowl-after-accident-idUSKBN2A60QN"
-  "https://www.reuters.com/article/us-football-nfl-superbowl-kc/chiefs-fans-wade-into-enemy-waters-for-back-to-back-super-bowl-bid-idUSKBN2A60JK"
-  "https://www.reuters.com/article/us-football-nfl-superbowl-fans/no-cheering-no-parties-covid-19-forces-different-super-bowl-sunday-for-fans-idUSKBN2A60QB"
-  "https://www.reuters.com/article/tennis-men-italy/tennis-sinner-confident-italian-tennis-is-on-the-up-idUSL4N2LG1T2"
-  "https://www.reuters.com/article/us-golf-honda-westwood/red-hot-westwood-drained-but-not-ready-to-rest-idUSKBN2B92TX"
-  "https://www.reuters.com/article/us-basketball-nba-covid-vaccine/nba-adds-freedoms-for-fully-vaccinated-players-staff-idUSKBN2BA20S"
-  "https://www.reuters.com/article/basketball-nba-hou-gsw/warriors-send-rockets-to-franchise-worst-18th-straight-loss-idUSMTZXEH3I58Y9CQ"
-  "https://www.reuters.com/article/baseball-mlb-roundup/spring-training-roundup-rays-outslug-pirates-idUSKBN2BA01N")
  ("/non-english/")
  ("/non-english/CZ/"
   "https://cs.wikipedia.org/wiki/Bayesovo_filtrov%C3%A1n%C3%AD"
@@ -1285,4 +1221,68 @@
   "https://www.cyclinguk.org/blog/tales-trails-beginning"
   "https://www.cyclinguk.org/trailsforwales")
  ("/utility/society/sport/tennis/"
-  "https://www.leamington-tennis-squash.co.uk/club-information/club-history/")) 
+  "https://www.leamington-tennis-squash.co.uk/club-information/club-history/")
+ ("/news/sports/guardian/"
+  "https://www.theguardian.com/sport/2021/feb/06/england-scotland-six-nations-rugby-union-match-report"
+  "https://www.theguardian.com/sport/blog/2021/feb/06/a-tale-of-two-innings-how-joe-root-finally-learned-how-to-disappear"
+  "https://www.theguardian.com/football/2021/feb/06/fulham-west-ham-premier-league-match-report"
+  "https://www.theguardian.com/football/live/2021/feb/06/man-utd-v-everton-premier-league-live"
+  "https://www.theguardian.com/sport/live/2021/feb/21/australian-open-2021-mens-final-live-tennis-novak-djokovic-scores-melbourne-park-coverage-latest-news-updates"
+  "https://www.theguardian.com/football/2021/feb/20/good-news-for-ozan-kabak-liverpool-it-cannot-get-much-worse-than-this"
+  "https://www.theguardian.com/sport/2021/feb/20/ken-owens-wales-surprise-package-england-six-nations"
+  "https://www.theguardian.com/sport/blog/2021/feb/20/naomi-osaka-jigs-and-punches-her-way-to-glory-and-tennis-legend-status-australian-open"
+  "https://www.theguardian.com/sport/2007/apr/24/tennis"
+  "https://www.theguardian.com/football/2021/mar/18/dinamo-zagreb-tottenham-hotspur-europa-league-match-report"
+  "https://www.theguardian.com/football/2021/mar/18/milan-manchester-united-europa-league-match-report"
+  "https://www.theguardian.com/sport/2021/mar/18/eddie-jones-media-rat-poison-england-six-nations"
+  "https://www.theguardian.com/sport/2021/mar/18/cricket-india-england-twenty20-international-match-report"
+  "https://www.theguardian.com/sport/2021/mar/18/cheltenham-gold-cup-blackmore-one-race-from-festival-domination")
+ ("/news/sports/"
+  "https://dodgers.mlblogs.com/remembering-don-sutton-59b31580a60b"
+  "https://bleacherreport.com/articles/1198425-a-retrospective-who-is-the-best-tennis-player-on-clay"
+  "https://fivethirtyeight.com/features/yes-brady-is-the-goat-but-he-didnt-do-it-alone/"
+  "https://projects.fivethirtyeight.com/2021-nba-player-projections/brad-wanamaker/")
+ ("/news/sports/reuters/"
+  "https://www.reuters.com/article/us-tennis-tennis-roundup/atp-roundup-russia-italy-advance-to-atp-cup-final-idUSKBN2A60MU"
+  "https://www.reuters.com/article/us-football-nfl-superbowl-chiefs/chiefs-assistant-coach-will-not-make-trip-to-super-bowl-after-accident-idUSKBN2A60QN"
+  "https://www.reuters.com/article/us-football-nfl-superbowl-kc/chiefs-fans-wade-into-enemy-waters-for-back-to-back-super-bowl-bid-idUSKBN2A60JK"
+  "https://www.reuters.com/article/us-football-nfl-superbowl-fans/no-cheering-no-parties-covid-19-forces-different-super-bowl-sunday-for-fans-idUSKBN2A60QB"
+  "https://www.reuters.com/article/tennis-men-italy/tennis-sinner-confident-italian-tennis-is-on-the-up-idUSL4N2LG1T2"
+  "https://www.reuters.com/article/us-golf-honda-westwood/red-hot-westwood-drained-but-not-ready-to-rest-idUSKBN2B92TX"
+  "https://www.reuters.com/article/us-basketball-nba-covid-vaccine/nba-adds-freedoms-for-fully-vaccinated-players-staff-idUSKBN2BA20S"
+  "https://www.reuters.com/article/basketball-nba-hou-gsw/warriors-send-rockets-to-franchise-worst-18th-straight-loss-idUSMTZXEH3I58Y9CQ"
+  "https://www.reuters.com/article/baseball-mlb-roundup/spring-training-roundup-rays-outslug-pirates-idUSKBN2BA01N")
+ ("/news/sports/la-times/"
+  "https://www.latimes.com/sports/dodgers/story/2021-02-06/trevor-bauer-dodgers-contract-salary-cap"
+  "https://www.latimes.com/sports/story/2021-02-05/evan-mobley-usc-ucla-basketball-rivalry-pac-12"
+  "https://www.latimes.com/sports/story/2021-02-06/chiefs-buccaneers-super-bowl-2021-teams-match-up"
+  "https://www.latimes.com/sports/story/2021-02-06/australian-open-preview-serena-williams-coronavirus-covid19"
+  "https://www.latimes.com/sports/story/2021-03-18/ball-family-big-baller-brand-chino-hills"
+  "https://www.latimes.com/sports/ucla/story/2021-03-17/ucla-basketball-ncaa-tournament-michigan-state-first-four"
+  "https://www.latimes.com/sports/story/2021-03-18/nfl-broadcast-rights-espn-directv"
+  "https://www.latimes.com/sports/story/2021-03-18/ncaa-california-baptist-womens-basketball-no-march-madness"
+  "https://www.latimes.com/sports/story/2021-03-18/ncaa-tournament-beat-times-experts")
+ ("/news/sports/bbc/" "https://www.bbc.com/sport/rugby-union/55962483"
+  "https://www.bbc.com/sport/cricket/55960815"
+  "https://www.bbc.com/sport/football/55867137"
+  "https://www.bbc.com/sport/rugby-union/55964723"
+  "https://www.bbc.com/sport/football/56433776"
+  "https://www.bbc.com/sport/football/56433793"
+  "https://www.bbc.com/sport/cricket/56446341"
+  "https://www.bbc.com/sport/football/56433769")
+ ("/news/sports/aljazeera/"
+  "https://www.aljazeera.com/economy/2021/2/5/the-super-bowl-ads-generating-big-buzz-before-sundays-big-game"
+  "https://www.aljazeera.com/news/2021/2/5/super-bowl-one-for-the-ages-despite-covid-politics"
+  "https://www.aljazeera.com/gallery/2021/2/4/mexicos-tigres-uanl-seal-progress-at-club-world-cup-in-qatar"
+  "https://www.aljazeera.com/news/2021/2/3/club-world-cup-kicks-off-in-qatar-against-covid-backdrop"
+  "https://www.aljazeera.com/news/2021/3/17/sex-abuse-inquiry-english-football-failed-children-for-35-years"
+  "https://www.aljazeera.com/news/2021/3/16/covid-forces-india-england-t20-cricket-matches-in-empty-stadium"
+  "https://www.aljazeera.com/news/2021/3/14/boxing-legend-marvelous-marvin-hagler-dies-aged-66"
+  "https://www.aljazeera.com/features/2021/3/14/south-african-ultramarathoner-on-the-road-to-overcome-rape")
+ ("/articles/stem/computer-technology/AI/game-ai/"
+  "https://arcengames.com/designing-emergent-ai-part-1-an-introduction/"
+  "https://arcengames.com/designing-emergent-ai-part-2-queries-and-code/"
+  "https://arcengames.com/designing-emergent-ai-part-3-limitations/"
+  "https://arcengames.com/designing-emergent-ai-part-4-asymetrical-goals/"
+  "https://arcengames.com/designing-emergent-ai-part-5-dont-squeeze-a-handful-of-sand/"
+  "https://arcengames.com/designing-emergent-ai-part-6-the-tempo-and-ai-vs-player-agency/")) 

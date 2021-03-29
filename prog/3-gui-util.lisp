@@ -60,7 +60,10 @@
 
 (defun checkbox (r c master text command)
   (let ((ch (widget r c 'ltk:check-button master)))
-    (setf (ltk:command ch) command)
+    (setf (ltk:command ch) #'(lambda (a)
+                               (declare (ignore a))
+                               ;(setf (ltk:value ch))
+                               (funcall command)))
     (setf (ltk:text ch) text)
     ch))
 
@@ -108,7 +111,7 @@
                                (setf (ltk:text b) "")
                                (setf (ltk:command b) #'pass)))))
                      (setf (ltk:text l) (concat start "/" (length lst)))
-                     (if (> start page-length)
+                     (if (>= start page-length)
                          (ltk:configure left :state :normal)
                          (ltk:configure left :state :disabled))
                      (if (< start (- (length lst) page-length))

@@ -188,65 +188,63 @@ http://blog.hostilefork.com/clocks-that-run-backwards/ should be split, as only 
 Earthquakes and fire count as weather for these purposes :)")
  ("/articles/stem/technology/" . "")
  ("/articles/stem/technology/bionics/" . "Human-machine interfaces.")
- ("/articles/stem/technology/computer-technology/"
-  . "Any aspect of designing or making software.")
- ("/articles/stem/technology/computer-technology/AI/"
+ ("/articles/stem/computer-technology/cryptocurrency/"
+  . "The mechanics of blockchain, rather than the finance & design philosophy aspects.")
+ ("/articles/stem/computer-technology/AI/long-term/"
+  . "Singularity opinions. AI long-term safety.")
+ ("/articles/stem/computer-technology/AI/mechanisms/"
+  . "Neural networks, machine learning, geneticv algorithms, and other specific techniques that can make narrow AI happen.")
+ ("/articles/stem/computer-technology/AI/"
   . "Anything related to artificial intelligence. May be worth splitting into singularity-type (with discussions of Friendly AI, etc.) and artificial intelligence for more mundane tasks (primarily in games). Some AI, such as self-driving cars, however, exists in the middle.
 
 Note: Games tend to be put here by the classifier, likely because of game theory & video game AI.")
- ("/articles/stem/technology/computer-technology/AI/game-ai/"
-  . "A specific application of AI: any NPC with nontrivial behaviour. Also AIs as the players.")
- ("/articles/stem/technology/computer-technology/AI/long-term/"
-  . "Singularity opinions. AI long-term safety.")
- ("/articles/stem/technology/computer-technology/AI/mechanisms/"
-  . "Neural networks, machine learning, geneticv algorithms, and other specific techniques that can make narrow AI happen.")
- ("/articles/stem/technology/computer-technology/cryptocurrency/"
-  . "The mechanics of blockchain, rather than the finance & design philosophy aspects.")
- ("/articles/stem/technology/computer-technology/git/"
-  . "Complete git tutorial with low weight. The book should cover Git from all sides.")
- ("/articles/stem/technology/computer-technology/git/general/"
+ ("/articles/stem/computer-technology/git/general/"
   . "About version control, history, and founding principles.")
- ("/articles/stem/technology/computer-technology/git/internals/"
-  . "The inner workings of Git under the hood.")
- ("/articles/stem/technology/computer-technology/git/setup/"
-  . "Git installation tutorials")
- ("/articles/stem/technology/computer-technology/git/setup/server/" . "")
- ("/articles/stem/technology/computer-technology/git/usage/"
-  . "Interacting with Git: a manual")
- ("/articles/stem/technology/computer-technology/interaction/"
+ ("/articles/stem/computer-technology/interaction/"
   . "User experience, user interfaces")
- ("/articles/stem/technology/computer-technology/internet/"
-  . "Includes opinions on how the Internet is being used, if they are connected to its potential (and not treated from a news-y perspective as just \"another thing\")")
- ("/articles/stem/technology/computer-technology/internet/hosting/"
+ ("/articles/stem/computer-technology/git/internals/"
+  . "The inner workings of Git under the hood.")
+ ("/articles/stem/computer-technology/git/setup/server/" . "")
+ ("/articles/stem/computer-technology/git/usage/"
+  . "Interacting with Git: a manual")
+ ("/articles/stem/computer-technology/git/setup/"
+  . "Git installation tutorials")
+ ("/articles/stem/computer-technology/git/"
+  . "Complete git tutorial with low weight. The book should cover Git from all sides.")
+ ("/articles/stem/computer-technology/internet/hosting/"
   . "Reviews of hosting companies")
- ("/articles/stem/technology/computer-technology/internet/infrastructure/"
-  . "Not technology that *uses* the internet, but the actual workings and standards of the internet/World Wide Web (and related technology) itself.")
- ("/articles/stem/technology/computer-technology/linux/"
+ ("/articles/stem/computer-technology/linux/"
   . "Linux in colloquial use, and by extension, GNU/Linux and associated.")
- ("/articles/stem/technology/computer-technology/programming/"
+ ("/articles/stem/computer-technology/internet/infrastructure/"
+  . "Not technology that *uses* the internet, but the actual workings and standards of the internet/World Wide Web (and related technology) itself.")
+ ("/articles/stem/computer-technology/internet/"
+  . "Includes opinions on how the Internet is being used, if they are connected to its potential (and not treated from a news-y perspective as just \"another thing\")")
+ ("/articles/stem/computer-technology/programming/programming-languages/"
+  . "Self-explanatory. Discussions of the finer points of various programming languages.
+")
+ ("/articles/stem/computer-technology/search/keyword/"
+  . "The \"traditional\" problem of finding matching documents for queries.")
+ ("/articles/stem/computer-technology/programming/"
   . "Programming style, languages, models, etc. Intended to be closer to practice than theory, with project management included.
 
 TBD: This may go against the general principle used in STEM.")
- ("/articles/stem/technology/computer-technology/programming/programming-languages/"
-  . "Self-explanatory. Discussions of the finer points of various programming languages.
-")
- ("/articles/stem/technology/computer-technology/search/"
-  . "Anything related to search engine technology. Excludes privacy concerns. Instead, explicitly includes crawling (for search purposes), PageRank-like systems, and text search algorithms.")
- ("/articles/stem/technology/computer-technology/search/keyword/"
-  . "The \"traditional\" problem of finding matching documents for queries.")
- ("/articles/stem/technology/computer-technology/search/semantic/"
-  . "Semantic Web, even though it failed.")
- ("/articles/stem/technology/computer-technology/search/semantic/classification/"
-  . "Notes on classification, whether manual or automatic.")
- ("/articles/stem/technology/computer-technology/search/semantic/classification/automatic-classification/"
+ ("/articles/stem/computer-technology/security/" . "")
+ ("/articles/stem/computer-technology/search/semantic/classification/automatic-classification/"
   . "Natural Language Processing or other ways of finding the meaning of sites to be found.")
- ("/articles/stem/technology/computer-technology/search/semantic/semantic-web/"
-  . "The Semantic Web attempt at making the Internet machine-readable.")
- ("/articles/stem/technology/computer-technology/search/semantic/semantic-web/criticism/"
+ ("/articles/stem/computer-technology/search/"
+  . "Anything related to search engine technology. Excludes privacy concerns. Instead, explicitly includes crawling (for search purposes), PageRank-like systems, and text search algorithms.")
+ ("/articles/stem/computer-technology/search/semantic/semantic-web/criticism/"
   . "The problems with the Semantic Web protocol")
- ("/articles/stem/technology/computer-technology/search/semantic/semantic-web/mechanism/"
+ ("/articles/stem/computer-technology/search/semantic/classification/"
+  . "Notes on classification, whether manual or automatic.")
+ ("/articles/stem/computer-technology/search/semantic/"
+  . "Semantic Web, even though it failed.")
+ ("/articles/stem/computer-technology/search/semantic/semantic-web/mechanism/"
   . "Specification and advocacy for Semantic Web")
- ("/articles/stem/technology/computer-technology/security/" . "")
+ ("/articles/stem/computer-technology/search/semantic/semantic-web/"
+  . "The Semantic Web attempt at making the Internet machine-readable.")
+ ("/articles/stem/computer-technology/"
+  . "Any aspect of designing or making software.")
  ("/articles/stem/technology/infrastructure/" . "City planning, projects,")
  ("/fiction/"
   . "Fiction itself, not text *about* fiction. This class may pick up on true stories with similar language.")
@@ -274,15 +272,12 @@ TBD: This may go against the general principle used in STEM.")
  ("/news/news-reports/"
   . "Articles on news sites about events, as opposed to opinions or culture.
 
-The subclasses are not here for classification purposes, but instead to have roughly equal representation of various sources. They will be labeled WIP as soon as that feature is added.")
+The subclasses are not here for classification purposes, but instead to have roughly equal representation of various sources.")
  ("/news/news-reports/aljazeera/" . "") ("/news/news-reports/bbc/" . "")
  ("/news/news-reports/guardian/" . "") ("/news/news-reports/la-times/" . "")
  ("/news/news-reports/reuters/" . "") ("/news/opinions/" . "Opinion columns.")
  ("/news/opinions/aljazeera/" . "") ("/news/opinions/guardian/" . "")
- ("/news/opinions/la-times/" . "") ("/news/sports/" . "Sports news.")
- ("/news/sports/aljazeera/" . "") ("/news/sports/bbc/" . "")
- ("/news/sports/guardian/" . "") ("/news/sports/la-times/" . "")
- ("/news/sports/reuters/" . "")
+ ("/news/opinions/la-times/" . "")
  ("/non-english/"
   . "A few links for a few languages to catch some accidentally slipped foreign sites.")
  ("/non-english/CZ/" . "Czech") ("/non-english/DE/" . "German")
@@ -320,4 +315,9 @@ Technically also includes similarly-structured royalty-free music.")
   . "Government structure, governmental organisations for standards, safety, (inter)national security, etc.")
  ("/utility/society/social-justice/" . "")
  ("/utility/society/sport/" . "Sport clubs, places to do sport, etc.")
- ("/utility/society/sport/tennis/" . "")) 
+ ("/utility/society/sport/tennis/" . "") ("/news/sports/guardian/" . "")
+ ("/news/sports/" . "Sports news.") ("/news/sports/reuters/" . "")
+ ("/news/sports/la-times/" . "") ("/news/sports/bbc/" . "")
+ ("/news/sports/aljazeera/" . "")
+ ("/articles/stem/computer-technology/AI/game-ai/"
+  . "A specific application of AI: any NPC with nontrivial behaviour. Also AIs as the players.")) 

@@ -32,6 +32,7 @@
 
 (defparameter *comments-file* "../DATA/comments")
 (defparameter *weights-file* "../DATA/weights")
+(defparameter *tentatives-file* "../DATA/tentatives")
 (defparameter *corpora-file* "../DATA/corpora")
 (defparameter *urls-file* "../DATA/urls")
 

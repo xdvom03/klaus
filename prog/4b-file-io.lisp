@@ -2,11 +2,11 @@
 
 (defun apply-to-all-classes (fun)
   ;; TBD: Add to a better crawler testing suite
-  (labels ((res (class)
+  (labels ((rec (class)
              (funcall fun class)
              (dolist (subclass (subclasses class))
-               (res subclass))))
-    (res "/")))
+               (rec subclass))))
+    (rec "/")))
 
 (defun classes-hashtable (fun)
   (let ((acc (ht)))
@@ -27,14 +27,16 @@
   ;; When the old path is moved to a new path, what is the new path of its subclass?
   (concat new-path (subseq subclass (length old-path))))
 
-(let ((url-tree (ht))
+(let ((subclasses (ht))
+      (url-tree (ht))
       (corpus-tree (ht))
       (recursive-corpus-tree (ht))
       (word-count-tree (ht))
       (url-count-tree (ht))
-      (subclasses (ht))
+      
       (comment-tree (ht))
-      (weight-tree (ht)))
+      (weight-tree (ht))
+      (tentative-tree (ht)))
 
   (defun read-comments ()
     (setf comment-tree
@@ -51,6 +53,7 @@
   (defun read-comment (class)
     (gethash class comment-tree))
   
+  
   (defun read-weights ()
     (setf weight-tree (assoc-to-hashtable (read-from-file *weights-file*))))
 
@@ -60,9 +63,33 @@
   (defun set-weight (class weight)
     (setf (gethash class weight-tree)
           weight))
-  
+
   (defun read-weight (class)
     (gethash class weight-tree))
+
+  
+  (defun read-tentative (class)
+    (gethash class tentative-tree))
+
+  (defun read-tentatives ()
+    (setf tentative-tree (assoc-to-hashtable (read-from-file *tentatives-file*))))
+
+  (defun save-tentatives ()
+    (overwrite-file *tentatives-file* (hashtable-to-assoc tentative-tree)))
+
+  (defun set-tentative (class tentative?)
+    (setf (gethash class tentative-tree)
+          tentative?))
+
+  (defun save-config ()
+    (save-comments)
+    (save-weights)
+    (save-tentatives))
+
+  (defun read-config ()
+    (read-comments)
+    (read-weights)
+    (read-tentatives))
 
   ;;; CONFIG
   ;;;----------------------------------------------------------------------------------------------
