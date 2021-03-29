@@ -53,8 +53,10 @@
     (setf (ltk:text l) txt)
     l))
 
-(defun entry (r c master)
-  (widget r c 'ltk:entry master))
+(defun entry (r c master &optional (txt ""))
+  (let ((e (widget r c 'ltk:entry master)))
+    (setf (ltk:text e) txt)
+    e))
 
 (defun checkbox (r c master text command)
   (let ((ch (widget r c 'ltk:check-button master)))
@@ -71,6 +73,9 @@
 (defun frame (r c master)
   ;; Ugly hack: LTK does not support backround colours of frames, but it works for canvases, and they seem to work serviceably as frames. 
   (let ((f (widget r c 'ltk:canvas master)))
+    (ltk:configure f :width 0)
+    (ltk:configure f :height 0)
+    (ltk:configure f :background *frame-colour*)
     f))
 
 (defun window (title)
@@ -103,10 +108,10 @@
                                (setf (ltk:text b) "")
                                (setf (ltk:command b) #'pass)))))
                      (setf (ltk:text l) (concat start "/" (length lst)))
-                     (if (>= start page-length)
+                     (if (> start page-length)
                          (ltk:configure left :state :normal)
                          (ltk:configure left :state :disabled))
-                     (if (<= start (- (length lst) page-length))
+                     (if (< start (- (length lst) page-length))
                          (ltk:configure right :state :normal)
                          (ltk:configure right :state :disabled)))))
     (setf left (button 0 0 f "←" #'(lambda ()
@@ -122,24 +127,18 @@
   ;; gets the time of start
   (info-box (concat message " Time taken: " (my-round (/ (- (get-internal-real-time) timer) internal-time-units-per-second))) "success!"))
 
-#|
-funky window
-(ltk:with-ltk ()
-(ltk:withdraw ltk:*tk*)
-(let* ((W (window "ahoj"))
-(b (button 0 0 W "1" #'(lambda ()
-)))
-(bb (button 1 0 W "2" #'(lambda ()
-(print (ltk:wm-state W)))))
-(bbb (button 2 0 W "3" #'(lambda ()
-(ltk:set-geometry-xy W 20 20 ))))
-(tx (text 0 2 W "nejaky texta projistotu vic textu jeden nikdy nevi" 15 24 "NotoSans 10")))
-(ltk:force-focus b)
-(ltk:grid (ltk:make-scrollbar W) 2 2)
+(defun destroy-widgets (list)
+  (dolist (w list)
+    (ltk:destroy w)))
 
-(ltk:grid (make-instance 'ltk:paned-window) 3 3)
-(ltk:on-close W #'(lambda ()
-(warning-box "Save some shit?" "yeehaw")
-(ltk:destroy W)
-(ltk:destroy ltk:*tk*)))))
-|#
+(defun comment (r c master)
+  (text r c master "" 15 35 "NotoMono 10"))
+
+(defmacro warn-on-error ((error-title) &body body)
+  (let ((title-var (gensym)))
+    `(let ((,title-var ,error-title))
+       (handler-case (progn
+                       ,@body)
+         (error (err-text)
+           (warning-box err-text ,title-var)
+           (abort))))))

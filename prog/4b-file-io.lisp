@@ -1,42 +1,5 @@
 ;; all file input/output (and data storage)
 
-;; TBD: The reading here (& below) is only needed when recompiling. Remove from final executable.
-(let ((comment-tree (ht)))
-  (defun read-comments ()
-    (setf comment-tree
-          (assoc-to-hashtable (read-from-file *comments-file*))))
-
-  (defun save-comments ()
-    (overwrite-file *comments-file*
-                    (hashtable-to-assoc comment-tree)))
-
-  (defun set-comment (class comment)
-    (setf (gethash class comment-tree)
-          comment)
-    (save-comments))
-  
-  (defun read-comment (class)
-    (gethash class comment-tree))
-
-  (read-comments))
-
-(let ((weight-tree (ht)))
-  (defun read-weights ()
-    (setf weight-tree (assoc-to-hashtable (read-from-file *weights-file*))))
-
-  (defun save-weights ()
-    (overwrite-file *weights-file* (hashtable-to-assoc weight-tree)))
-
-  (defun set-weight (class weight)
-    (setf (gethash class weight-tree)
-          weight)
-    (save-weights))
-  
-  (defun read-weight (class)
-    (gethash class weight-tree))
-
-  (read-weights))
-
 (defun apply-to-all-classes (fun)
   ;; TBD: Add to a better crawler testing suite
   (labels ((res (class)
@@ -52,23 +15,88 @@
                                     (funcall fun class))))
     acc))
 
+(defun move-hash (hash-table original-key new-key)
+  ;; destructive
+  (let ((value (gethash original-key hash-table)))
+    (setf (gethash new-key hash-table)
+          value)
+    (remhash original-key hash-table)
+    hash-table))
 
-
-
-
-
-
-
-
-
-
+(defun new-path (old-path new-path subclass)
+  ;; When the old path is moved to a new path, what is the new path of its subclass?
+  (concat new-path (subseq subclass (length old-path))))
 
 (let ((url-tree (ht))
       (corpus-tree (ht))
       (recursive-corpus-tree (ht))
       (word-count-tree (ht))
       (url-count-tree (ht))
-      (subclasses (ht)))
+      (subclasses (ht))
+      (comment-tree (ht))
+      (weight-tree (ht)))
+
+  (defun read-comments ()
+    (setf comment-tree
+          (assoc-to-hashtable (read-from-file *comments-file*))))
+
+  (defun save-comments ()
+    (overwrite-file *comments-file*
+                    (hashtable-to-assoc comment-tree)))
+
+  (defun set-comment (class comment)
+    (setf (gethash class comment-tree)
+          comment))
+  
+  (defun read-comment (class)
+    (gethash class comment-tree))
+  
+  (defun read-weights ()
+    (setf weight-tree (assoc-to-hashtable (read-from-file *weights-file*))))
+
+  (defun save-weights ()
+    (overwrite-file *weights-file* (hashtable-to-assoc weight-tree)))
+
+  (defun set-weight (class weight)
+    (setf (gethash class weight-tree)
+          weight))
+  
+  (defun read-weight (class)
+    (gethash class weight-tree))
+
+  ;;; CONFIG
+  ;;;----------------------------------------------------------------------------------------------
+  ;;; 
+
+  (defun move-one-class (original-path new-path)
+    (move-hash url-tree original-path new-path)
+    (move-hash corpus-tree original-path new-path)
+    (move-hash recursive-corpus-tree original-path new-path)
+    (move-hash word-count-tree original-path new-path)
+    (move-hash url-count-tree original-path new-path)
+    (move-hash comment-tree original-path new-path)
+    (move-hash weight-tree original-path new-path)
+    (move-class-imports original-path new-path))
+
+  (defun recursive-subclasses (class)
+    ;; includes the class itself
+    (append1 (reduce #'append (mapcar #'recursive-subclasses (gethash class subclasses)))
+             class))
+  
+  (defun move-class (old-path new-path)
+    ;; class is the class path, while new-name is the new endpoint name
+    (mapcar #'(lambda (subclass)
+                (move-one-class subclass
+                                (new-path old-path new-path subclass)))
+            (recursive-subclasses old-path))
+    (build-subclasses))
+
+  (defun rename-class (class new-name)
+    ;; class is the class path, while new-name is the new endpoint name
+    ;; TBD: Rename all imports
+    (if (find #\/ new-name)
+        (error "Name contains slash.")
+        (move-class class (concat (parent-class class) new-name "/"))))
 
   (defun classes ()
     (remove-duplicates (append (list-keys url-tree)
@@ -102,20 +130,17 @@
     (if (member url (class-urls "/" t) :test #'equal)
         (error (concat "File already in " (location url)))
         (setf (gethash class url-tree)
-              (append1 (gethash class url-tree) url)))
-    (save-corpora) ;; TBD: autosave for now, unsaved changes warn later if there is any problem with this system
-    )
+              (append1 (gethash class url-tree) url))))
   
   (defun remove-url (url class)
     (setf (gethash class url-tree)
           (remove-if #'(lambda (checked-url)
                          (equal checked-url url))
-                     (gethash class url-tree)))
-    (save-corpora))
+                     (gethash class url-tree))))
 
-  (defun get-recursive-url-tree (class)
+  (defun get-recursive-urls (class)
     (reduce #'append
-            (append1 (mapcar #'get-recursive-url-tree
+            (append1 (mapcar #'get-recursive-urls
                              (subclasses class))
                      (gethash class url-tree))))
 
@@ -143,12 +168,10 @@
             recursive-corpus)
       (setf (gethash class url-count-tree)
             (length (append (recursive-imported-urls class)
-                            (get-recursive-url-tree class))))
+                            (get-recursive-urls class))))
       (setf (gethash class word-count-tree)
             (word-count recursive-corpus))
       (print (concat "rebuilt: " class))
-      (if (equal class "/")
-          (save-corpora))
       
       (scale-corpus recursive-corpus (read-weight class))))
 
@@ -157,11 +180,7 @@
     (overwrite-file *urls-file*
                     (hashtable-to-assoc url-tree))
     (overwrite-file *corpora-file*
-                    (hashtable-to-assoc (map-to-hash (compose #'sort-corpus
-                                                              #'hashtable-to-assoc
-                                                              #'(lambda (class)
-                                                                  (gethash class corpus-tree)))
-                                                     (list-keys corpus-tree)))))
+                    (saveable-corpora corpus-tree)))
 
   (defun read-saved ()
     (let ((assoc-corpus (assoc-to-hashtable (read-from-file *corpora-file*))))
@@ -177,7 +196,8 @@
     (let ((classes (classes)))
       (dolist (class classes)
         (setf (gethash class subclasses)
-              (remove-if-not #'(lambda (class2)
-                                 (equal (parent-class class2)
-                                        class))
-                             classes))))))
+              (sort (copy-seq (remove-if-not #'(lambda (class2)
+                                                 (equal (parent-class class2)
+                                                        class))
+                                             classes))
+                    #'string<))))))

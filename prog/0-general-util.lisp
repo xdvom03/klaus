@@ -39,6 +39,8 @@
 (defparameter *crawl-data-folder* "../DATA/crawlers/")
 (defparameter *discovered-folder* "../DATA/discovered") ;; without terminating slash because of place results (TBD: Inconsistent with other folders)
 
+(defparameter *frame-colour* "#abcdef")
+
 ;; core engine
 (defparameter *score-threshold* 1/5)
 (defparameter *word-group-size* 400)

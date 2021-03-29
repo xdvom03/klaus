@@ -31,45 +31,64 @@
 (defun imports ()
   (mapcar #'namestring (directory (concat *imports-folder* "*/"))))
 
-(let (url-trees
-      assoc-import-corpora
-      import-corpora
+(defun process-imported-corpora (assoc-corpora)
+  ;; Reads it in assoc list format
+  (assoc-to-hashtable (mapcar #'(lambda (cons)
+                                  (cons (car cons)
+                                        (assoc-to-hashtable (cdr cons))))
+                              assoc-corpora)))
+
+(defun saveable-corpora (hashtable-corpora)
+  (hashtable-to-assoc (map-to-hash (compose #'sort-corpus
+                                            #'hashtable-to-assoc
+                                            #'(lambda (class)
+                                                (gethash class hashtable-corpora)))
+                                   (list-keys hashtable-corpora))))
+
+(let (import-corpora
       import-urls)
   (defun refresh-imports ()
-    (let ((data (mapcar #'(lambda (import-folder)
-                            (cons (read-from-file (concat import-folder "urls"))
-                                  (read-from-file (concat import-folder "corpora"))))
-                        (imports))))
-      (setf url-trees (mapcar #'car data))
-      (setf assoc-import-corpora (mapcar #'cdr data))
+    (setf import-urls (map-to-hash #'(lambda (import-folder)
+                                       (assoc-to-hashtable (read-from-file (concat import-folder "urls"))))
+                                   (imports)))
+    (setf import-corpora (map-to-hash #'(lambda (import-folder)
+                                          (process-imported-corpora (read-from-file (concat import-folder "corpora"))))
+                                      (imports))))
 
-      (setf import-corpora (mapcar (compose #'assoc-to-hashtable
-                                            #'(lambda (assoc)
-                                                (mapcar #'(lambda (cons)
-                                                            (cons (car cons)
-                                                                  (assoc-to-hashtable (cdr cons))))
-                                                        assoc)))
-                                   assoc-import-corpora))
-      (setf import-urls (mapcar #'assoc-to-hashtable
-                                url-trees))))
+  (defun save-imports ()
+    ;; necessary because of file system editing
+    (dolist (import-folder (list-keys import-urls))
+      (let ((urls-file (concat import-folder "urls"))
+            (corpora-file (concat import-folder "corpora")))
+        (print "GOOD SPORT LOC:")
+        (print (gethash "/news/sports/" (gethash import-folder import-urls)))
+        (print "BAD SPORT LOC:")
+        (print (gethash "/news/news-reports/sports/" (gethash import-folder import-urls)))
+        (overwrite-file urls-file (hashtable-to-assoc (gethash import-folder import-urls)))
+        (overwrite-file corpora-file (saveable-corpora (gethash import-folder import-corpora))))))
+
+  (defun move-class-imports (old-path new-path)
+    (dolist (import-class (list-keys import-urls))
+      (move-hash (gethash import-class import-urls) old-path new-path)
+      (move-hash (gethash import-class import-corpora) old-path new-path)))
   
   (defun imported-corpus (class)
     (reduce #'add-corpuses (mapcar #'(lambda (import)
                                        (fallback (gethash class import)
                                                  (ht)))
-                                   import-corpora)
+                                   (list-values import-corpora))
             :initial-value (ht)))
   
   (defun imported-file-count (class)
     (reduce #'+ (mapcar #'(lambda (tree)
                             (length (gethash class tree)))
-                        import-urls)
+                        (list-values import-urls))
             :initial-value 0))
 
   (defun imported-urls (class)
     (reduce #'append (mapcar #'(lambda (tree)
                                  (gethash class tree))
-                             import-urls)
+                             (list-values import-urls))
             :initial-value nil))
 
   (defun recursive-imported-urls (class)
@@ -78,7 +97,7 @@
             :initial-value nil))
 
   (defun imported-classes ()
-    (remove-duplicates (reduce #'append (mapcar #'list-keys import-urls)
+    (remove-duplicates (reduce #'append (mapcar #'list-keys (list-values import-urls))
                                :initial-value nil)
                        :test #'equal)))
 

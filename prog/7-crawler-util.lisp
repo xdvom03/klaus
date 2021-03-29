@@ -1,13 +1,3 @@
-(defun remove-fragment (url)
-  ;; TBD: QURI
-  (do ((i 0 (1+ i)))
-      ((or (>= i (length url))
-           (equal (char "#" 0) (char url i))
-           (equal (char "?" 0) (char url i)))
-       (if (>= i (length url))
-           url
-           (subseq url 0 i)))))
-
 ;; TBD: Add dollar signs, crawl delay, and asterisk wildcards.
 (defun matching-rule? (rule url)
   (safe-check-substr (quri:url-decode (remove-domain url)) rule))
