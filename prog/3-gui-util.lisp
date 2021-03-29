@@ -142,3 +142,40 @@
          (error (err-text)
            (warning-box err-text ,title-var)
            (abort))))))
+
+
+
+
+
+;; general bucket
+
+(defun next-mode (mode modes-cycle)
+  (fallback (second (member mode modes-cycle :test #'equal))
+            (first modes-cycle)))
+
+(defun bucket-section (r c master button-action refresher modes-cycle data-fun)
+  ;; data-fun is called as (data-fun url origin) to produce button labels
+  (let* ((f (frame r c master))
+         (fr (frame 0 0 f))
+         bucket-buttons
+         bucket-data
+         (mode (first modes-cycle)))
+                  
+    (letrec ((b (button 0 1 f mode #'(lambda () (setf (ltk:text b) (setf mode (next-mode mode modes-cycle)))))))
+      (labels ((new-bucket-button (url origin)
+                 (let ((button-text (funcall data-fun url origin)))
+                   (if (find button-text bucket-data :test #'equal)
+                       (warning-box "Already in bucket." "Nope!")
+                       (letrec ((index (length bucket-buttons))
+                                (new-button (button index
+                                                    0
+                                                    fr
+                                                    button-text
+                                                    #'(lambda ()
+                                                        (funcall button-action url origin (get-current-class) mode)
+                                                        (setf bucket-data (remove button-text bucket-data :test #'equal))
+                                                        (ltk:destroy new-button)
+                                                        (funcall refresher)))))
+                         (push button-text bucket-data)
+                         (push new-button bucket-buttons))))))
+        #'new-bucket-button))))

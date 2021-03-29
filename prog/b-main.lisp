@@ -26,8 +26,15 @@ Naming convention: 'class' is simplified path, 'folder' is actual folder.
 
 (let ((refresh-files #'pass)
       (refresh-classes #'pass)
+      (current-class "/")
       (W nil))
   ;; shared environment variables for parts of GUI
+
+  (defun get-current-class ()
+    current-class)
+
+  (defun set-current-class (new-value)
+    (setf current-class new-value))
 
   (defun rebuild-frame (r c master)
     ;; DOES NOT refresh imports. This means imports can only be added before program launch.
@@ -56,9 +63,9 @@ Naming convention: 'class' is simplified path, 'folder' is actual folder.
         (class-section 0 0 W)
       (setf refresh-files (file-frame 1 0 W))
       (funcall set-file-refresher refresh-files)
-      (funcall refresh-files "/")
+      (funcall refresh-files)
       (setf refresh-classes classes-refresher)
-      (funcall refresh-classes "/")
+      (funcall refresh-classes)
       (setf refresh-classes classes-refresher))))
 
 (defun db ()
