@@ -2,3 +2,5 @@ portacle/
 DATA/files/
 DATA/generated-data/
 *.fasl
+*.log
+*.aux
