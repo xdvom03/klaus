@@ -33,6 +33,9 @@
       (recursive-corpus-tree (ht))
       (word-count-tree (ht))
       (url-count-tree (ht))
+
+      (cached-corpora (ht))
+      (cached-urls (ht))
       
       (comment-tree (ht))
       (weight-tree (ht))
@@ -165,12 +168,6 @@
                          (equal checked-url url))
                      (gethash class url-tree))))
 
-  (defun get-recursive-urls (class)
-    (reduce #'append
-            (append1 (mapcar #'get-recursive-urls
-                             (subclasses class))
-                     (gethash class url-tree))))
-
   (defun get-recursive-corpus (class)
     (gethash class recursive-corpus-tree))
 
@@ -181,7 +178,10 @@
     (gethash class word-count-tree))  
 
   (defun rebuild-corpus (&optional (class "/"))
-    (let* ((base-corpus (get-corpus class))
+    (let* ((base-corpus (if (equal (class-urls class)
+                                   (gethash class cached-urls))
+                            (gethash class cached-corpora)
+                            (get-corpus class)))
            (corpus (add-corpuses (imported-corpus class)
                                  base-corpus))
            (recursive-corpus (reduce #'add-corpuses
@@ -194,8 +194,8 @@
       (setf (gethash class recursive-corpus-tree)
             recursive-corpus)
       (setf (gethash class url-count-tree)
-            (length (append (recursive-imported-urls class)
-                            (get-recursive-urls class))))
+            (+ (length (recursive-imported-urls class))
+               (length (class-urls class t))))
       (setf (gethash class word-count-tree)
             (word-count recursive-corpus))
       (print (concat "rebuilt: " class))
@@ -209,15 +209,23 @@
     (overwrite-file *corpora-file*
                     (saveable-corpora corpus-tree)))
 
-  (defun read-saved ()
+  (defun saved-urls ()
+    (assoc-to-hashtable (read-from-file *urls-file*)))
+
+  (defun saved-corpora ()
     (let ((assoc-corpus (assoc-to-hashtable (read-from-file *corpora-file*))))
-      (setf corpus-tree
-            (map-to-hash (compose #'assoc-to-hashtable
-                                  #'(lambda (class)
-                                      (gethash class assoc-corpus)))
-                         (list-keys assoc-corpus))))
-    (setf url-tree
-          (assoc-to-hashtable (read-from-file *urls-file*))))
+      (map-to-hash (compose #'assoc-to-hashtable
+                            #'(lambda (class)
+                                (gethash class assoc-corpus)))
+                   (list-keys assoc-corpus))))
+
+  (defun read-saved ()
+    (let ((corpora (saved-corpora))
+          (urls (saved-urls)))
+      (setf corpus-tree corpora)
+      (setf cached-corpora corpora)
+      (setf url-tree urls)
+      (setf cached-urls urls)))
 
   (defun build-subclasses ()
     (let ((classes (classes)))

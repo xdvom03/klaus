@@ -60,10 +60,6 @@
     (dolist (import-folder (list-keys import-urls))
       (let ((urls-file (concat import-folder "urls"))
             (corpora-file (concat import-folder "corpora")))
-        (print "GOOD SPORT LOC:")
-        (print (gethash "/news/sports/" (gethash import-folder import-urls)))
-        (print "BAD SPORT LOC:")
-        (print (gethash "/news/news-reports/sports/" (gethash import-folder import-urls)))
         (overwrite-file urls-file (hashtable-to-assoc (gethash import-folder import-urls)))
         (overwrite-file corpora-file (saveable-corpora (gethash import-folder import-corpora))))))
 
