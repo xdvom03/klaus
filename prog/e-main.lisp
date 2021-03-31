@@ -24,6 +24,14 @@ Naming convention: 'class' is simplified path, 'folder' is actual folder.
 ;;;----------------------------------------------------------------------------------------------
 ;;; THE TOTALITY
 
+(defun save-all ()
+  (build-core-text-database)
+  (rebuild-corpus)
+  (save-corpora)
+  (save-config)
+  (refresh-imports) ; loads any new import files
+  )
+
 (let ((refresh-files #'pass)
       (refresh-classes #'pass)
       (current-class "/")
@@ -37,22 +45,19 @@ Naming convention: 'class' is simplified path, 'folder' is actual folder.
     (setf current-class new-value))
 
   (defun rebuild-frame (r c master)
-    ;; DOES NOT refresh imports. This means imports can only be added before program launch.
     (let ((fr (frame r c master)))
       (button 0 0 fr "SAVE ALL CHANGES" #'(lambda ()
                                             (let ((timer (get-internal-real-time)))
-                                              (build-core-text-database)
-                                              (rebuild-corpus)
-                                              (show-time timer "Rebuilt the corpus.")
+                                              (save-all)
                                               (funcall refresh-classes)
-                                              (save-corpora)
-                                              (save-config)
-                                              (refresh-imports))))
+                                              (show-time timer "Saved."))))
       fr))
 
   (defun db-window ()
     (setf W (window "/"))
-    (ltk:on-close W #'(lambda () (ltk:destroy ltk:*tk*)))
+    (ltk:on-close W #'(lambda ()
+                        (save-all)
+                        (ltk:destroy ltk:*tk*)))
     (rebuild-frame 0 2 W)
     (button 0 3 W "Go to classifier" #'(lambda ()
                                          (ltk:destroy W)
