@@ -96,7 +96,10 @@
 
   ;;; CONFIG
   ;;;----------------------------------------------------------------------------------------------
-  ;;; 
+  ;;;
+
+  (defun read-cached-urls (class)
+    (gethash class cached-urls))
 
   (defun move-one-class (original-path new-path)
     (move-hash url-tree original-path new-path)
@@ -170,6 +173,12 @@
                      class)))
     ;; sets up corpus, url/word count
     (rebuild-corpus class))
+
+  (defun add-manual-url (url class)
+    (if (member url (class-urls "/" t) :test #'equal)
+        (error (concat "File already in " (location url)))
+        (setf (gethash class url-tree)
+              (append1 (gethash class url-tree) url))))
   
   (defun add-url (url class)
     (redownload-url url)
@@ -195,12 +204,16 @@
 
   (defun rebuild-corpus (&optional (class "/"))
     (let* ((urls (class-urls class))
-           (base-corpus (cond
-                          ((null urls)
-                           (ht))
-                          ((equal urls (gethash class cached-urls))
-                           (gethash class cached-corpora))
-                          (t (get-corpus class))))
+           (base-corpus (let ((cached (gethash class cached-corpora)))
+                          (cond
+                            ((null urls)
+                             (ht))
+                            ((and cached
+                                  (equal urls (gethash class cached-urls)))
+                             cached)
+                            (t
+                             (print (concat "EDIT at " class))
+                             (get-corpus class)))))
            (corpus (add-corpuses (imported-corpus class)
                                  base-corpus))
            (recursive-corpus (reduce #'add-corpuses
@@ -217,7 +230,6 @@
                (length (class-urls class t))))
       (setf (gethash class word-count-tree)
             (word-count recursive-corpus))
-      (print (concat "rebuilt: " class))
       
       (scale-corpus recursive-corpus (read-weight class))))
 
@@ -242,9 +254,9 @@
     (let ((corpora (saved-corpora))
           (urls (saved-urls)))
       (setf corpus-tree corpora)
-      (setf cached-corpora corpora)
+      (setf cached-corpora (alexandria:copy-hash-table corpora))
       (setf url-tree urls)
-      (setf cached-urls urls)))
+      (setf cached-urls (alexandria:copy-hash-table urls))))
 
   (defun build-subclasses ()
     (let ((classes (classes)))

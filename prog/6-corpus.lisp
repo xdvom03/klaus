@@ -121,20 +121,25 @@
     (dolist (domain domains)
       (princ ".")
       (add-domain-alias domain)
+      ;; Manual files have domain NIL and should be exempt from this
       (if (not (equal (read-domain-urls domain)
                       (gethash domain domain-lists)))
-          (let ((boilerplate (mapcar #'(lambda (words) (cl-strings:join words :separator " "))
-                                     (boilerplate domain))))
-            (overwrite-file (concat *domain-lists-folder* (domain-alias domain))
-                            (gethash domain domain-lists))
-            (overwrite-file (concat *boilerplate-folder* (domain-alias domain))
-                            boilerplate)
-            (dolist (url (gethash domain domain-lists))
-              (let ((num (file-alias url)))
-                
-                (overwrite-file (concat *core-text-folder* num)
-                                (reduce #'remove-substr (append (list (read-text url))
-                                                                boilerplate))))))))))
+          (if domain
+              (let ((boilerplate (mapcar #'(lambda (words) (cl-strings:join words :separator " "))
+                                         (boilerplate domain))))
+                (overwrite-file (concat *domain-lists-folder* (domain-alias domain))
+                                (gethash domain domain-lists))
+                (overwrite-file (concat *boilerplate-folder* (domain-alias domain))
+                                boilerplate)
+                (dolist (url (gethash domain domain-lists))
+                  (let ((num (file-alias url)))
+                    (overwrite-file (concat *core-text-folder* num)
+                                    (reduce #'remove-substr (append (list (read-text url))
+                                                                    boilerplate))))))
+              (dolist (url (gethash domain domain-lists))
+                (let ((num (file-alias url)))
+                  (overwrite-file (concat *core-text-folder* num)
+                                  (read-text url)))))))))
 
 ;;; TEXT HELPER DATABASES
 ;;;----------------------------------------------------------------------------------------------

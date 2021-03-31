@@ -61,7 +61,7 @@
          (comment-frame (frame 0 2 fr))
 
          ;; variable stuff
-         (tex (text 0 0 comment-frame "" 10 20 "NotoSans 10"))
+         (tex (text 0 0 comment-frame "" 10 20))
          (class-label (label 0 0 class-frame ""))
          parent-button)
     (labels ((redraw (new-path)
@@ -110,7 +110,7 @@
            (comment-frame (frame 0 2 fr))
 
            ;; variable stuff
-           (tex (text 0 0 comment-frame "" 10 20 "NotoSans 10"))
+           (tex (text 0 0 comment-frame "" 10 20))
            (class-label (label 0 0 class-frame ""))
            parent-button)
       (labels ((redraw (new-path)
@@ -161,7 +161,7 @@
                (main-menu (r c master)
                  (letrec ((fr (frame r c master))
                           (e1 (entry 0 0 fr))
-                          (t1 (text 1 0 fr "" 20 20 "NotoSans 10"))
+                          (t1 (text 1 0 fr "" 20 20))
                           (ch (checkbox 0 2 fr "Explain classing?" #'(lambda ()
                                                                        (setf explain? (ltk:value ch))))))
                    (setf (ltk:text e1) current-url)

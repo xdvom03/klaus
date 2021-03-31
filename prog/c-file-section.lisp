@@ -1,11 +1,10 @@
 (let ((modes-cycle (list 'move 'remove 'nothing))
       (add-to-bucket #'pass)
       (refresh-files #'pass))
-  (labels ((file-section (r c master)
+  (labels ((add-url-section (r c master)
              (let* ((fr (frame r c master))
-                    (file-list (frame 0 0 fr))
-                    (e (entry 1 0 fr)))
-               (button 2 0 fr "Add to this class" #'(lambda ()
+                    (e (entry 0 0 fr)))
+               (button 1 0 fr "Add to this class" #'(lambda ()
                                                       (warn-on-error ("Website error")
                                                         (let ((url (ltk:text e)))
                                                           (add-url url (get-current-class))
@@ -14,16 +13,38 @@
                                                                 (warning-box (concat "This file is very short! Word count: " words ". It will be added, remove it if you consider this an error.") "Few words!")))
                                                           (funcall refresh-files)))
                                                       (setf (ltk:text e) "")))
-               (labels ((refresh ()
-                          (let ((urls (class-urls (get-current-class))))
-                            (ltk:destroy file-list)
-                            (setf file-list
-                                  (scrollable-list 0 0 fr *entries-per-page* urls
-                                                   (mapcar #'(lambda (url)
-                                                               (lambda () (funcall add-to-bucket url (get-current-class))))
-                                                           urls))))))
-                 
-                 #'refresh))))
+               fr))
+
+           (add-text-section (r c master)
+             (let* ((fr (frame r c master))
+                    (e (entry 0 0 fr))
+                    (tx (text 1 0 fr "" 5 15)))
+               (button 2 0 fr "Add this text here" #'(lambda ()
+                                                       (let ((url (concat "manual:" (ltk:text e))))
+                                                         (add-manual-file url (ltk:text tx))
+                                                         (add-manual-url url (get-current-class))
+                                                         (funcall refresh-files))
+                                                       (setf (ltk:text tx) "")
+                                                       (setf (ltk:text e) "")))
+               (button 3 0 fr "Load text from file" #'(lambda ()
+                                                        (setf (ltk:text tx)
+                                                              (cl-strings:join 
+                                                               (uiop:read-file-lines (choose-file)) :separator (make-string 1 :initial-element #\Newline)))))
+               fr))
+
+           (file-section (r c master)
+             (let* ((fr (frame r c master))
+                    (file-list (frame 0 0 fr)))
+               (add-url-section 1 0 fr)
+               (add-text-section 1 1 fr)
+               #'(lambda ()
+                   (let ((urls (class-urls (get-current-class))))
+                     (ltk:destroy file-list)
+                     (setf file-list
+                           (scrollable-list 0 0 fr *entries-per-page* urls
+                                            (mapcar #'(lambda (url)
+                                                        (lambda () (funcall add-to-bucket url (get-current-class))))
+                                                    urls))))))))
 
     ;; Our ultimate output is merely a function returning the file section refresher & frame
     (defun file-frame (r c master)

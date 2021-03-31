@@ -85,9 +85,6 @@
   (remove-tags (remove-enclosed (remove-enclosed text "<style" "</style>" #\ )
                                 "<script" "</script>" #\ )))
 
-(defun raw-text (url)
-  (extract-raw-text (html url)))
-
 (defun clean-text (txt)
   (cl-strings:clean (make-safe txt)))
 
@@ -102,13 +99,10 @@
        text))
 
 (defun basic-text (text)
-  (simplify-chars (cl-strings:clean-diacritics (string-downcase text))))
+  (cl-strings:clean (make-safe (simplify-chars (cl-strings:clean-diacritics (string-downcase text))))))
 
 (defun extract-text (html)
-  (cl-strings:clean (make-safe (basic-text (decode-xml-entities (remove-fluff html))))))
-
-(defun extract-raw-text (html)
-  (cl-strings:clean (basic-text (decode-xml-entities (remove-fluff html)))))
+  (basic-text (decode-xml-entities (remove-fluff html))))
 
 
 ;;; TEXT CLEANING

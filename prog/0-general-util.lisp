@@ -1,4 +1,4 @@
-(ql:quickload (list "ltk" "drakma" "quri" "plump" "trivial-timeout" "cl-strings"))
+(ql:quickload (list "ltk" "drakma" "quri" "plump" "trivial-timeout" "cl-strings" "alexandria"))
 
 ;;; IMPORTS
 ;;;----------------------------------------------------------------------------------------------

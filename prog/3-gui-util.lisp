@@ -11,6 +11,9 @@
 (defun info-box (text title)
   (ltk:message-box text title "ok" "info"))
 
+(defun choice-box (text title)
+  (equal :yes (ltk:message-box text title "yesno" "question")))
+
 (defun widget (r c type master)
   (let ((w (make-instance type :master master)))
     (ltk:grid w r c :sticky "nesw")
@@ -35,7 +38,7 @@
       (push (button (+ i starting-row) column window "" #'pass) acc))
     (reverse acc)))
 
-(defun text (r c master txt height width font)
+(defun text (r c master txt height width &optional (font "NotoSans 10"))
   (let ((tex (widget r c 'ltk:text master)))
     (ltk:configure tex :height height)
     (ltk:configure tex :width width)
@@ -135,7 +138,7 @@
     (ltk:destroy w)))
 
 (defun comment (r c master)
-  (text r c master "" 15 35 "NotoMono 10"))
+  (text r c master "" 15 35))
 
 (defmacro warn-on-error ((error-title) &body body)
   (let ((title-var (gensym)))
@@ -146,11 +149,9 @@
            (warning-box err-text ,title-var)
            (abort))))))
 
-
-
-
-
-;; general bucket
+;;; VARIOUS UTILS
+;;;----------------------------------------------------------------------------------------------
+;;; GENERAL BUCKET SYSTEM
 
 (defun next-mode (mode modes-cycle)
   (fallback (second (member mode modes-cycle :test #'equal))
@@ -182,3 +183,13 @@
                          (push button-text bucket-data)
                          (push new-button bucket-buttons))))))
         #'new-bucket-button))))
+
+;;; GENERAL BUCKET SYSTEM
+;;;----------------------------------------------------------------------------------------------
+;;; HORRIFYING ZONE
+
+(defun choose-file (&key (initialdir (namestring ltk::*default-pathname-defaults*))
+			 parent title mustexist)
+  ;; this was a total shot in the dark, but somehow it actually works?
+  (ltk:format-wish "senddatastring [tk_getOpenFile ~@[ -initialdir \"~a\"~]~@[ -parent ~a ~]~@[ -title {~a}~]~@[ -mustexist ~a~]]" (ltk::tkescape2 initialdir) (and parent (ltk:widget-path parent)) title (and mustexist 1))
+  (ltk::read-data))

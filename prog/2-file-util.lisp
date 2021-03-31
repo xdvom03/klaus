@@ -121,20 +121,21 @@
 ;;;----------------------------------------------------------------------------------------------
 ;;; DOWNLOADING FILES
 
+(defun manual? (url)
+  (equal (quri:uri-scheme (quri:uri url))
+         "manual"))
+
 (defun redownload (class)
-  ;; BUG: Halts if any site has any error. Currently solvable by adding something manually, but pretty bad overall
-  ;; Solution: Redownload through GUI, solve errors with error boxes. Keep errors for last so that a minimum of work time gets lost if user is AFK
   (ensure-directories-exist *files-folder*)
   (if (not (directory *aliases-file*))
       (overwrite-file *aliases-file* nil))
-  (let ((files (class-urls class)))
-    (dolist (file files)
-      (redownload-url file))
-    (dolist (subclass (subclasses class))
-      (redownload subclass)))
+  (dolist (file (remove-if #'manual?
+                           (class-urls class)))
+    (redownload-url file))
+  (dolist (subclass (subclasses class))
+    (redownload subclass))
   (print (concat "redownloaded " class)))
 
-;; TBD: Rename
 (defun redownload-url (url)
   (if (not (file-alias url))
       (multiple-value-bind (html response-origin)
@@ -144,4 +145,13 @@
           (overwrite-file (concat *loc-folder* new-alias) response-origin)
           (overwrite-file (concat *html-folder* new-alias) html)
           (overwrite-file (concat *text-folder* new-alias) text))))
+  (file-alias url))
+
+(defun add-manual-file (url content)
+  (if (not (file-alias url))
+      (let* ((text (basic-text content))
+             (new-alias (add-alias url)))
+        (overwrite-file (concat *loc-folder* new-alias) url)
+        (overwrite-file (concat *html-folder* new-alias) content)
+        (overwrite-file (concat *text-folder* new-alias) text)))
   (file-alias url))
