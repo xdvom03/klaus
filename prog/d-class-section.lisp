@@ -140,7 +140,7 @@
                                                 (declare (ignore url))
                                                 (case mode
                                                   (move (move-class origin (concat current-class (folder-name origin) "/")))
-                                                  (remove (print "remove placeholder"))
+                                                  (remove (remove-class origin))
                                                   (nothing #'pass)))
                                             refresh-classes (list 'move 'remove 'nothing)
                                             #'(lambda (url origin)

@@ -108,10 +108,26 @@
     (move-hash weight-tree original-path new-path)
     (move-class-imports original-path new-path))
 
+  (defun remove-one-class (path)
+    (remhash path url-tree)
+    (remhash path corpus-tree)
+    (remhash path recursive-corpus-tree)
+    (remhash path word-count-tree)
+    (remhash path url-count-tree)
+    (remhash path comment-tree)
+    (remhash path weight-tree))
+
   (defun recursive-subclasses (class)
     ;; includes the class itself
     (append1 (reduce #'append (mapcar #'recursive-subclasses (gethash class subclasses)))
              class))
+
+  (defun remove-class (path)
+    ;; class is the class path, while new-name is the new endpoint name
+    (mapcar #'(lambda (subclass)
+                (remove-one-class subclass))
+            (recursive-subclasses path))
+    (build-subclasses))
   
   (defun move-class (old-path new-path)
     ;; class is the class path, while new-name is the new endpoint name
@@ -175,13 +191,16 @@
     (gethash class url-count-tree))
 
   (defun get-word-count (class)
-    (gethash class word-count-tree))  
+    (gethash class word-count-tree))
 
   (defun rebuild-corpus (&optional (class "/"))
-    (let* ((base-corpus (if (equal (class-urls class)
-                                   (gethash class cached-urls))
-                            (gethash class cached-corpora)
-                            (get-corpus class)))
+    (let* ((urls (class-urls class))
+           (base-corpus (cond
+                          ((null urls)
+                           (ht))
+                          ((equal urls (gethash class cached-urls))
+                           (gethash class cached-corpora))
+                          (t (get-corpus class))))
            (corpus (add-corpuses (imported-corpus class)
                                  base-corpus))
            (recursive-corpus (reduce #'add-corpuses
