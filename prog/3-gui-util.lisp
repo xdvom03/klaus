@@ -78,7 +78,9 @@
 
 (defun frame (r c master)
   ;; Ugly hack: LTK does not support backround colours of frames, but it works for canvases, and they seem to work serviceably as frames. 
-  (let ((f (widget r c 'ltk:canvas master)))
+  (let* ((f (widget r c 'ltk:canvas master)))
+    ;; This frame does nothing (and gets overwritten), but frames don't collapse when all their widgets are destroyed, so we want something invisible to always remain
+    (widget 0 0 'ltk:frame f)
     (ltk:configure f :width 0)
     (ltk:configure f :height 0)
     (ltk:configure f :background *frame-colour*)

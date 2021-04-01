@@ -139,7 +139,9 @@
                                             #'(lambda (url origin current-class mode)
                                                 (declare (ignore url))
                                                 (case mode
-                                                  (move (move-class origin (concat current-class (folder-name origin) "/")))
+                                                  (move
+                                                   (move-class origin (concat current-class (folder-name origin) "/"))
+                                                   (funcall refresh-classes))
                                                   (remove (remove-class origin))
                                                   (nothing #'pass)))
                                             refresh-classes (list 'move 'remove 'nothing)
