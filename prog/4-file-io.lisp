@@ -238,7 +238,9 @@
     (overwrite-file *urls-file*
                     (hashtable-to-assoc url-tree))
     (overwrite-file *corpora-file*
-                    (saveable-corpora corpus-tree)))
+                    (saveable-corpora corpus-tree))
+    (setf cached-corpora (alexandria:copy-hash-table corpus-tree))
+    (setf cached-urls (alexandria:copy-hash-table url-tree)))
 
   (defun saved-urls ()
     (assoc-to-hashtable (read-from-file *urls-file*)))
