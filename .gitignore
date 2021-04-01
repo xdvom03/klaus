@@ -1,6 +1,6 @@
 portacle/
 DATA/files/
-DATA/generated-data/
+DATA/corpora
 *.fasl
 *.log
 *.aux
