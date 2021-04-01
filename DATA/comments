@@ -4,15 +4,16 @@
   . "Any text meant as information, not, e.g., to navigate some other task.
 
 This class itself serves files that are either multicategorical or don't have a more specific place.")
- ("/articles/humanities/" . "")
- ("/articles/humanities/education/"
-  . "Considering the transfer of knowledge. Excludes self-learning. Excludes questions of memory, which have their own class.
-")
- ("/articles/humanities/education/lessons/" . "pedagogy, college life")
- ("/articles/humanities/education/memory/"
+ ("/articles/humanities/"
+  . "Parallel to theoretical science in STEM, here we house social sciences.")
+ ("/articles/life/society/progress/" . "The social consequences of STEM.")
+ ("/articles/life/education/memory/"
   . "Matters of long-term memory (working memory presumably belongs elsewhere, though no precedent exists). Spaced repetition.
 ")
- ("/articles/humanities/education/parenting/" . "")
+ ("/articles/life/education/parenting/" . "")
+ ("/articles/life/education/"
+  . "Considering the transfer of knowledge. Excludes self-learning. Excludes questions of memory, which have their own class.
+")
  ("/articles/humanities/fallacies/" . "")
  ("/articles/humanities/history/" . "Not limited to political history.
 
@@ -48,7 +49,7 @@ Probably much wider and narrower and confusing, but you know it when you see it 
  ("/articles/humanities/philosophy/ethics/"
   . "Right/wrong et al. Morality and ethics.
 ")
- ("/articles/life/" . "")
+ ("/articles/life/" . "Daily life, ideas, stories.")
  ("/articles/life/food/"
   . "Recipes, cooking tips, eating habits, anything to do with preparing and eating food.
 Excludes medical matters.
@@ -160,8 +161,6 @@ http://blog.hostilefork.com/clocks-that-run-backwards/ should be split, as only 
  ("/articles/stem/nature/space/exploration/"
   . "The endpoint of going into space. The science done on other planets and the plans for space expansion.")
  ("/articles/stem/nature/space/observation/" . "Viewing space from the Earth.")
- ("/articles/stem/nature/space/rocket-science/"
-  . "The technology and theory behind rocket science.")
  ("/articles/stem/nature/space/tethers/"
   . "Space tethers: an idea which more or less got shelved after 2004, but which might be about to come back. Historical tether flights and tether physics.")
  ("/articles/stem/nature/weather/"
@@ -320,4 +319,8 @@ Technically also includes similarly-structured royalty-free music.")
  ("/news/sports/la-times/" . "") ("/news/sports/bbc/" . "")
  ("/news/sports/aljazeera/" . "")
  ("/articles/stem/computer-technology/AI/game-ai/"
-  . "A specific application of AI: any NPC with nontrivial behaviour. Also AIs as the players.")) 
+  . "A specific application of AI: any NPC with nontrivial behaviour. Also AIs as the players.")
+ ("/articles/life/money/economics/" . "")
+ ("/articles/life/education/lessons/" . "pedagogy, college life")
+ ("/articles/stem/nature/space/transportation/"
+  . "The technology and theory behind rocket science.")) 

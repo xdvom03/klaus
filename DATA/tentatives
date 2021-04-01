@@ -132,4 +132,4 @@
  ("/utility/society/") ("/utility/society/art/") ("/utility/society/charity/")
  ("/utility/society/environment/") ("/utility/society/government/")
  ("/utility/society/social-justice/") ("/utility/society/sport/")
- ("/utility/society/sport/tennis/")) 
+ ("/utility/society/sport/tennis/") ("/articles/life/money/economics/" . T)) 

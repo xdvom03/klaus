@@ -22,8 +22,24 @@
   "https://chelseatroy.com/2018/04/05/how-do-we-make-remote-meetings-not-suck/"
   "https://cdrnys.org/disability-writing-journalism-guidelines/")
  ("/articles/humanities/" "https://waitbutwhy.com/2019/09/thinking-ladder.html"
-  "https://waitbutwhy.com/2019/10/idea-labs-echo-chambers.html")
- ("/articles/humanities/education/" "http://www.garlikov.com/Soc_Meth.html"
+  "https://waitbutwhy.com/2019/10/idea-labs-echo-chambers.html"
+  "https://languagelog.ldc.upenn.edu/nll/?p=2592")
+ ("/articles/life/society/progress/"
+  "https://www.cameronwiese.com/blog/worlds-fair"
+  "https://medium.com/cgo-benchmark/why-are-we-so-slow-today-c34dad4d2bff"
+  "https://antonhowes.substack.com/p/age-of-invention-the-industry-of"
+  "https://rootsofprogress.org/how-to-end-stagnation")
+ ("/articles/life/education/memory/" "http://www.paulgraham.com/know.html"
+  "https://ncase.me/remember/" "http://cognitivemedium.com/srs-mathematics"
+  "http://augmentingcognition.com/ltm.html"
+  "https://www.supermemo.com/en/archives1990-2015/articles/20rules"
+  "https://yourawesomememory.com/how-flashcards-succeed-solutions-on-using-anki-for-serious-study/"
+  "https://yourawesomememory.com/reviewing-as-thinking/"
+  "https://nostalgebraist.wordpress.com/2014/07/27/i-forget-everything-i-memorize-in-biology-and/")
+ ("/articles/life/education/parenting/"
+  "https://www.medicalnewstoday.com/articles/270769"
+  "https://fieldnotesfromfatherhood.com/2015/02/05/when-kids-punish-themselves/")
+ ("/articles/life/education/" "http://www.garlikov.com/Soc_Meth.html"
   "http://www.garlikov.com/teaching/absorb.html"
   "http://www.paulgraham.com/nerds.html"
   "http://www.garlikov.com/teaching/uniforms.htm"
@@ -32,22 +48,6 @@
   "https://blog.ncase.me/2001-a-school-oddysey/"
   "https://medium.com/@ThingMaker/educ-103-antagonistic-learning-b64f42bd4394"
   "https://hbr.org/1964/01/profit-from-the-learning-curve")
- ("/articles/humanities/education/lessons/"
-  "https://www.cc-seas.columbia.edu/node/31875"
-  "http://www.garlikov.com/teaching/tothetest.htm"
-  "http://www.garlikov.com/teaching/TeachingTestsFollowUp.html"
-  "http://www.garlikov.com/math/TeachingMath.html")
- ("/articles/humanities/education/memory/"
-  "http://www.paulgraham.com/know.html" "https://ncase.me/remember/"
-  "http://cognitivemedium.com/srs-mathematics"
-  "http://augmentingcognition.com/ltm.html"
-  "https://www.supermemo.com/en/archives1990-2015/articles/20rules"
-  "https://yourawesomememory.com/how-flashcards-succeed-solutions-on-using-anki-for-serious-study/"
-  "https://yourawesomememory.com/reviewing-as-thinking/"
-  "https://nostalgebraist.wordpress.com/2014/07/27/i-forget-everything-i-memorize-in-biology-and/")
- ("/articles/humanities/education/parenting/"
-  "https://www.medicalnewstoday.com/articles/270769"
-  "https://fieldnotesfromfatherhood.com/2015/02/05/when-kids-punish-themselves/")
  ("/articles/humanities/fallacies/" "http://www.fallacyfiles.org/adnazium.html"
   "http://www.fallacyfiles.org/introtof.html"
   "https://rationalwiki.org/wiki/Logical_fallacy"
@@ -202,7 +202,8 @@
   "https://blog.plover.com//lang/fluency.html"
   "https://blog.plover.com//lang/further.html"
   "https://blog.plover.com//lang/etym/pencil.html"
-  "https://blog.plover.com//lang/known-to-man.html")
+  "https://blog.plover.com//lang/known-to-man.html"
+  "https://www.thoughtco.com/sapir-whorf-hypothesis-1691924")
  ("/articles/humanities/philosophy/"
   "http://oneoverzero.comicgenesis.com/IR1.html"
   "https://waitbutwhy.com/2014/12/what-makes-you-you.html"
@@ -246,10 +247,11 @@
   "https://www.foodsafety.gov/keep-food-safe/4-steps-to-food-safety"
   "https://www.fda.gov/food/consumers/agricultural-biotechnology")
  ("/articles/life/money/" "https://www.tbray.org/ongoing/Biz"
-  "https://mises.org/library/deflationary-spiral-bogey"
   "http://paulgraham.com/wtax.html" "http://paulgraham.com/selfindulgence.html"
   "https://docs.sendwithses.com/random-stuff/enemy-at-the-billing-gates"
-  "https://docs.sendwithses.com/random-stuff/stripe-country-comparison")
+  "https://docs.sendwithses.com/random-stuff/stripe-country-comparison"
+  "http://www.bluecollardollar.com/basics-of-using-credit-cards/"
+  "http://www.bluecollardollar.com/adjusting-your-life-to-increased-income/")
  ("/articles/life/recreation/" "https://watersafety.ie/recreation/")
  ("/articles/life/recreation/art/")
  ("/articles/life/recreation/art/fiction/"
@@ -297,7 +299,8 @@
   "https://www.shamusyoung.com/shocked/faq.html")
  ("/articles/life/recreation/art/visual/"
   "https://tvtropes.org/pmwiki/pmwiki.php/UsefulNotes/GraphicalPerspective"
-  "https://tvtropes.org/pmwiki/pmwiki.php/Analysis/PurpleIsTheNewBlack")
+  "https://tvtropes.org/pmwiki/pmwiki.php/Analysis/PurpleIsTheNewBlack"
+  "https://thekidshouldseethis.com/post/gradations-daihei-shibata-video")
  ("/articles/life/recreation/art/visual/artists/"
   "https://www.inprnt.com/blog/entry/artist-spotlight-megan-kott-and-justin-devine/")
  ("/articles/life/recreation/art/visual/design/"
@@ -538,7 +541,8 @@
   "https://www.airspacemag.com/space/spacewalk-almost-killed-him-180950135/?all"
   "https://www.voanews.com/archive/columbia-loss-could-delay-construction-international-space-station-2003-02-01"
   "https://science.nasa.gov/heliophysics/big-questions/how-does-solar-variability-affect-human-society-technological-systems-and-the-habitability-of-planets"
-  "https://www.thenewatlantis.com/publications/a-space-program-for-the-rest-of-us")
+  "https://www.thenewatlantis.com/publications/a-space-program-for-the-rest-of-us"
+  "https://autogeny.org/tower/tower.html")
  ("/articles/stem/nature/space/NoD/"
   "https://science.ksc.nasa.gov/shuttle/missions/51-l/docs/rogers-commission/Appendix-F.txt"
   "http://www.spacenewsmag.com/feature/would-allan-mcdonald-be-heard-today/"
@@ -561,9 +565,6 @@
   "https://www.eso.org/public/about-eso/faq/faq-vlt-paranal/"
   "http://news.bbc.co.uk/2/hi/science/nature/4426535.stm"
   "https://www.freethink.com/articles/supermassive-black-holes")
- ("/articles/stem/nature/space/rocket-science/"
-  "https://www.nasa.gov/mission_pages/station/expeditions/expedition30/tryanny.html"
-  "http://www.high-frontier.org/its-all-about-speed/")
  ("/articles/stem/nature/space/tethers/"
   "http://www.parabolicarc.com/2014/01/20/jaxa-develops-electrodynamic-tether-deorbit-space-debris/"
   "https://web.archive.org/web/20071008083138/http://www.tethers.com/MAST_Blog.html"
@@ -657,7 +658,9 @@
   "https://physicscentral.com/buzz/blog/index.cfm"
   "https://bgr.com/2017/02/28/iphone-8-rumors-usb-c-vs-lightning/"
   "https://www.freethink.com/articles/underwater-base"
-  "https://tvtropes.org/pmwiki/pmwiki.php/UsefulNotes/Airships")
+  "https://tvtropes.org/pmwiki/pmwiki.php/UsefulNotes/Airships"
+  "https://rootsofprogress.org/there-are-no-natural-resources"
+  "https://rootsofprogress.org/iron-from-mythical-to-mundane")
  ("/articles/stem/technology/bionics/"
   "https://www.technologyreview.com/2020/08/30/1007786/elon-musks-neuralink-demo-update-neuroscience-theater/"
   "https://www.technologyreview.com/2015/04/09/168424/paralyzed-again/")
@@ -809,7 +812,8 @@
   "https://developers.google.com/search/docs/beginner/how-search-works"
   "https://www.elastic.co/guide/en/elasticsearch/reference/current/elasticsearch-intro.html")
  ("/articles/stem/computer-technology/programming/"
-  "https://mvanier.livejournal.com/2897.html")
+  "https://mvanier.livejournal.com/2897.html"
+  "http://www.gigamonkeys.com/book/programming-in-the-large-packages-and-symbols.html")
  ("/articles/stem/computer-technology/security/"
   "https://hritcu.wordpress.com/2014/04/13/about-heartbleed-memory-safety-crashsafe-hardbountwatchdog-mitls-and-everything-else/"
   "http://vblocalhost.com/conference/presentations/hidden-risks-of-advertisements"
@@ -1290,4 +1294,15 @@
   "https://arcengames.com/designing-emergent-ai-part-3-limitations/"
   "https://arcengames.com/designing-emergent-ai-part-4-asymetrical-goals/"
   "https://arcengames.com/designing-emergent-ai-part-5-dont-squeeze-a-handful-of-sand/"
-  "https://arcengames.com/designing-emergent-ai-part-6-the-tempo-and-ai-vs-player-agency/")) 
+  "https://arcengames.com/designing-emergent-ai-part-6-the-tempo-and-ai-vs-player-agency/")
+ ("/articles/life/money/economics/"
+  "https://archive.triblive.com/news/the-ultimate-scholar/"
+  "https://mises.org/library/deflationary-spiral-bogey")
+ ("/articles/life/education/lessons/"
+  "https://www.cc-seas.columbia.edu/node/31875"
+  "http://www.garlikov.com/teaching/tothetest.htm"
+  "http://www.garlikov.com/teaching/TeachingTestsFollowUp.html"
+  "http://www.garlikov.com/math/TeachingMath.html")
+ ("/articles/stem/nature/space/transportation/"
+  "https://www.nasa.gov/mission_pages/station/expeditions/expedition30/tryanny.html"
+  "http://www.high-frontier.org/its-all-about-speed/")) 
