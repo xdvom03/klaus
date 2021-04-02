@@ -89,6 +89,7 @@
   (cl-strings:clean (make-safe txt)))
 
 (defun url-text (url)
+  ;; For files we merely want to download, not save (i.e. mostly just stuff in the classifier)
   (extract-text (html url)))
 
 (defun simplify-chars (text)
@@ -165,3 +166,61 @@
            (subseq url i)))))
 
 ;; TBD: Introduce a settable cap on link count
+
+;;; ROBOTS.TXT
+;;;----------------------------------------------------------------------------------------------
+;;; URL UTILS
+
+(defun equivalent-urls (url1 url2)
+  (equal (raw-url url1)
+         (raw-url url2)))
+
+(defun raw-url (url)
+  (if (search "//" url)
+      (let* ((step1 (subseq url (+ 2 (search "//" url))))
+             (step2 (reverse (subseq (reverse step1)
+                                     (position-if #'(lambda (character) (not (equal character #\/)))
+                                                  (reverse step1))))))
+        (if (equal 0 (search "www." step2))
+            (subseq step2 4)
+            step2))
+      url))
+
+(defun prob (vocab class)
+  (let* ((sibling-classes (classifier-options (parent-class class)))
+         (path-scores (scores vocab
+                              sibling-classes
+                              (map-to-hash #'get-recursive-corpus sibling-classes)
+                              (map-to-hash #'get-word-count sibling-classes)
+                              nil)))
+    (fallback (gethash class path-scores)
+              (error (concat "Class " class " does not exist.")))))
+
+(defun vocab-score (vocab target-class)
+  (let ((path "/")
+        (acc 0)
+        (prob 1))
+    (dolist (frag (cl-strings:split (subseq target-class 1) #\/))
+      (if (not (equal frag ""))
+          (progn
+            (setf path (concat path frag "/"))
+            (setf prob (* prob (prob vocab path)))
+            (incf acc prob))))
+    prob))
+
+(defun zoombot-url-value (url target)
+  (let* ((actual-place (discover url))
+         (overlap-length (overlap-length (cl-strings:split actual-place #\/)
+                                         (cl-strings:split target #\/)))
+         (final-folder (concat (cl-strings:join (subseq (cl-strings:split target #\/)
+                                                        0
+                                                        (min (length (cl-strings:split target #\/))
+                                                             (1+ overlap-length)))
+                                                :separator "/")
+                               "/")))
+    (+ (1- overlap-length) (vocab-score (remove-duplicates (wordlist (read-text url))) final-folder))))
+
+(defun valid-scheme? (url)
+  (ignore-errors
+   (or (equal (quri:uri-scheme (quri:uri url)) "http")
+       (equal (quri:uri-scheme (quri:uri url)) "https"))))

@@ -91,6 +91,12 @@
     (ltk:set-geometry-xy W 0 0)
     W))
 
+(defun progress-bar (r c master bar-col bg-col)
+  (let ((pb (widget r c 'ltk-mw:progress master)))
+    (setf (ltk-mw:bar-color pb) bar-col)
+    (ltk:configure pb :background bg-col)
+    pb))
+
 (defun scrollable-list (r c master page-length lst &optional function-lst)
   ;; No function list will assume no button functions.
   ;; Returns the frame within which it exists

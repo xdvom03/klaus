@@ -4,7 +4,18 @@
     (dolist (thing things)
       (print thing stream))))
 
-;;; MODIFYING FILES
+(defun append-to-file (path txt)
+  (with-open-file (stream path :direction :output :if-exists :append :if-does-not-exist :create)
+    (print txt stream)))
+
+(defun read-from-file (path)
+  (let ((exists? (directory path)))
+    (values (if exists?
+                (with-open-file (stream path :direction :input :if-does-not-exist :error)
+                  (read stream)))
+            exists?)))
+
+;;; BASIC I/O
 ;;;----------------------------------------------------------------------------------------------
 ;;; READING FILES
 
@@ -18,39 +29,7 @@
         (if sub
             (location url sub)))))
 
-(defun discovered-location (url &optional (class "/"))
-  ;; returns the class where the url is to be found
-  (if (member url (discovered-urls class) :test #'equal)
-      class
-      (let ((sub (find-if #'(lambda (subclass) (member url (discovered-urls subclass t) :test #'equal))
-                          (subclasses class))))
-        (if sub
-            (discovered-location url sub)))))
-
-(defun discovered-urls (class &optional recursive?)
-  (labels ((helper (class)
-             (read-from-file (concat (discovered-path class) "urls"))))
-    (append (helper class)
-            (if recursive?
-                (apply #'append
-                       (mapcar #'(lambda (class) (discovered-urls class t))
-                               (subclasses class)))))))
-
-(defun read-from-file (path)
-  (let ((exists? (directory path)))
-    (values (if exists?
-                (with-open-file (stream path :direction :input :if-does-not-exist :error)
-                  (read stream)))
-            exists?)))
-
 ;;; READING FILES
-;;;----------------------------------------------------------------------------------------------
-;;; CONVERTORS
-
-(defun discovered-path (simple-path)
-  (concat *discovered-folder* simple-path))
-
-;;; CONVERTORS
 ;;;----------------------------------------------------------------------------------------------
 ;;; FOLDER NAVIGATION
 

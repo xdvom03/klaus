@@ -34,7 +34,7 @@
 
 ;;; SCORE MATH
 ;;;----------------------------------------------------------------------------------------------
-;;; 
+;;; DESIGN
 
 (defun chosen-words (vocab word-scores)
   (declare (type list vocab)
@@ -52,6 +52,10 @@
                                          2)))))
     (subseq ordered-words 0 (min evidence-length
                                  (length ordered-words)))))
+
+;;; DESIGN
+;;;----------------------------------------------------------------------------------------------
+;;; INTERFACE FUNCTIONS
 
 (defun compare-classes (vocab paths corpuses &optional (want-evidence? t))
   ;; Returns a cons of two hash tables. A hash table of path -> score, and a hash table of path -> chosen words.
@@ -132,3 +136,27 @@
                   pair-words
                   pair-word-details)))
       (values (ht) 0)))
+
+;;; INTERFACE FUNCTIONS
+;;;----------------------------------------------------------------------------------------------
+;;; CRAWLER SCORING UTILS
+
+(defun place (url &optional (class "/"))
+  (redownload-url url)
+  (place-vocab (remove-duplicates (wordlist (read-text url))) :class class))
+
+(defun place-vocab (vocab &key (class "/") target)
+  (let ((options (classifier-options class)))
+    (if options
+        (let* ((scores (scores vocab
+                               options
+                               (map-to-hash #'get-recursive-corpus options)
+                               (map-to-hash #'get-word-count options)
+                               nil))
+               (best-path (best-key scores #'>)))
+          (if target
+              (if (equal 0 (search best-path target))
+                  (place-vocab vocab :class best-path :target target)
+                  class)
+              (place-vocab vocab :class best-path)))
+        class)))

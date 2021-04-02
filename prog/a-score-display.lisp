@@ -170,8 +170,7 @@
                                                       (ltk:wm-title W current-url)
                                                       (handler-case (change-screen (database-window 0 1 master (;;hashtable-to-count-list ;;
                                                                                                                 list-keys
-                                                                                                                (tokens (url-text current-url))
-                                                                                                                )))
+                                                                                                                (tokens (url-text current-url)))))
                                                         (error (err-text)
                                                           (warning-box err-text "Website error")
                                                           (back-to-main)
@@ -191,7 +190,10 @@
                                 (back-to-main)))
           (button 1 0 X "Go to database" #'(lambda ()
                                              (ltk:destroy W)
-                                             (db-window))))
+                                             (db-window)))
+          (button 2 0 X "Go to crawler" #'(lambda ()
+                                            (ltk:destroy W)
+                                            (crawler-window))))
         (back-to-main)
         (ltk:on-close W #'(lambda () (ltk:destroy ltk:*tk*)))
         W))))

@@ -1,4 +1,4 @@
-(ql:quickload (list "ltk" "drakma" "quri" "plump" "trivial-timeout" "cl-strings" "alexandria"))
+(ql:quickload (list "ltk" "ltk-mw" "drakma" "quri" "plump" "trivial-timeout" "cl-strings" "alexandria"))
 
 ;;; IMPORTS
 ;;;----------------------------------------------------------------------------------------------
@@ -38,7 +38,7 @@
 
 
 (defparameter *crawl-data-folder* "../DATA/crawlers/")
-(defparameter *discovered-folder* "../DATA/discovered") ;; without terminating slash because of place results (TBD: Inconsistent with other folders)
+(defparameter *discovered-file* "../DATA/discovered")
 
 (defparameter *frame-colour* "#abcdef")
 
@@ -53,12 +53,12 @@
 ;; crawler
 (defparameter *crawler-name* "botelaire")
 (defparameter *user-agent* "botelaire (https://github.com/xdvom03/klaus, xdvom03 (at) gjk (dot) cz)")
+;; avoiding very short sites or sites in unknown languages
 (defparameter *min-word-count* 450)
-(defparameter *min-character-comprehensibility* 0.8)
 (defparameter *min-word-comprehensibility* 0.6)
 (defparameter *forbidden-extensions* (list "css" "png" "mp4" "ico" "svg" "webmanifest" "js" "json" "xml" "jpg" "mp3" "scss" "jsp" "xsl"))
 (defparameter *timeout* 20)
-(defparameter *link-cap* 40)
+(defparameter *link-cap* 20)
 
 ;; display
 (defparameter *entries-per-page* 10)
@@ -194,6 +194,7 @@
 
 (defun html (url)
   "Gets HTML data from a URL, but calls an error if it doesn't contain useable text. Error should be resolved within GUI."
+  (print (concat "HTML from " url))
   (trivial-timeout:with-timeout (*timeout*)
     ;; connection-timeout does not catch server-side timeouts
     (multiple-value-bind (response status-code headers actual-uri)
@@ -217,6 +218,22 @@
                   ;; The PURI library only lets you print an URI to a stream, not just return it. (which is why we use quri instead!)
                   (puri:render-uri actual-uri str)))))))
 
+(defun best-key (hashtable pred)
+  (best-element (list-keys hashtable) pred #'(lambda (el) (gethash el hashtable))))
+
+(defun up-to-n-first (n lst)
+  (subseq lst 0 (min n (length lst))))
+
+(defun best-element (lst pred key)
+  (if lst
+      (let* ((acc (car lst))
+             (max (funcall key acc)))
+        (dolist (i lst)
+          (if (funcall pred (funcall key i) max)
+              (progn
+                (setf acc i)
+                (setf max (funcall key acc)))))
+        (values acc max))))
 
 
 (defmacro letrec (bindings &body decls/forms)

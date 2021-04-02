@@ -12,6 +12,7 @@
   (read-config)
   (build-subclasses)
   (print "Building corpora...")
-  (rebuild-corpus) ; Is that needed?
+  (rebuild-corpus)
+  (refresh-comprehensible-corp)
   (print "All done. Opening classifier.")
   (run))
