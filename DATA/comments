@@ -26,18 +26,19 @@ http://www.fsmitha.com/h1/phil17.htm is the start if an infrastructure class... 
   . "also general prosperity, growth, trade, exploration, and the resulting issues")
  ("/articles/humanities/history/empire/"
   . "The fall of empires (rise generally falls under economics or war), dark ages.")
- ("/articles/humanities/history/geological/" . "ňyc")
+ ("/articles/humanities/history/geological/"
+  . "History on the timescale of species, not civilisations, and longer.")
  ("/articles/humanities/history/philosophy/"
   . "Philosophy is about what the world is or ought to be, I guess. For now, I apply the \"know it when you see it\" theory, since most of this cannot be reasonably classed anywhere else.")
- ("/articles/humanities/history/politics/" . "ňyc")
- ("/articles/humanities/history/religion/" . "ňyc")
+ ("/articles/humanities/history/politics/" . "")
+ ("/articles/humanities/history/religion/" . "")
  ("/articles/humanities/history/religion/china/" . "")
  ("/articles/humanities/history/religion/christianity/" . "")
  ("/articles/humanities/history/religion/greek/" . "")
  ("/articles/humanities/history/religion/islam/" . "")
  ("/articles/humanities/history/religion/jewish/" . "")
  ("/articles/humanities/history/religion/rome/" . "")
- ("/articles/humanities/history/science/" . "ňyc")
+ ("/articles/humanities/history/science/" . "")
  ("/articles/humanities/history/society/"
   . "Closest to \"daily life\" - structure of society, who lived how, what people ate, how they made a living...")
  ("/articles/humanities/history/war/" . "wars")
@@ -132,26 +133,25 @@ Lucid dreaming considered dubious except where uncontroversially studied.
   . "Findings in the name of science, and so without an axe to grind.")
  ("/articles/stem/life/health/mental/dreams/various/"
   . "Primarily a control group for research. More focus on a popular culture view.")
- ("/articles/stem/math/" . "Pure mathematics not classed as applied elsewhere.
+ ("/articles/stem/science/math/googology/ordinal-numbers/"
+  . "As encountered within googology. On their own, they belong in the main math class, perhaps under set theory.")
+ ("/articles/stem/science/math/topology/" . "")
+ ("/articles/stem/science/math/googology/"
+  . "The study of large numbers and the structures encountered along the way. ")
+ ("/articles/stem/science/math/"
+  . "Pure mathematics not classed as applied elsewhere.
 
 http://blog.hostilefork.com/clocks-that-run-backwards/ should be split, as only part of it refers to tau. Tau should get its own class.
 ")
- ("/articles/stem/math/complexity-theory/"
-  . "The mathematical theory, discussing the models, not (primarily) the applications. P versus NP discussions, algorithms, etc.")
- ("/articles/stem/math/googology/"
-  . "The study of large numbers and the structures encountered along the way. ")
- ("/articles/stem/math/googology/ordinal-numbers/"
-  . "As encountered within googology. On their own, they belong in the main math class, perhaps under set theory.")
- ("/articles/stem/math/topology/" . "")
  ("/articles/stem/nature/" . "Non-living natural things: study of the world.")
- ("/articles/stem/nature/physics/"
-  . "Problem of this class: Broken bits of LaTeX in the corpus.")
- ("/articles/stem/nature/physics/electromagnetism/" . "")
- ("/articles/stem/nature/physics/mechanics/"
+ ("/articles/stem/science/math/complexity-theory/"
+  . "The mathematical theory, discussing the models, not (primarily) the applications. P versus NP discussions, algorithms, etc.")
+ ("/articles/stem/science/physics/mechanics/"
   . "Excluding the theory of relativity. Classical Newtonian mechanics.")
- ("/articles/stem/nature/physics/relativity/" . "")
- ("/articles/stem/nature/physics/relativity/special/"
-  . "Everything that is not explicitly general relativity.")
+ ("/articles/stem/science/physics/optics/" . "")
+ ("/articles/stem/science/physics/thermodynamics/macroscopic/"
+  . "The laws of thermodynamics can be considered without concern for the internals")
+ ("/articles/stem/science/physics/relativity/" . "")
  ("/articles/stem/nature/space/"
   . "Space technology, the contents of space (astronomical objects), space travel.")
  ("/articles/stem/nature/space/NoD/"
@@ -187,61 +187,57 @@ http://blog.hostilefork.com/clocks-that-run-backwards/ should be split, as only 
 Earthquakes and fire count as weather for these purposes :)")
  ("/articles/stem/technology/" . "")
  ("/articles/stem/technology/bionics/" . "Human-machine interfaces.")
- ("/articles/stem/computer-technology/cryptocurrency/"
-  . "The mechanics of blockchain, rather than the finance & design philosophy aspects.")
- ("/articles/stem/computer-technology/AI/long-term/"
-  . "Singularity opinions. AI long-term safety.")
- ("/articles/stem/computer-technology/AI/mechanisms/"
-  . "Neural networks, machine learning, geneticv algorithms, and other specific techniques that can make narrow AI happen.")
- ("/articles/stem/computer-technology/AI/"
-  . "Anything related to artificial intelligence. May be worth splitting into singularity-type (with discussions of Friendly AI, etc.) and artificial intelligence for more mundane tasks (primarily in games). Some AI, such as self-driving cars, however, exists in the middle.
-
-Note: Games tend to be put here by the classifier, likely because of game theory & video game AI.")
- ("/articles/stem/computer-technology/git/general/"
+ ("/articles/stem/computer-technology/technology/git/general/"
   . "About version control, history, and founding principles.")
- ("/articles/stem/computer-technology/interaction/"
-  . "User experience, user interfaces")
- ("/articles/stem/computer-technology/git/internals/"
+ ("/articles/stem/computer-technology/long-term-AI/"
+  . "Singularity opinions. AI long-term safety.")
+ ("/articles/stem/computer-technology/technology/machine-learning/"
+  . "Neural networks, machine learning, genetic algorithms, and other specific techniques that can make narrow AI happen.")
+ ("/articles/stem/computer-technology/technology/video-games/"
+  . "The technical aspects: game engines, NPC AI, etc.")
+ ("/articles/stem/computer-technology/technology/git/internals/"
   . "The inner workings of Git under the hood.")
- ("/articles/stem/computer-technology/git/setup/server/" . "")
- ("/articles/stem/computer-technology/git/usage/"
-  . "Interacting with Git: a manual")
- ("/articles/stem/computer-technology/git/setup/"
+ ("/articles/stem/computer-technology/design/security/" . "")
+ ("/articles/stem/computer-technology/technology/git/setup/server/" . "")
+ ("/articles/stem/computer-technology/technology/git/setup/"
   . "Git installation tutorials")
- ("/articles/stem/computer-technology/git/"
+ ("/articles/stem/computer-technology/technology/git/"
   . "Complete git tutorial with low weight. The book should cover Git from all sides.")
- ("/articles/stem/computer-technology/internet/hosting/"
-  . "Reviews of hosting companies")
- ("/articles/stem/computer-technology/linux/"
-  . "Linux in colloquial use, and by extension, GNU/Linux and associated.")
- ("/articles/stem/computer-technology/internet/infrastructure/"
+ ("/articles/stem/computer-technology/technology/git/usage/"
+  . "Interacting with Git: a manual")
+ ("/articles/stem/computer-technology/technology/search/keyword/"
+  . "The \"traditional\" problem of finding matching documents for queries.")
+ ("/articles/stem/computer-technology/technology/internet/infrastructure/"
   . "Not technology that *uses* the internet, but the actual workings and standards of the internet/World Wide Web (and related technology) itself.")
- ("/articles/stem/computer-technology/internet/"
-  . "Includes opinions on how the Internet is being used, if they are connected to its potential (and not treated from a news-y perspective as just \"another thing\")")
- ("/articles/stem/computer-technology/programming/programming-languages/"
+ ("/articles/stem/computer-technology/technology/programming/programming-languages/"
   . "Self-explanatory. Discussions of the finer points of various programming languages.
 ")
- ("/articles/stem/computer-technology/search/keyword/"
-  . "The \"traditional\" problem of finding matching documents for queries.")
- ("/articles/stem/computer-technology/programming/"
+ ("/articles/stem/computer-technology/technology/internet/"
+  . "Includes opinions on how the Internet is being used, if they are connected to its potential (and not treated from a news-y perspective as just \"another thing\")")
+ ("/articles/stem/computer-technology/technology/linux/"
+  . "Linux in colloquial use, and by extension, GNU/Linux and associated.")
+ ("/articles/stem/computer-technology/technology/programming/"
   . "Programming style, languages, models, etc. Intended to be closer to practice than theory, with project management included.
 
 TBD: This may go against the general principle used in STEM.")
- ("/articles/stem/computer-technology/security/" . "")
- ("/articles/stem/computer-technology/search/semantic/classification/automatic-classification/"
+ ("/articles/stem/computer-technology/technology/search/semantic/classification/automatic-classification/"
   . "Natural Language Processing or other ways of finding the meaning of sites to be found.")
- ("/articles/stem/computer-technology/search/"
-  . "Anything related to search engine technology. Excludes privacy concerns. Instead, explicitly includes crawling (for search purposes), PageRank-like systems, and text search algorithms.")
- ("/articles/stem/computer-technology/search/semantic/semantic-web/criticism/"
-  . "The problems with the Semantic Web protocol")
- ("/articles/stem/computer-technology/search/semantic/classification/"
+ ("/articles/stem/computer-technology/technology/cryptocurrency/"
+  . "The mechanics of blockchain, rather than the finance & design philosophy aspects.")
+ ("/articles/stem/computer-technology/technology/internet/hosting/"
+  . "Reviews of hosting companies")
+ ("/articles/stem/computer-technology/technology/search/semantic/classification/"
   . "Notes on classification, whether manual or automatic.")
- ("/articles/stem/computer-technology/search/semantic/"
-  . "Semantic Web, even though it failed.")
- ("/articles/stem/computer-technology/search/semantic/semantic-web/mechanism/"
+ ("/articles/stem/computer-technology/technology/search/semantic/semantic-web/mechanism/"
   . "Specification and advocacy for Semantic Web")
- ("/articles/stem/computer-technology/search/semantic/semantic-web/"
+ ("/articles/stem/computer-technology/technology/search/semantic/semantic-web/criticism/"
+  . "The problems with the Semantic Web protocol")
+ ("/articles/stem/computer-technology/technology/search/"
+  . "Anything related to search engine technology. Excludes privacy concerns. Instead, explicitly includes crawling (for search purposes), PageRank-like systems, and text search algorithms.")
+ ("/articles/stem/computer-technology/technology/search/semantic/semantic-web/"
   . "The Semantic Web attempt at making the Internet machine-readable.")
+ ("/articles/stem/computer-technology/technology/search/semantic/"
+  . "Semantic Web, even though it failed.")
  ("/articles/stem/computer-technology/"
   . "Any aspect of designing or making software.")
  ("/articles/stem/technology/infrastructure/" . "City planning, projects,")
@@ -318,9 +314,25 @@ Technically also includes similarly-structured royalty-free music.")
  ("/news/sports/" . "Sports news.") ("/news/sports/reuters/" . "")
  ("/news/sports/la-times/" . "") ("/news/sports/bbc/" . "")
  ("/news/sports/aljazeera/" . "")
- ("/articles/stem/computer-technology/AI/game-ai/"
+ ("/articles/stem/computer-technology/technology/video-games/game-ai/"
   . "A specific application of AI: any NPC with nontrivial behaviour. Also AIs as the players.")
  ("/articles/life/money/economics/" . "")
  ("/articles/life/education/lessons/" . "pedagogy, college life")
  ("/articles/stem/nature/space/transportation/"
-  . "The technology and theory behind rocket science.")) 
+  . "The technology and theory behind rocket science.")
+ ("/articles/stem/computer-technology/design/" . "")
+ ("/articles/stem/computer-technology/technology/" . "")
+ ("/articles/stem/computer-technology/design/interaction/"
+  . "User experience, user interfaces")
+ ("/articles/stem/science/physics/electromagnetism/" . "")
+ ("/articles/stem/science/physics/quantum/" . "")
+ ("/articles/stem/science/physics/relativity/special/"
+  . "Everything that is not explicitly general relativity.")
+ ("/articles/stem/science/physics/"
+  . "Problem of this class: Broken bits of LaTeX in the corpus.")
+ ("/articles/stem/science/"
+  . "The very math-y parts of it, and some aspects of math itself. Physics and its entourage.")
+ ("/articles/stem/science/physics/thermodynamics/microscopic/"
+  . "Statistical mechanics")
+ ("/articles/stem/science/physics/thermodynamics/" . "")
+ ("/articles/stem/science/physics/electromagnetism/light/" . "")) 

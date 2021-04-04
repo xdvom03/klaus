@@ -430,27 +430,13 @@
   "https://www.world-of-lucid-dreaming.com/inception-review.html"
   "https://www.nytimes.com/2013/10/20/opinion/sunday/data-mining-our-dreams.html"
   "https://www.vox.com/the-goods/2020/4/9/21215312/quarantine-vivid-dreams-psychologist-q-and-a")
- ("/articles/stem/math/"
-  "https://rjlipton.wordpress.com/2020/08/19/logical-complexity-of-proofs/"
-  "https://keisan.casio.com/exec/system/1180573437"
-  "https://rjlipton.wordpress.com/2009/12/26/mathematical-embarrassments/"
-  "https://qchu.wordpress.com/2013/05/28/the-type-system-of-mathematics/"
-  "https://tauday.com/tau-manifesto"
-  "https://sites.google.com/site/taubeforeitwascool/"
-  "http://www.math.utah.edu/~palais/pi.html"
-  "http://blog.hostilefork.com/clocks-that-run-backwards/"
-  "https://esolangs.org/wiki/Lambda_calculus"
-  "https://mooseymath.wordpress.com/2020/07/05/a-less-simple-explanation-of-weakly-compact-cardinals/"
-  "https://www.embeddedrelated.com/showarticle/152.php"
-  "https://www.feynmanlectures.caltech.edu/I_22.html"
-  "http://philogb.github.io/notes/ordinal-numbers")
- ("/articles/stem/math/complexity-theory/"
-  "https://rjlipton.wordpress.com/2010/10/23/galactic-algorithms/"
-  "https://rjlipton.wordpress.com/2020/09/13/convex-algorithms/"
-  "https://rjlipton.wordpress.com/2014/02/28/practically-pnp/"
-  "https://www.win.tue.nl/~gwoegi/P-versus-NP.htm"
-  "https://www.scottaaronson.com/blog/?p=122")
- ("/articles/stem/math/googology/"
+ ("/articles/stem/science/math/googology/ordinal-numbers/"
+  "https://sites.google.com/a/hollom.com/extremely-big-numbers/old-homepage/ordinal-intro"
+  "https://googology.wikia.org/wiki/Ordinal?action=render")
+ ("/articles/stem/science/math/topology/"
+  "http://tailsteak.com/archive.php?num=369" "http://www.geom.uiuc.edu/zoo/"
+  "https://www.math3ma.com/blog/topology-book-launch")
+ ("/articles/stem/science/math/googology/"
   "https://googology.wikia.org/wiki/Power-tower_paradox"
   "https://www-users.cs.york.ac.uk/~susan/cyc/b/big.htm"
   "https://sites.google.com/site/kotlopot/home/large-numbers"
@@ -476,25 +462,29 @@
   "https://sites.google.com/a/hollom.com/extremely-big-numbers/home/doodle-function"
   "https://johncarlosbaez.wordpress.com/2012/10/19/insanely-long-proofs/"
   "https://qntm.org/linear" "https://qntm.org/planar")
- ("/articles/stem/math/googology/ordinal-numbers/"
-  "https://sites.google.com/a/hollom.com/extremely-big-numbers/old-homepage/ordinal-intro"
-  "https://googology.wikia.org/wiki/Ordinal?action=render")
- ("/articles/stem/math/topology/" "http://tailsteak.com/archive.php?num=369"
-  "http://www.geom.uiuc.edu/zoo/"
-  "https://www.math3ma.com/blog/topology-book-launch")
+ ("/articles/stem/science/math/"
+  "https://rjlipton.wordpress.com/2020/08/19/logical-complexity-of-proofs/"
+  "https://keisan.casio.com/exec/system/1180573437"
+  "https://rjlipton.wordpress.com/2009/12/26/mathematical-embarrassments/"
+  "https://qchu.wordpress.com/2013/05/28/the-type-system-of-mathematics/"
+  "https://tauday.com/tau-manifesto"
+  "https://sites.google.com/site/taubeforeitwascool/"
+  "http://www.math.utah.edu/~palais/pi.html"
+  "http://blog.hostilefork.com/clocks-that-run-backwards/"
+  "https://esolangs.org/wiki/Lambda_calculus"
+  "https://mooseymath.wordpress.com/2020/07/05/a-less-simple-explanation-of-weakly-compact-cardinals/"
+  "https://www.embeddedrelated.com/showarticle/152.php"
+  "https://www.feynmanlectures.caltech.edu/I_22.html"
+  "http://philogb.github.io/notes/ordinal-numbers"
+  "https://www.feynmanlectures.caltech.edu/I_25.html")
  ("/articles/stem/nature/")
- ("/articles/stem/nature/physics/"
-  "https://www.feynmanlectures.caltech.edu/I_04.html"
-  "https://www.feynmanlectures.caltech.edu/I_07.html"
-  "https://www.ngdc.noaa.gov/geomag/faqgeom.shtml"
-  "https://math.ucr.edu/home/baez/constants.html"
-  "https://www.feynmanlectures.caltech.edu/I_21.html"
-  "https://waitbutwhy.com/2016/03/sound.html")
- ("/articles/stem/nature/physics/electromagnetism/"
-  "https://www.feynmanlectures.caltech.edu/II_01.html"
-  "https://www.feynmanlectures.caltech.edu/II_04.html"
-  "https://www.feynmanlectures.caltech.edu/II_05.html")
- ("/articles/stem/nature/physics/mechanics/"
+ ("/articles/stem/science/math/complexity-theory/"
+  "https://rjlipton.wordpress.com/2010/10/23/galactic-algorithms/"
+  "https://rjlipton.wordpress.com/2020/09/13/convex-algorithms/"
+  "https://rjlipton.wordpress.com/2014/02/28/practically-pnp/"
+  "https://www.win.tue.nl/~gwoegi/P-versus-NP.htm"
+  "https://www.scottaaronson.com/blog/?p=122")
+ ("/articles/stem/science/physics/mechanics/"
   "http://tailsteak.com/archive.php?num=97"
   "https://compphys.go.ro/event-driven-molecular-dynamics/"
   "https://compphys.go.ro/newtonian-gravity/"
@@ -510,11 +500,15 @@
   "https://www.feynmanlectures.caltech.edu/I_18.html"
   "https://www.feynmanlectures.caltech.edu/I_19.html"
   "https://www.feynmanlectures.caltech.edu/I_20.html")
- ("/articles/stem/nature/physics/relativity/")
- ("/articles/stem/nature/physics/relativity/special/"
-  "https://www.feynmanlectures.caltech.edu/I_15.html"
-  "https://www.feynmanlectures.caltech.edu/I_16.html"
-  "https://www.feynmanlectures.caltech.edu/I_17.html")
+ ("/articles/stem/science/physics/optics/"
+  "https://www.feynmanlectures.caltech.edu/I_27.html"
+  "https://www.feynmanlectures.caltech.edu/I_35.html"
+  "https://www.feynmanlectures.caltech.edu/I_36.html")
+ ("/articles/stem/science/physics/thermodynamics/macroscopic/"
+  "https://www.feynmanlectures.caltech.edu/I_44.html"
+  "https://www.feynmanlectures.caltech.edu/I_45.html"
+  "https://www.feynmanlectures.caltech.edu/I_46.html")
+ ("/articles/stem/science/physics/relativity/")
  ("/articles/stem/nature/space/"
   "https://waitbutwhy.com/2016/09/spacexs-big-fking-rocket-the-full-story.html"
   "https://www.space.com/12819-space-junk-cleanup-giant-net-tether.html"
@@ -664,31 +658,20 @@
  ("/articles/stem/technology/bionics/"
   "https://www.technologyreview.com/2020/08/30/1007786/elon-musks-neuralink-demo-update-neuroscience-theater/"
   "https://www.technologyreview.com/2015/04/09/168424/paralyzed-again/")
- ("/articles/stem/computer-technology/cryptocurrency/"
-  "https://skilled.dev/course/combine-blockchains"
-  "https://michaelnielsen.org/ddi/how-the-bitcoin-protocol-actually-works/")
- ("/articles/stem/computer-technology/AI/long-term/"
+ ("/articles/stem/computer-technology/technology/git/general/"
+  "https://git-scm.com/book/en/v2/Getting-Started-What-is-Git%3F"
+  "https://git-scm.com/book/en/v2/Getting-Started-A-Short-History-of-Git"
+  "https://git-scm.com/book/en/v2/Getting-Started-About-Version-Control")
+ ("/articles/stem/computer-technology/long-term-AI/"
   "https://waitbutwhy.com/2015/01/artificial-intelligence-revolution-1.html"
   "https://waitbutwhy.com/2015/01/artificial-intelligence-revolution-2.html"
   "https://web.archive.org/web/20180801084633/https://www.technologyreview.com/s/425733/paul-allen-the-singularity-isnt-near/"
   "https://futureoflife.org/background/benefits-risks-of-artificial-intelligence/")
- ("/articles/stem/computer-technology/AI/mechanisms/"
+ ("/articles/stem/computer-technology/technology/machine-learning/"
   "http://www.genetic-programming.org/"
   "http://www0.cs.ucl.ac.uk/research/genprog/gp2faq/gp2faq2.html")
- ("/articles/stem/computer-technology/AI/"
-  "https://cs.nyu.edu/faculty/davise/papers/WinogradSchemas/WS.html")
- ("/articles/stem/computer-technology/git/general/"
-  "https://git-scm.com/book/en/v2/Getting-Started-What-is-Git%3F"
-  "https://git-scm.com/book/en/v2/Getting-Started-A-Short-History-of-Git"
-  "https://git-scm.com/book/en/v2/Getting-Started-About-Version-Control")
- ("/articles/stem/computer-technology/interaction/"
-  "https://www.petarperovic.com/blog/friction/"
-  "http://rachelbythebay.com/w/2020/10/26/num/"
-  "https://www.nngroup.com/articles/stop-password-masking/"
-  "https://www.agconsult.com/en/usability-blog/passwords-to-hide-or-not-to-hide/"
-  "https://blog.plover.com/tech/ui.html"
-  "https://blog.plover.com/tech/ui-2.html")
- ("/articles/stem/computer-technology/git/internals/"
+ ("/articles/stem/computer-technology/technology/video-games/")
+ ("/articles/stem/computer-technology/technology/git/internals/"
   "https://git-scm.com/book/en/v2/Git-Internals-Plumbing-and-Porcelain"
   "https://git-scm.com/book/en/v2/Git-Internals-Git-Objects"
   "https://git-scm.com/book/en/v2/Git-Internals-Git-References"
@@ -697,7 +680,11 @@
   "https://git-scm.com/book/en/v2/Git-Internals-Transfer-Protocols"
   "https://git-scm.com/book/en/v2/Git-Internals-Maintenance-and-Data-Recovery"
   "https://git-scm.com/book/en/v2/Git-Internals-Environment-Variables")
- ("/articles/stem/computer-technology/git/setup/server/"
+ ("/articles/stem/computer-technology/design/security/"
+  "https://hritcu.wordpress.com/2014/04/13/about-heartbleed-memory-safety-crashsafe-hardbountwatchdog-mitls-and-everything-else/"
+  "http://vblocalhost.com/conference/presentations/hidden-risks-of-advertisements"
+  "http://jibbering.com/blog/?p=514")
+ ("/articles/stem/computer-technology/technology/git/setup/server/"
   "https://git-scm.com/book/en/v2/Git-on-the-Server-The-Protocols"
   "https://git-scm.com/book/en/v2/Git-on-the-Server-Getting-Git-on-a-Server"
   "https://git-scm.com/book/en/v2/Git-on-the-Server-Generating-Your-SSH-Public-Key"
@@ -707,7 +694,14 @@
   "https://git-scm.com/book/en/v2/Git-on-the-Server-GitWeb"
   "https://git-scm.com/book/en/v2/Git-on-the-Server-GitLab"
   "https://git-scm.com/book/en/v2/Git-on-the-Server-Third-Party-Hosted-Options")
- ("/articles/stem/computer-technology/git/usage/"
+ ("/articles/stem/computer-technology/technology/git/setup/"
+  "https://git-scm.com/book/en/v2/Getting-Started-Getting-Help"
+  "https://git-scm.com/book/en/v2/Getting-Started-First-Time-Git-Setup"
+  "https://git-scm.com/book/en/v2/Getting-Started-Installing-Git"
+  "https://git-scm.com/book/en/v2/Appendix-C%3A-Git-Commands-Setup-and-Config")
+ ("/articles/stem/computer-technology/technology/git/"
+  "https://stackabuse.com/git-adding-a-commit-message/")
+ ("/articles/stem/computer-technology/technology/git/usage/"
   "https://git-scm.com/book/en/v2/Git-Basics-Getting-a-Git-Repository"
   "https://git-scm.com/book/en/v2/Git-Basics-Recording-Changes-to-the-Repository"
   "https://git-scm.com/book/en/v2/Git-Basics-Viewing-the-Commit-History"
@@ -768,18 +762,11 @@
   "https://git-scm.com/book/en/v2/Appendix-C%3A-Git-Commands-External-Systems"
   "https://git-scm.com/book/en/v2/Appendix-C%3A-Git-Commands-Administration"
   "https://git-scm.com/book/en/v2/Appendix-C%3A-Git-Commands-Plumbing-Commands")
- ("/articles/stem/computer-technology/git/setup/"
-  "https://git-scm.com/book/en/v2/Getting-Started-Getting-Help"
-  "https://git-scm.com/book/en/v2/Getting-Started-First-Time-Git-Setup"
-  "https://git-scm.com/book/en/v2/Getting-Started-Installing-Git"
-  "https://git-scm.com/book/en/v2/Appendix-C%3A-Git-Commands-Setup-and-Config")
- ("/articles/stem/computer-technology/git/"
-  "https://stackabuse.com/git-adding-a-commit-message/")
- ("/articles/stem/computer-technology/internet/hosting/"
-  "https://websitesetup.org/hosting-reviews/hostinger/")
- ("/articles/stem/computer-technology/linux/" "http://fedoraplanet.org/"
-  "http://tailsteak.com/archive.php?num=133")
- ("/articles/stem/computer-technology/internet/infrastructure/"
+ ("/articles/stem/computer-technology/technology/search/keyword/"
+  "http://infolab.stanford.edu/~backrub/google.html"
+  "https://developers.google.com/search/docs/beginner/how-search-works"
+  "https://www.elastic.co/guide/en/elasticsearch/reference/current/elasticsearch-intro.html")
+ ("/articles/stem/computer-technology/technology/internet/infrastructure/"
   "https://www.freesoft.org/CIE/Topics/10.htm"
   "https://www.freesoft.org/CIE/Topics/12.htm"
   "https://www.freesoft.org/CIE/Topics/13.htm"
@@ -797,9 +784,7 @@
   "https://www.freesoft.org/CIE/Topics/15.htm"
   "https://www.freesoft.org/CIE/Topics/16.htm"
   "https://tools.ietf.org/html/rfc3986")
- ("/articles/stem/computer-technology/internet/"
-  "https://docs.sendwithses.com/random-stuff/the-internet-is-an-seo-landfill")
- ("/articles/stem/computer-technology/programming/programming-languages/"
+ ("/articles/stem/computer-technology/technology/programming/programming-languages/"
   "http://www.paulgraham.com/javacover.html"
   "http://www.paulgraham.com/avg.html" "http://www.paulgraham.com/icad.html"
   "http://www.paulgraham.com/power.html"
@@ -807,40 +792,41 @@
   "http://www.paulgraham.com/syntaxquestion.html"
   "http://www.paulgraham.com/thist.html"
   "https://markkarpov.com/post/lisp-and-haskell.html")
- ("/articles/stem/computer-technology/search/keyword/"
-  "http://infolab.stanford.edu/~backrub/google.html"
-  "https://developers.google.com/search/docs/beginner/how-search-works"
-  "https://www.elastic.co/guide/en/elasticsearch/reference/current/elasticsearch-intro.html")
- ("/articles/stem/computer-technology/programming/"
+ ("/articles/stem/computer-technology/technology/internet/"
+  "https://docs.sendwithses.com/random-stuff/the-internet-is-an-seo-landfill")
+ ("/articles/stem/computer-technology/technology/linux/"
+  "http://fedoraplanet.org/" "http://tailsteak.com/archive.php?num=133")
+ ("/articles/stem/computer-technology/technology/programming/"
   "https://mvanier.livejournal.com/2897.html"
   "http://www.gigamonkeys.com/book/programming-in-the-large-packages-and-symbols.html")
- ("/articles/stem/computer-technology/security/"
-  "https://hritcu.wordpress.com/2014/04/13/about-heartbleed-memory-safety-crashsafe-hardbountwatchdog-mitls-and-everything-else/"
-  "http://vblocalhost.com/conference/presentations/hidden-risks-of-advertisements"
-  "http://jibbering.com/blog/?p=514")
- ("/articles/stem/computer-technology/search/semantic/classification/automatic-classification/"
+ ("/articles/stem/computer-technology/technology/search/semantic/classification/automatic-classification/"
   "http://www.paulgraham.com/spam.html" "http://www.paulgraham.com/better.html"
   "http://www.ra.ethz.ch/cdstore/www6/posters/725/web_search.html"
   "https://hangingtogether.org/?p=3534" "http://www.nltk.org/book/ch06.html")
- ("/articles/stem/computer-technology/search/"
-  "https://www.tbray.org/ongoing/When/200x/2003/05/08/OCLC"
-  "https://www.tbray.org/ongoing/When/200x/2003/02/21/Search")
- ("/articles/stem/computer-technology/search/semantic/semantic-web/criticism/"
-  "https://people.well.com/user/doctorow/metacrap.htm"
-  "https://web.archive.org/web/20130325232952/http://www.shirky.com/writings/semantic_syllogism.html")
- ("/articles/stem/computer-technology/search/semantic/classification/"
+ ("/articles/stem/computer-technology/technology/cryptocurrency/"
+  "https://skilled.dev/course/combine-blockchains"
+  "https://michaelnielsen.org/ddi/how-the-bitcoin-protocol-actually-works/")
+ ("/articles/stem/computer-technology/technology/internet/hosting/"
+  "https://websitesetup.org/hosting-reviews/hostinger/")
+ ("/articles/stem/computer-technology/technology/search/semantic/classification/"
   "https://hritcu.wordpress.com/2005/04/08/folksonomies-vs-ontologies/"
   "http://adammathes.com/academic/computer-mediated-communication/folksonomies.html"
   "https://web.archive.org/web/20170306040107/http://www.shirky.com/writings/ontology_overrated.html")
- ("/articles/stem/computer-technology/search/semantic/"
-  "https://www.traindex.io/blog/what-is-semantic-search-3612/")
- ("/articles/stem/computer-technology/search/semantic/semantic-web/mechanism/"
+ ("/articles/stem/computer-technology/technology/search/semantic/semantic-web/mechanism/"
   "https://www.tbray.org/ongoing/When/200x/2003/11/09/SemWebFirstStep"
   "https://www.tbray.org/ongoing/When/200x/2003/05/21/RDFNet"
   "https://www.xml.com/pub/a/2001/01/24/rdf.html"
   "https://web.archive.org/web/20130308021350/http://infomesh.net/2001/swintro/"
   "https://www.w3.org/2002/03/semweb/")
- ("/articles/stem/computer-technology/search/semantic/semantic-web/")
+ ("/articles/stem/computer-technology/technology/search/semantic/semantic-web/criticism/"
+  "https://people.well.com/user/doctorow/metacrap.htm"
+  "https://web.archive.org/web/20130325232952/http://www.shirky.com/writings/semantic_syllogism.html")
+ ("/articles/stem/computer-technology/technology/search/"
+  "https://www.tbray.org/ongoing/When/200x/2003/05/08/OCLC"
+  "https://www.tbray.org/ongoing/When/200x/2003/02/21/Search")
+ ("/articles/stem/computer-technology/technology/search/semantic/semantic-web/")
+ ("/articles/stem/computer-technology/technology/search/semantic/"
+  "https://www.traindex.io/blog/what-is-semantic-search-3612/")
  ("/articles/stem/computer-technology/"
   "https://idlewords.com/talks/website_obesity.htm"
   "https://www.siteuptime.com/blog/2019/12/19/how-to-create-your-own-server-at-home-for-web-hosting/"
@@ -850,7 +836,8 @@
   "https://www.tbray.org/ongoing/misc/Software"
   "https://levelup.gitconnected.com/6-things-you-need-to-know-about-kafka-before-using-it-in-a-system-design-interview-1fc31451732c"
   "https://docs.sendwithses.com/random-stuff/feedback-noise"
-  "https://stackoverflow.blog/2021/01/07/open-source-has-a-funding-problem/")
+  "https://stackoverflow.blog/2021/01/07/open-source-has-a-funding-problem/"
+  "https://cs.nyu.edu/faculty/davise/papers/WinogradSchemas/WS.html")
  ("/articles/stem/technology/infrastructure/"
   "https://www.fastcompany.com/90615861/this-inverted-building-saves-energy-because-its-300-feet-underground")
  ("/fiction/" "http://www.sshock2.com/fanworks/stories/story23.htm"
@@ -1288,7 +1275,7 @@
   "https://www.aljazeera.com/news/2021/3/16/covid-forces-india-england-t20-cricket-matches-in-empty-stadium"
   "https://www.aljazeera.com/news/2021/3/14/boxing-legend-marvelous-marvin-hagler-dies-aged-66"
   "https://www.aljazeera.com/features/2021/3/14/south-african-ultramarathoner-on-the-road-to-overcome-rape")
- ("/articles/stem/computer-technology/AI/game-ai/"
+ ("/articles/stem/computer-technology/technology/video-games/game-ai/"
   "https://arcengames.com/designing-emergent-ai-part-1-an-introduction/"
   "https://arcengames.com/designing-emergent-ai-part-2-queries-and-code/"
   "https://arcengames.com/designing-emergent-ai-part-3-limitations/"
@@ -1305,4 +1292,50 @@
   "http://www.garlikov.com/math/TeachingMath.html")
  ("/articles/stem/nature/space/transportation/"
   "https://www.nasa.gov/mission_pages/station/expeditions/expedition30/tryanny.html"
-  "http://www.high-frontier.org/its-all-about-speed/")) 
+  "http://www.high-frontier.org/its-all-about-speed/")
+ ("/articles/stem/computer-technology/design/")
+ ("/articles/stem/computer-technology/technology/")
+ ("/articles/stem/computer-technology/design/interaction/"
+  "https://www.petarperovic.com/blog/friction/"
+  "http://rachelbythebay.com/w/2020/10/26/num/"
+  "https://www.nngroup.com/articles/stop-password-masking/"
+  "https://www.agconsult.com/en/usability-blog/passwords-to-hide-or-not-to-hide/"
+  "https://blog.plover.com/tech/ui.html"
+  "https://blog.plover.com/tech/ui-2.html")
+ ("/articles/stem/science/physics/electromagnetism/"
+  "https://www.feynmanlectures.caltech.edu/II_01.html"
+  "https://www.feynmanlectures.caltech.edu/II_04.html"
+  "https://www.feynmanlectures.caltech.edu/II_05.html")
+ ("/articles/stem/science/physics/quantum/"
+  "https://www.feynmanlectures.caltech.edu/I_37.html"
+  "https://www.feynmanlectures.caltech.edu/I_38.html")
+ ("/articles/stem/science/physics/relativity/special/"
+  "https://www.feynmanlectures.caltech.edu/I_15.html"
+  "https://www.feynmanlectures.caltech.edu/I_16.html"
+  "https://www.feynmanlectures.caltech.edu/I_17.html")
+ ("/articles/stem/science/physics/"
+  "https://www.feynmanlectures.caltech.edu/I_04.html"
+  "https://www.feynmanlectures.caltech.edu/I_07.html"
+  "https://www.ngdc.noaa.gov/geomag/faqgeom.shtml"
+  "https://math.ucr.edu/home/baez/constants.html"
+  "https://www.feynmanlectures.caltech.edu/I_21.html"
+  "https://waitbutwhy.com/2016/03/sound.html"
+  "https://www.feynmanlectures.caltech.edu/I_23.html"
+  "https://www.feynmanlectures.caltech.edu/I_34.html"
+  "https://www.feynmanlectures.caltech.edu/I_47.html")
+ ("/articles/stem/science/")
+ ("/articles/stem/science/physics/thermodynamics/microscopic/"
+  "https://www.feynmanlectures.caltech.edu/I_39.html"
+  "https://www.feynmanlectures.caltech.edu/I_40.html"
+  "https://www.feynmanlectures.caltech.edu/I_41.html"
+  "https://www.feynmanlectures.caltech.edu/I_42.html"
+  "https://www.feynmanlectures.caltech.edu/I_43.html")
+ ("/articles/stem/science/physics/thermodynamics/")
+ ("/articles/stem/science/physics/electromagnetism/light/"
+  "https://www.feynmanlectures.caltech.edu/I_26.html"
+  "https://www.feynmanlectures.caltech.edu/I_28.html"
+  "https://www.feynmanlectures.caltech.edu/I_29.html"
+  "https://www.feynmanlectures.caltech.edu/I_30.html"
+  "https://www.feynmanlectures.caltech.edu/I_31.html"
+  "https://www.feynmanlectures.caltech.edu/I_32.html"
+  "https://www.feynmanlectures.caltech.edu/I_33.html")) 

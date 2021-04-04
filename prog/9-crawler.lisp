@@ -87,7 +87,7 @@
                                                                             (vocab (wordlist text)))
                                                                        (if (> (length vocab) *min-word-count*)
                                                                            (if (> (comprehensible? vocab) *min-word-comprehensibility*)
-                                                                               (princ "✓")
+                                                                               (princ "O")
                                                                                (progn
                                                                                  (princ "?")
                                                                                  nil))
