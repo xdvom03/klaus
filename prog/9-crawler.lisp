@@ -215,7 +215,7 @@
   (let ((W (window "Botelaire welcomes you, human being!")))
     (ltk:on-close W #'(lambda ()
                         (ltk:destroy ltk:*tk*)))
-    (let ((pb (progress-bar 3 0 W "#692" "#841")))
+    (let ((pb (progress-bar 3 0 W)))
       (let* ((f (frame 0 0 W))
              (e1 (entry 0 1 f))
              (e2 (entry 1 1 f))

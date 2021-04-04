@@ -1,8 +1,6 @@
 (defun main ()
-  ;(print "Creating imported classes...")
-  ;(create-all-import-classes) Tohle případně slouží k vytvoření komentářů a vah, i když by toho měly asi taky být součástí
   (print "Downloading missing files...")
-  (redownload "/")
+  (redownload)
   (print "Building core text database...")
   (terpri)
   (build-core-text-database)

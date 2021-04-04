@@ -91,7 +91,7 @@
     (ltk:set-geometry-xy W 0 0)
     W))
 
-(defun progress-bar (r c master bar-col bg-col)
+(defun progress-bar (r c master &optional (bar-col "#692") (bg-col "#841"))
   (let ((pb (widget r c 'ltk-mw:progress master)))
     (setf (ltk-mw:bar-color pb) bar-col)
     (ltk:configure pb :background bg-col)

@@ -104,28 +104,6 @@
   (equal (quri:uri-scheme (quri:uri url))
          "manual"))
 
-(defun redownload (class)
-  (ensure-directories-exist *files-folder*)
-  (if (not (directory *aliases-file*))
-      (overwrite-file *aliases-file* nil))
-  (dolist (file (remove-if #'manual?
-                           (class-urls class)))
-    (redownload-url file))
-  (dolist (subclass (subclasses class))
-    (redownload subclass))
-  (print (concat "redownloaded " class)))
-
-(defun redownload-url (url)
-  (if (not (file-alias url))
-      (multiple-value-bind (html response-origin)
-          (html url)
-        (let* ((text (extract-text html))
-               (new-alias (add-alias url)))
-          (overwrite-file (concat *loc-folder* new-alias) response-origin)
-          (overwrite-file (concat *html-folder* new-alias) html)
-          (overwrite-file (concat *text-folder* new-alias) text))))
-  (file-alias url))
-
 (defun add-manual-file (url content)
   (if (not (file-alias url))
       (let* ((text (basic-text content))
