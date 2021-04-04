@@ -26,8 +26,7 @@
     (dolist (rule (reverse rules))
       (if (matching-rule? (cdr rule) url)
           (setf result (equal (car rule) "Allow"))))
-    result)
-  )
+    result))
 
 (let ((broken-robots-txt (ht)))
   ;; an empty robots.txt will allow everything, which is what the spec says should be done in that case

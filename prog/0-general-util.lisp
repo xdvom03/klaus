@@ -39,6 +39,7 @@
 
 (defparameter *crawl-data-folder* "../DATA/crawlers/")
 (defparameter *discovered-file* "../DATA/discovered")
+(defparameter *scores-file* "../DATA/scores")
 
 (defparameter *frame-colour* "#abcdef")
 
@@ -194,7 +195,6 @@
 
 (defun html (url)
   "Gets HTML data from a URL, but calls an error if it doesn't contain useable text. Error should be resolved within GUI."
-  (print (concat "HTML from " url))
   (trivial-timeout:with-timeout (*timeout*)
     ;; connection-timeout does not catch server-side timeouts
     (multiple-value-bind (response status-code headers actual-uri)
@@ -221,8 +221,8 @@
 (defun best-key (hashtable pred)
   (best-element (list-keys hashtable) pred #'(lambda (el) (gethash el hashtable))))
 
-(defun up-to-n-first (n lst)
-  (subseq lst 0 (min n (length lst))))
+(defun up-to-n-first (n seq)
+  (subseq seq 0 (min n (length seq))))
 
 (defun best-element (lst pred key)
   (if lst

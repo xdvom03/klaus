@@ -65,7 +65,7 @@ Naming convention: 'class' is simplified path, 'folder' is actual folder.
                                          (classifier-window)))
     (button 3 0 W "Go to crawler" #'(lambda ()
                                       (ltk:destroy W)
-                                      (crawler-window)))
+                                      (crawler-window current-class)))
     (multiple-value-bind (classes-refresher set-file-refresher)
         (class-section 0 0 W)
       (setf refresh-files (file-frame 1 0 W))

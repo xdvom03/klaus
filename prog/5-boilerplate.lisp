@@ -1,7 +1,7 @@
 ;; detecting repeated content
 
 (defun overlap-length (txt1 txt2)
-  ;; only looks for sequences beginning at 0
+  ;; in txt1, only looks for sequences beginning at 0
   (let ((max-len (min (length txt1)
                       (length txt2))))
     (do ((len 0 (1+ len)))

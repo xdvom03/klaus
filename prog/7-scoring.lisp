@@ -142,8 +142,7 @@
 ;;; CRAWLER SCORING UTILS
 
 (defun place (url &optional (class "/"))
-  (redownload-url url)
-  (place-vocab (remove-duplicates (wordlist (read-text url))) :class class))
+  (place-vocab (remove-duplicates (wordlist (url-text url))) :class class))
 
 (defun place-vocab (vocab &key (class "/") target)
   (let ((options (classifier-options class)))

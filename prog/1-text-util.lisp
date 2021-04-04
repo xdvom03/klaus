@@ -82,7 +82,8 @@
   (remove-enclosed text "<" ">" #\ ))
 
 (defun remove-fluff (text)
-  (remove-tags (remove-enclosed (remove-enclosed text "<style" "</style>" #\ )
+  (remove-tags (remove-enclosed (remove-enclosed (remove-enclosed text "<head" "</head" #\ )
+                                                 "<style" "</style>" #\ )
                                 "<script" "</script>" #\ )))
 
 (defun clean-text (txt)
@@ -131,8 +132,9 @@
 (defun find-links (text)
   ;; only looks for href
   ;; does not consider tags (could theoretically find literal text, but that seems like a non-issue)
-  (append (find-enclosed-text text "href=\"" "\"")
-          (find-enclosed-text text "href='" "'")))
+  (let ((no-resources (remove-enclosed text "<link" ">")))
+    (append (find-enclosed-text no-resources "href=\"" "\"")
+            (find-enclosed-text no-resources "href='" "'"))))
 
 (defun remove-fragment (url)
   (subseq url 0 (search (concat "#" (fallback (quri:uri-fragment (quri:uri url)) "")) url)))
@@ -141,11 +143,11 @@
   ;; This program can treat fragments as entirely irrelevant in URLs
   (remove-fragment (quri:render-uri (quri:merge-uris link origin))))
 
-(defun downloaded-vetted-links (url)
+(defun vetted-links (origin html)
   ;; links may contain invalid characters, removing anything with errors is the cheapest way of handling that
   (remove-duplicates (remove-if #'null
-                                (mapcar #'(lambda (link) (ignore-errors (follow-link url link)))
-                                        (find-links (read-html url))))
+                                (mapcar #'(lambda (link) (ignore-errors (follow-link origin link)))
+                                        (find-links html)))
                      :test #'equal))
 
 (defun find-domain (url)
@@ -187,14 +189,16 @@
       url))
 
 (defun prob (vocab class)
-  (let* ((sibling-classes (classifier-options (parent-class class)))
-         (path-scores (scores vocab
-                              sibling-classes
-                              (map-to-hash #'get-recursive-corpus sibling-classes)
-                              (map-to-hash #'get-word-count sibling-classes)
-                              nil)))
-    (fallback (gethash class path-scores)
-              (error (concat "Class " class " does not exist.")))))
+  (if (equal class "/")
+      1 ;; would crash otherwise, easiest to catch here
+      (let* ((sibling-classes (classifier-options (parent-class class)))
+             (path-scores (scores vocab
+                                  sibling-classes
+                                  (map-to-hash #'get-recursive-corpus sibling-classes)
+                                  (map-to-hash #'get-word-count sibling-classes)
+                                  nil)))
+        (fallback (gethash class path-scores)
+                  (error (concat "Class " class " does not exist."))))))
 
 (defun vocab-score (vocab target-class)
   (let ((path "/")
@@ -207,18 +211,6 @@
             (setf prob (* prob (prob vocab path)))
             (incf acc prob))))
     prob))
-
-(defun zoombot-url-value (url target)
-  (let* ((actual-place (discover url))
-         (overlap-length (overlap-length (cl-strings:split actual-place #\/)
-                                         (cl-strings:split target #\/)))
-         (final-folder (concat (cl-strings:join (subseq (cl-strings:split target #\/)
-                                                        0
-                                                        (min (length (cl-strings:split target #\/))
-                                                             (1+ overlap-length)))
-                                                :separator "/")
-                               "/")))
-    (+ (1- overlap-length) (vocab-score (remove-duplicates (wordlist (read-text url))) final-folder))))
 
 (defun valid-scheme? (url)
   (ignore-errors
