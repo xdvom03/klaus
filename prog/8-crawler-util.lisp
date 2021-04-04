@@ -28,18 +28,18 @@
           (setf result (equal (car rule) "Allow"))))
     result))
 
-(let ((broken-robots-txt (ht)))
+(let ((cache (ht)))
   ;; an empty robots.txt will allow everything, which is what the spec says should be done in that case
   (defun robots-txt (site)
-   ;; this link follow cannot cause an error if the site itself is OK
-   (let ((robots-txt-url (follow-link site "/robots.txt")))
-     (and (not (gethash robots-txt-url broken-robots-txt))
-          (handler-case (redownload-url robots-txt-url)
-            (error (err-text)
-              (declare (ignore err-text))
-              (setf (gethash robots-txt-url broken-robots-txt) t)
-              nil))
-          (let* ((file (read-html robots-txt-url))
+    ;; this link follow cannot cause an error if the site itself is OK
+    (let* ((robots-txt-url (follow-link site "/robots.txt"))
+           (cached (gethash robots-txt-url cache)))
+      (if cached
+          cached
+          (let* ((file (handler-case (html robots-txt-url)
+                         (error (err-text)
+                           (declare (ignore err-text))
+                           "")))
                  (user-agents nil)
                  (rules nil)
                  (accepting-new-agents? t)
@@ -66,7 +66,9 @@
                        (push (cons "Disallow" line-body) rules)))
                 (setf accepting-new-agents? agent?)))
             (push (cons user-agents rules) acc)
-            (reverse acc))))))
+            ;; also returns
+            (setf (gethash robots-txt-url cache)
+                  (reverse acc)))))))
 
 (defun extension (url)
   (last1 (cl-strings:split url #\.)))
