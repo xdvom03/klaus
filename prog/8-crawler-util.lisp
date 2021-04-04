@@ -81,7 +81,7 @@
   (defun comprehensible? (vocab)
    (/ (1+ (length (remove-if #'(lambda (word) (zerop (occurrences word total-corp)))
                              vocab)))
-      (1+ (length vocab)))))
+      (+ (length vocab) 2))))
 
 (defun comprehensible-text? (raw clean)
   (/ (1+ (length clean))

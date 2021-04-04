@@ -49,9 +49,12 @@
                (if (not (gethash url htmls))
                    (multiple-value-bind (html response-origin)
                        (html url)
-                     (setf (gethash url locs) response-origin)
-                     (setf (gethash response-origin htmls) html)
-                     (setf (gethash response-origin texts) (extract-text html)))))
+                     (let ((text (extract-text html)))
+                       (setf (gethash url locs) response-origin)
+                       (setf (gethash url htmls) html)
+                       (setf (gethash response-origin htmls) html)
+                       (setf (gethash url texts) text)
+                       (setf (gethash response-origin texts) text)))))
              (simplified-filter-urls (urls domain visited-urls visited-domains same-domain?)
                ;; turns a list of link targets into a list of URLs ready for classification, scoring, & saving
                (terpri)
@@ -97,9 +100,9 @@
                                                        ;; Any error will cause the system to refuse the link (typically because the site is unreachable or contains invalid content)
                                                        (error (err-text)
                                                          (declare (ignore err-text))
-                                                         (princ "E")
+                                                         (princ "e")
                                                          nil))
-                                                     (princ "R")))
+                                                     (princ "r")))
                                              urls-2)))
                  urls-3)))
       (handler-case (save-url-data current-url)
@@ -152,7 +155,8 @@
   (setf *random-state* (make-random-state t))
   (let* ((visited-urls nil)
          (followed-urls nil)
-         (url-scores (ht)))
+         (url-scores (ht))
+         (timer (get-internal-real-time)))
 
     (labels ((score-url (url score)
                (setf (gethash url url-scores)
@@ -189,7 +193,8 @@
           (push starting-url followed-urls)
           (if (enter-new-domain starting-url)
               (incf i)))))
-    (reverse visited-urls)))
+    (show-time timer "Crawl complete.")
+    (print (reverse visited-urls))))
 
 
 
