@@ -1,7 +1,7 @@
 (defun redownload ()
   (ltk:with-ltk ()
     (let* ((pb (progress-bar 0 0 ltk:*tk*))
-           (total-files (get-file-count "/"))
+           (total-files (length (class-urls "/" t)))
            (counter 0))
       (ltk:wm-title ltk:*tk* "Verifying files...")
       (labels ((redownload-class (class)

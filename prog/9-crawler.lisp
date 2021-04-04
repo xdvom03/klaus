@@ -184,7 +184,7 @@
           ((>= i domains))
         (gc :full t)
         (print "NEW DOMAIN. Options:")
-        (setf (ltk-mw:percent progress-bar) (* 100 (print (/ (+ i 2) domains)))) ;; one for indexing from zero, one for the delay in display
+        (setf (ltk-mw:percent progress-bar) (* 100 (print (/ (1+ i) domains))))
         (let* ((options (print (set-difference visited-urls followed-urls)))
                (starting-url (if options
                                  (best-element options
