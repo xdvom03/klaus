@@ -132,7 +132,7 @@
             (best-element (reverse url-options)
                           #'> #'(lambda (url) (gethash url link-scores))))))))
 
-(defun domain-links (seed target count)
+(defun domain-links (seed target count progress-bar total-domains traversed-domains)
   ;; visits links in succession (different from interdomain, may change) to get wider site coverage
   ;; if it finds no valid links, it keeps trying again (maybe getting other links)
   ;; returns do not include the seed
@@ -152,7 +152,10 @@
                               (concat (my-round score) " " url))
               (setf (gethash url scores) score)
               (setf current-url url)
-              (push url visited)))))
+              (push url visited))))
+      (setf (ltk-mw:percent progress-bar)
+            (* 100 (print (/ (+ traversed-domains (/ (1+ i) count))
+                             total-domains)))))
     (values (reverse visited) scores)))
 
 (defun zoombot (seed domains per-domain target progress-bar)
@@ -167,24 +170,25 @@
                (setf (gethash url url-scores)
                      score))
 
-             (traverse-domain (new-url)
+             (traverse-domain (new-url traversed-domains)
                (multiple-value-bind (domain-links domain-scores)
-                   (domain-links new-url target per-domain)
+                   (domain-links new-url target per-domain progress-bar domains traversed-domains)
                  (dolist (link domain-links)
                    (push link visited-urls)
+                   (append-to-file *stats-file* (cons link (place link))) ; TBD: Remove after getting stats!
                    (score-url link (gethash link domain-scores)))))
 
-             (enter-new-domain (url)
+             (enter-new-domain (url traversed-domains)
                (multiple-value-bind (chosen-url chosen-score)
                    (next-link url visited-urls target nil)
                  (when chosen-url
                    (print (concat "New domain opened with " chosen-url " with score " chosen-score))
                    (setf (gethash chosen-url url-scores)
                          chosen-score)
-                   (traverse-domain chosen-url)
+                   (traverse-domain chosen-url traversed-domains)
                    t))))
 
-      (traverse-domain seed)
+      (traverse-domain seed 0)
       (do ((i 0))
           ((>= i domains))
         (gc :full t)
@@ -196,7 +200,7 @@
                                                #'> #'(lambda (url) (gethash url url-scores)))
                                  (error "Ran out of URLs in the queue"))))
           (push starting-url followed-urls)
-          (if (enter-new-domain starting-url)
+          (if (enter-new-domain starting-url i)
               (incf i)))))
     (show-time timer "Crawl complete.")
     (print (reverse visited-urls))))

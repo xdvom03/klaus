@@ -39,6 +39,7 @@
 
 (defparameter *crawl-data-folder* "../DATA/crawlers/")
 (defparameter *discovered-file* "../DATA/discovered")
+(defparameter *stats-file* "../DATA/stats")
 (defparameter *scores-file* "../DATA/scores")
 
 (defparameter *frame-colour* "#abcdef")
