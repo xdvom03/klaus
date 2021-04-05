@@ -37,34 +37,45 @@
 ;;; DESIGN
 
 (defun chosen-words (vocab word-scores)
-  (declare (type list vocab)
-           (type fixnum *evidence-length*)
-           (type ratio *score-threshold*)
-           (optimize (speed 3)))
-  (let* ((ordered-words (sort (copy-seq vocab)
+  (let* ((ordered-words (sort (list-keys vocab)
                               #'<
                               :key #'(lambda (word) (gethash word word-scores))))
+         (total-words (length ordered-words))
          (evidence-length (max *evidence-length*
-                               (floor (/ (length (remove-if #'(lambda (word) (>= (ln (- 1 *score-threshold*))
-                                                                                 (gethash word word-scores)
-                                                                                 (ln *score-threshold*)))
-                                                            ordered-words))
+                               (floor (/ (reduce #'+
+                                                 (mapcar #'(lambda (word)
+                                                             (gethash word vocab))
+                                                         (remove-if #'(lambda (word) (>= (ln (- 1 *score-threshold*))
+                                                                                         (gethash word word-scores)
+                                                                                         (ln *score-threshold*)))
+                                                                    ordered-words)))
                                          2)))))
-    (subseq ordered-words 0 (min evidence-length
-                                 (length ordered-words)))))
+    (do* ((i -1 (1+ i))
+          (word nil (nth i ordered-words))
+          (acc (ht) (add-hash acc word (min (- evidence-length word-count)
+                                            (gethash word vocab))))
+          (word-count 0 (+ word-count (gethash word vocab))))
+         ((or (>= (1+ i) total-words)
+              (>= word-count evidence-length))
+          acc))))
+
+(defun add-hash (hash-table new-key new-value)
+  (setf (gethash new-key hash-table) new-value)
+  hash-table)
 
 ;;; DESIGN
 ;;;----------------------------------------------------------------------------------------------
 ;;; INTERFACE FUNCTIONS
 
 (defun compare-classes (vocab paths corpuses &optional (want-evidence? t))
-  ;; Returns a cons of two hash tables. A hash table of path -> score, and a hash table of path -> chosen words.
   ;; Already gets normalised corpuses
-  ;; TBD: Make this two-class. It's ridiculous.
+  ;; vocab is a hash table of word -> count
+  ;; can theoretically work for multiple classes (it does the traditional class-versus-all approach, but it is never thus used)
   (let* ((class-count (length (list-keys corpuses)))
          (scores (ht))
          (evidence-words (ht))
-         (evidence-details (ht)))
+         (evidence-details (ht))
+         (words (list-keys vocab)))
     (dolist (path paths)
       ;; balance evidence for and against
       (let* ((corpus (gethash path corpuses))
@@ -75,10 +86,12 @@
                                                                             paths))
                                                          class-count
                                                          *smoothing-factor*))
-                                       vocab))
+                                       words))
+             ;; same format as vocab
              (chosen-words (chosen-words vocab word-scores))
-             (score (apply #'+ (mapcar #'(lambda (word) (gethash word word-scores))
-                                       chosen-words))))
+             (score (apply #'+ (mapcar #'(lambda (word) (* (gethash word word-scores)
+                                                           (gethash word chosen-words)))
+                                       (list-keys chosen-words)))))
         (setf (gethash path scores) score)
         (if want-evidence?
             (progn
@@ -86,8 +99,10 @@
               (setf (gethash path evidence-details) (map-to-hash #'(lambda (word)
                                                                      (concat (apply #'concat (mapcar #'(lambda (path) (concat " / " (my-round (occurrences word (gethash path corpuses))))) paths))
                                                                              " -> "
-                                                                             (my-round (exp (gethash word word-scores)))))
-                                                                 vocab))))))
+                                                                             (my-round (exp (gethash word word-scores)))
+                                                                             " x "
+                                                                             (gethash word chosen-words)))
+                                                                 (list-keys chosen-words)))))))
 
     (let ((prob-sum (apply #'ln+ (mapcar #'(lambda (path) (gethash path scores)) paths))))
       (dolist (path paths)
@@ -97,7 +112,6 @@
     (values scores evidence-words evidence-details)))
 
 (defun scores (vocab classes corpuses word-counts &optional (want-evidence? t))
-  ;; excluded data is a cons of (url . class) used for blind checks
   ;; In classes without subclasses, we don't want to do anything
   (if classes
       (let* ((pair-scores (ht))
@@ -142,7 +156,7 @@
 ;;; CRAWLER SCORING UTILS
 
 (defun place (url &optional (class "/"))
-  (place-vocab (remove-duplicates (wordlist (url-text url))) :class class))
+  (place-vocab (tokens (url-text url)) :class class))
 
 (defun place-vocab (vocab &key (class "/") target)
   (let ((options (classifier-options class)))

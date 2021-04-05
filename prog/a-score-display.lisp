@@ -1,13 +1,14 @@
 (defun words-explainer (r c master class-1 class-2 words1 words2 word-details-1 word-details-2 page-length)
-  (let* ((f (frame r c master)))
+  ;; words still have the vocab format
+  (let ((f (frame r c master)))
     (button 0 0 f class-2 #'pass)
     (button 0 1 f class-1 #'pass)
     (scrollable-list 1 0 f page-length (mapcar #'list
-                                               words1
-                                               (mapcar #'(lambda (word) (gethash word word-details-1)) words1)))
+                                               (list-keys words1)
+                                               (mapcar #'(lambda (word) (gethash word word-details-1)) (list-keys words1))))
     (scrollable-list 1 1 f page-length (mapcar #'list
-                                               words2
-                                               (mapcar #'(lambda (word) (gethash word word-details-2)) words2)))))
+                                               (list-keys words2)
+                                               (mapcar #'(lambda (word) (gethash word word-details-2)) (list-keys words2))))))
 
 (defun pair-scores-explainer (r c master classes pair-scores pair-words pair-word-details)
   (let* ((f (frame r c master)))
@@ -43,7 +44,7 @@
                         (write-to-string (my-round score)))
                     (if (= i j)
                         #'pass
-                        #'(lambda () (words-explainer 100 100
+                        #'(lambda () (words-explainer 0 0
                                                       (window "hujaja")
                                                       (folder-name class)
                                                       (folder-name opponent)
@@ -119,9 +120,7 @@
                    (button 0 1 fr "Open database with URL" #'(lambda ()
                                                                (setf current-url (ltk:text e1))
                                                                (ltk:wm-title W current-url)
-                                                               (handler-case (change-screen (database-window 0 1 master (;;hashtable-to-count-list ;;
-                                                                                                                         list-keys
-                                                                                                                         (tokens (url-text current-url)))))
+                                                               (handler-case (change-screen (database-window 0 1 master (tokens (url-text current-url))))
                                                                  (error (err-text)
                                                                    (warning-box err-text "Website error")
                                                                    (back-to-main)))))
@@ -131,9 +130,9 @@
                            #'(lambda ()
                                (setf current-url (ltk:text e1))
                                (ltk:wm-title W current-url)
-                               (change-screen (database-window 0 1 master (remove-duplicates (wordlist (extract-text (ltk:text t1))))))))
+                               (change-screen (database-window 0 1 master (tokens (extract-text (ltk:text t1)))))))
                    (button 1 2 fr "Place text" #'(lambda ()
-                                                   (info-box (place-vocab (remove-duplicates (wordlist (extract-text (ltk:text t1))))) "Placing manual input")))
+                                                   (info-box (place-vocab (tokens (extract-text (ltk:text t1)))) "Placing manual input")))
                    (setf (ltk:value ch) explain?)
                    fr))
              
@@ -156,10 +155,3 @@
   (ltk:with-ltk ()
     (ltk:withdraw ltk:*tk*)
     (classifier-window)))
-
-(defun hashtable-to-count-list (hashtable)
-  ;; TEMP: This is a quick hack to consider text volume and not just a list of keywords - do it in a math-normal multiplying way!
-  (let ((corpus nil))
-    (dolist (word (list-keys hashtable))
-      (push (make-list (gethash word hashtable) :initial-element word) corpus))
-    (reduce #'append corpus)))

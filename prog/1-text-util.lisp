@@ -200,18 +200,6 @@
         (fallback (gethash class path-scores)
                   (error (concat "Class " class " does not exist."))))))
 
-(defun vocab-score (vocab target-class)
-  (let ((path "/")
-        (acc 0)
-        (prob 1))
-    (dolist (frag (cl-strings:split (subseq target-class 1) #\/))
-      (if (not (equal frag ""))
-          (progn
-            (setf path (concat path frag "/"))
-            (setf prob (* prob (prob vocab path)))
-            (incf acc prob))))
-    prob))
-
 (defun valid-scheme? (url)
   (ignore-errors
    (or (equal (quri:uri-scheme (quri:uri url)) "http")

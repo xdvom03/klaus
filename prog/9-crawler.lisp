@@ -124,7 +124,7 @@
                                                           urls)
                                                   domain visited-urls (mapcar #'find-domain visited-urls) same-domain?))
              (link-scores (map-to-hash #'(lambda (url) (multiple-value-bind (score place)
-                                                           (zoombot-vocab-value (remove-duplicates (wordlist (gethash url texts))) target)
+                                                           (zoombot-vocab-value (tokens (gethash url texts)) target)
                                                          (discover url place) ;; this is where all discovering happens
                                                          score))
                                        url-options)))
@@ -200,26 +200,6 @@
               (incf i)))))
     (show-time timer "Crawl complete.")
     (print (reverse visited-urls))))
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 (defun crawler-window (&optional (initial-target ""))
   (let ((W (window "Botelaire welcomes you, human being!")))
