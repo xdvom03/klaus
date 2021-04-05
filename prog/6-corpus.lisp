@@ -45,8 +45,8 @@
                                                 (gethash class hashtable-corpora)))
                                    (list-keys hashtable-corpora))))
 
-(let (import-corpora
-      import-urls)
+(let ((import-corpora (ht))
+      (import-urls (ht)))
   (defun refresh-imports ()
     (setf import-urls (map-to-hash #'(lambda (import-folder)
                                        (assoc-to-hashtable (read-from-file (concat import-folder "urls"))))
