@@ -9,7 +9,7 @@
                                                words2
                                                (mapcar #'(lambda (word) (gethash word word-details-2)) words2)))))
 
-(defun pair-scores-explainer (r c master classes pair-scores pair-words pair-word-details) ; TBD: Fix names
+(defun pair-scores-explainer (r c master classes pair-scores pair-words pair-word-details)
   (let* ((f (frame r c master)))
     (dotimes (i (length classes))
       (let ((class (nth i classes)))
@@ -51,54 +51,6 @@
                                                       word-details-1 word-details-2
                                                       *entries-per-page*))))))))
     f))
-
-(defun database-window (r c master vocab explain?)
-  (let* ((fr (frame r c master))
-         (current-class "/")
-         (widget-list nil)
-                        
-         (class-frame (frame 0 0 fr))
-         (comment-frame (frame 0 2 fr))
-
-         ;; variable stuff
-         (tex (text 0 0 comment-frame "" 10 20))
-         (class-label (label 0 0 class-frame ""))
-         parent-button)
-    (labels ((redraw (new-path)
-               (setf current-class new-path)
-               (if (equal new-path "/")
-                   (ltk:configure parent-button :state :disabled)
-                   (ltk:configure parent-button :state :normal))
-               (setf (ltk:text tex) (read-comment current-class))
-               (dolist (i widget-list)
-                 (ltk:destroy i))
-               (setf widget-list nil)
-               (setf (ltk:text class-label) current-class)
-               (let ((subclasses (subclasses current-class)))
-                 (multiple-value-bind (scores probsum pair-scores pair-words pair-word-details)
-                     (scores vocab
-                             subclasses
-                             (map-to-hash #'get-recursive-corpus subclasses)
-                             (map-to-hash #'get-word-count subclasses))
-                   (declare (ignore probsum))
-                   (if (and (> (length subclasses) 1) explain?)
-                       ;; TBD: Instead of scores, provide more details!
-                       (pair-scores-explainer 0 0 (window "HUJAJA") subclasses pair-scores pair-words pair-word-details))
-                   (let ((counter 1)
-                         (sorted-subclasses (sort (copy-seq subclasses) #'> :key #'(lambda (class) (fallback (gethash class scores) (/ (length subclasses)))))))
-                     (dolist (i sorted-subclasses)
-                       (incf counter)
-                       (push (button counter
-                                     0
-                                     class-frame
-                                     (concat (folder-name i) " score: " (my-round (fallback (gethash i scores) (/ (length subclasses)))))
-                                     #'(lambda ()
-                                         (redraw i)))
-                             widget-list)))))))
-                     
-      (setf parent-button (button 1 0 class-frame ".." #'(lambda () (redraw (parent-class current-class)))))
-      (redraw current-class)
-      fr)))
 
 (let ((explain? nil))
   (defun database-window (r c master vocab)
@@ -161,23 +113,27 @@
                  (letrec ((fr (frame r c master))
                           (e1 (entry 0 0 fr))
                           (t1 (text 1 0 fr "" 20 20))
-                          (ch (checkbox 0 2 fr "Explain classing?" #'(lambda ()
+                          (ch (checkbox 2 0 fr "Explain classing?" #'(lambda ()
                                                                        (setf explain? (ltk:value ch))))))
                    (setf (ltk:text e1) current-url)
-                   (button 0 1 fr "Open database" #'(lambda ()
-                                                      (setf current-url (ltk:text e1))
-                                                      (ltk:wm-title W current-url)
-                                                      (handler-case (change-screen (database-window 0 1 master (;;hashtable-to-count-list ;;
-                                                                                                                list-keys
-                                                                                                                (tokens (url-text current-url)))))
-                                                        (error (err-text)
-                                                          (warning-box err-text "Website error")
-                                                          (back-to-main)))))
+                   (button 0 1 fr "Open database with URL" #'(lambda ()
+                                                               (setf current-url (ltk:text e1))
+                                                               (ltk:wm-title W current-url)
+                                                               (handler-case (change-screen (database-window 0 1 master (;;hashtable-to-count-list ;;
+                                                                                                                         list-keys
+                                                                                                                         (tokens (url-text current-url)))))
+                                                                 (error (err-text)
+                                                                   (warning-box err-text "Website error")
+                                                                   (back-to-main)))))
+                   (button 0 2 fr "Place URL" #'(lambda ()
+                                                  (info-box (place (ltk:text e1)) (ltk:text e1))))
                    (button 1 1 fr "Open database with text"
                            #'(lambda ()
                                (setf current-url (ltk:text e1))
                                (ltk:wm-title W current-url)
                                (change-screen (database-window 0 1 master (remove-duplicates (wordlist (extract-text (ltk:text t1))))))))
+                   (button 1 2 fr "Place text" #'(lambda ()
+                                                   (info-box (place-vocab (remove-duplicates (wordlist (extract-text (ltk:text t1))))) "Placing manual input")))
                    (setf (ltk:value ch) explain?)
                    fr))
              

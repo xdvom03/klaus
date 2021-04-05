@@ -60,6 +60,13 @@
     (setf (ltk:text e) txt)
     e))
 
+(defun described-entry (r c master description &optional (txt ""))
+  (let* ((fr (frame r c master))
+         (e (widget 0 1 'ltk:entry fr)))
+    (label 0 0 fr description)
+    (setf (ltk:text e) txt)
+    (values e fr)))
+
 (defun checkbox (r c master text command)
   (let ((ch (widget r c 'ltk:check-button master)))
     (setf (ltk:command ch) #'(lambda (a)

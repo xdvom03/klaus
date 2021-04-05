@@ -20,7 +20,7 @@
              (let* ((fr (frame r c master))
                     (comment (comment 0 0 fr))
                     (fr2 (frame 1 0 fr))
-                    (weight-entry (entry 0 0 fr2)))
+                    (weight-entry (described-entry 0 0 fr2 "Weight: ")))
                (button 2 0 fr "Reload saved class description" #'(lambda () (funcall refresh-config)))
                (letrec ((tentative-ch (checkbox 0 1 fr2 "Tentative?" #'(lambda ()
                                                                          (set-tentative (get-current-class) (ltk:value tentative-ch))))))
@@ -71,29 +71,31 @@
                    
                    #'refresh))))
 
-           (class-data-frame (c settings-c master)
+           (class-data-frame (c settings-c master reduced?)
              ;; Not actually a frame. Merely fills in a data type. Name is mostly driven by convention and outside appearance.
-             (let* ((e (entry (+ c 3) settings-c master))
+             (let ((refresh-files (class-data t (+ c (if reduced? 0 1)) settings-c master "FILES" "Show file counts?" #'get-file-count)))
+               (if reduced?
+                   refresh-files
+                   (let* ((e (entry (+ c 3) settings-c master))
+                          (refresh-words (class-data t c settings-c master "WORDS" "Show word counts?" #'get-word-count))
+                          (refresh-usage (class-data nil (+ c 2) settings-c master "WORD USAGE" "Show word usage?" #'(lambda (class) (let ((word (intern (ltk:text e))))
+                                                                                                                                       (concat (my-round (occurrences word (get-recursive-corpus class)))
+                                                                                                                                               " ("
+                                                                                                                                               (my-round (* 10000 (/ (occurrences word (get-recursive-corpus class))
+                                                                                                                                                                     (get-word-count class))))
+                                                                                                                                               " ‱)"))))))
+                     
+                     #'(lambda ()
+                         (funcall refresh-files)
+                         (funcall refresh-words)
+                         (funcall refresh-usage))))))
 
-                    (refresh-words (class-data t c settings-c master "WORDS" "Show word counts?" #'get-word-count))
-                    (refresh-files (class-data t (+ c 1) settings-c master "FILES" "Show file counts?" #'get-file-count))
-                    (refresh-usage (class-data nil (+ c 2) settings-c master "ALGUMA COISA" "Show word usage?" #'(lambda (class) (let ((word (intern (ltk:text e))))
-                                                                                                                                   (concat (my-round (occurrences word (get-recursive-corpus class)))
-                                                                                                                                           " ("
-                                                                                                                                           (my-round (* 10000 (/ (occurrences word (get-recursive-corpus class))
-                                                                                                                                                                 (get-word-count class))))
-                                                                                                                                           " ‱)"))))))
-               #'(lambda ()
-                   (funcall refresh-words)
-                   (funcall refresh-files)
-                   (funcall refresh-usage))))
-
-           (class-frame (r c master)
+           (class-frame (r c master reduced?)
              (let* ((fr (frame r c master))
                     subclass-buttons
                     parent-button ;; recursively dependent with refresh, so we have to set it later
                     (class-frame (frame 1 0 fr))
-                    (refresh-class-data (class-data-frame 1 4 class-frame))
+                    (refresh-class-data (class-data-frame 1 4 class-frame reduced?))
                     (class-name (entry 0 0 fr (folder-name (get-current-class))))
                     (modes-cycle (list 'move 'bucket))
                     (mode (first modes-cycle)))
@@ -133,17 +135,22 @@
                    
                    (values #'refresh #'rename))))))
 
-    (defun class-section (r c master)
+    (defun class-section (r c master &optional reduced?)
       (let ((fr (frame r c master)))
         (setf add-to-bucket (bucket-section 0 2 fr
                                             #'(lambda (url origin current-class mode)
                                                 (declare (ignore url))
                                                 (case mode
                                                   (move
-                                                   (move-class origin (concat current-class (folder-name origin) "/"))
+                                                   (if (equal 0 (search origin current-class))
+                                                       (warning-box "You are trying to move a class into itself." "Nope!")
+                                                       (progn
+                                                         (move-class origin (concat current-class (folder-name origin) "/"))
+                                                         (funcall refresh-classes))))
+                                                  (remove
+                                                   (remove-class origin)
                                                    (funcall refresh-classes))
-                                                  (remove (remove-class origin))
-                                                  (nothing #'pass)))
+                                                  (nothing nil)))
                                             refresh-classes (list 'move 'remove 'nothing)
                                             #'(lambda (url origin)
                                                 (declare (ignore url))
@@ -153,7 +160,7 @@
           (setf refresh-config refresher)
           (setf save-description updater))
         (multiple-value-bind (refresher renamer)
-            (class-frame 0 0 fr)
+            (class-frame 0 0 fr reduced?)
           (setf refresh-classes refresher)
           (setf rename renamer))
         

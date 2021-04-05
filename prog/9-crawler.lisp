@@ -1,4 +1,9 @@
-(let ((discovered-urls (ht)))
+(let ((discovered-urls (let ((acc (ht)))
+                         (apply-to-all-classes #'(lambda (class)
+                                                   (if (not (read-tentative class))
+                                                       (setf (gethash class acc)
+                                                             nil))))
+                         acc)))
   (defun save-discovered ()
     (overwrite-file *discovered-file* (hashtable-to-assoc discovered-urls)))
   
@@ -231,6 +236,7 @@
         (label 1 0 f "Domains")
         (label 2 0 f "Steps per domain")
         (label 3 0 f "Target class")
+        
         (button 4 0 f "Start Zoombot" #'(lambda ()
                                           (zoombot (ltk:text e1)
                                                    (read-from-string (ltk:text e2))

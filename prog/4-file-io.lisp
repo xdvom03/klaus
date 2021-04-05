@@ -234,6 +234,16 @@
       
       (scale-corpus recursive-corpus (read-weight class))))
 
+  (defun rebuild-url-counts ()
+    (apply-to-all-classes #'(lambda (class)
+                              (setf (gethash class url-count-tree)
+                                    (+ (length (recursive-imported-urls class))
+                                       (length (class-urls class t)))))))
+
+  (defun save-edited-discovered ()
+    (overwrite-file *discovered-file*
+                    (hashtable-to-assoc url-tree)))
+
   (defun save-corpora ()
     ;; Must be saved so that it matches
     (overwrite-file *urls-file*
@@ -245,6 +255,9 @@
 
   (defun saved-urls ()
     (assoc-to-hashtable (read-from-file *urls-file*)))
+
+  (defun discovered-urls ()
+    (assoc-to-hashtable (read-from-file *discovered-file*)))
 
   (defun saved-corpora ()
     (let ((assoc-corpus (assoc-to-hashtable (read-from-file *corpora-file*))))
@@ -258,6 +271,11 @@
           (urls (saved-urls)))
       (setf corpus-tree corpora)
       (setf cached-corpora (alexandria:copy-hash-table corpora))
+      (setf url-tree urls)
+      (setf cached-urls (alexandria:copy-hash-table urls))))
+
+  (defun read-discovered ()
+    (let ((urls (discovered-urls)))
       (setf url-tree urls)
       (setf cached-urls (alexandria:copy-hash-table urls))))
 
