@@ -189,9 +189,8 @@
 
 ;; only used in debugging crawler results
 (defun open-url (url)
-  "Open the URL in the browser. Waits a bit for it to load."
-  (uiop:run-program (format nil "xdg-open ~S" url))
-  (sleep 1))
+  "Open the URL in the browser."
+  (uiop:run-program (format nil "xdg-open ~S" url)))
 
 (defun html (url)
   "Gets HTML data from a URL, but calls an error if it doesn't contain useable text. Error should be resolved within GUI."

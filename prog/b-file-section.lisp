@@ -1,4 +1,4 @@
-(let ((modes-cycle (list 'move 'remove 'nothing))
+(let ((modes-cycle (list 'move 'remove 'open 'nothing))
       (add-to-bucket #'pass)
       (refresh-files #'pass))
   (labels ((add-url-section (r c master)

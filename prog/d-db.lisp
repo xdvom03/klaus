@@ -17,6 +17,8 @@ Naming convention: 'class' is simplified path, 'folder' is actual folder.
      (add-url url class))
     (remove
      (remove-url url origin))
+    (open
+     (open-url url))
     (nothing
      nil)))
 
