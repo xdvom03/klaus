@@ -19,8 +19,7 @@
   "https://web.archive.org/web/20160107160941/https://thinkprogress.org/economy/2014/05/27/3441772/florida-homeless-financial-study/"
   "https://iflyamerica.org/safety_get_home_itis.asp"
   "https://chelseatroy.com/2018/03/29/why-do-remote-meetings-suck-so-much/"
-  "https://chelseatroy.com/2018/04/05/how-do-we-make-remote-meetings-not-suck/"
-  "https://cdrnys.org/disability-writing-journalism-guidelines/")
+  "https://chelseatroy.com/2018/04/05/how-do-we-make-remote-meetings-not-suck/")
  ("/articles/humanities/" "https://waitbutwhy.com/2019/09/thinking-ladder.html"
   "https://waitbutwhy.com/2019/10/idea-labs-echo-chambers.html"
   "https://languagelog.ldc.upenn.edu/nll/?p=2592")
@@ -164,7 +163,11 @@
   "http://www.fsmitha.com/h1/babylon-science.htm"
   "http://www.fsmitha.com/h1/phil06.htm"
   "http://www.fsmitha.com/h1/phil07.htm")
- ("/articles/humanities/history/society/" "http://www.fsmitha.com/h3/eu08.htm")
+ ("/articles/humanities/history/society/" "http://www.fsmitha.com/h3/eu08.htm"
+  "https://acoup.blog/2021/03/05/collections-clothing-how-did-they-make-it-part-i-high-fiber/"
+  "https://acoup.blog/2021/03/12/collections-clothing-how-did-they-make-it-part-ii-scouring-in-the-shire/"
+  "https://acoup.blog/2021/03/19/collections-clothing-how-did-they-make-it-part-iii-spin-me-right-round/"
+  "https://acoup.blog/2021/04/02/collections-clothing-how-did-they-make-it-part-iva-dyed-in-the-wool/")
  ("/articles/humanities/history/war/" "http://www.fsmitha.com/h1/ch30ww.htm"
   "http://www.fsmitha.com/h1/hell05.htm"
   "http://www.fsmitha.com/h1/persian_war.htm"
@@ -301,8 +304,7 @@
   "https://tvtropes.org/pmwiki/pmwiki.php/UsefulNotes/GraphicalPerspective"
   "https://tvtropes.org/pmwiki/pmwiki.php/Analysis/PurpleIsTheNewBlack"
   "https://thekidshouldseethis.com/post/gradations-daihei-shibata-video")
- ("/articles/life/recreation/art/visual/artists/"
-  "https://www.inprnt.com/blog/entry/artist-spotlight-megan-kott-and-justin-devine/")
+ ("/articles/life/recreation/art/visual/artists/")
  ("/articles/life/recreation/art/visual/design/"
   "https://docs.sendwithses.com/random-stuff/easy-to-remember-color-guide-for-non-designers")
  ("/articles/life/recreation/art/visual/general/"
@@ -624,8 +626,7 @@
  ("/articles/stem/nature/weather/meteorology/"
   "http://tropicalatlantic.com/radars/"
   "https://tropical.colostate.edu/projects/remote.html"
-  "https://www.weather.gov/bmx/kidscorner_weatherballoons"
-  "https://nas-sites.org/climate-change/climatemodeling/page_2_2.php")
+  "https://www.weather.gov/bmx/kidscorner_weatherballoons")
  ("/articles/stem/nature/weather/safety/"
   "http://www.tornadoproject.com/safety/shelters.htm"
   "https://www.nhc.noaa.gov/prepare/hazards.php"
