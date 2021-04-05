@@ -102,7 +102,8 @@ Closer to \"non-textual\"")
  ("/articles/life/self-help/mystical/"
   . "Self-help horoscopes and other popular versions of superstitions. Not for anthropology-grade stuff.")
  ("/articles/life/self-help/procrastination/" . "")
- ("/articles/life/society/" . "social justice is missing now")
+ ("/articles/life/society/"
+  . "Practical matters, if often removed from the individual life of an individual.")
  ("/articles/life/society/law-crime-order/"
   . "Information on *how* we might go about establishing these.")
  ("/articles/life/society/politics/"
@@ -193,7 +194,7 @@ Earthquakes and fire count as weather for these purposes :)")
   . "Singularity opinions. AI long-term safety.")
  ("/articles/stem/computer-technology/technology/machine-learning/"
   . "Neural networks, machine learning, genetic algorithms, and other specific techniques that can make narrow AI happen.")
- ("/articles/stem/computer-technology/technology/video-games/"
+ ("/articles/stem/computer-technology/video-games/mechanics/"
   . "The technical aspects: game engines, NPC AI, etc.")
  ("/articles/stem/computer-technology/technology/git/internals/"
   . "The inner workings of Git under the hood.")
@@ -314,7 +315,7 @@ Technically also includes similarly-structured royalty-free music.")
  ("/news/sports/" . "Sports news.") ("/news/sports/reuters/" . "")
  ("/news/sports/la-times/" . "") ("/news/sports/bbc/" . "")
  ("/news/sports/aljazeera/" . "")
- ("/articles/stem/computer-technology/technology/video-games/game-ai/"
+ ("/articles/stem/computer-technology/video-games/mechanics/game-ai/"
   . "A specific application of AI: any NPC with nontrivial behaviour. Also AIs as the players.")
  ("/articles/life/money/economics/" . "")
  ("/articles/life/education/lessons/" . "pedagogy, college life")
@@ -335,4 +336,15 @@ Technically also includes similarly-structured royalty-free music.")
  ("/articles/stem/science/physics/thermodynamics/microscopic/"
   . "Statistical mechanics")
  ("/articles/stem/science/physics/thermodynamics/" . "")
- ("/articles/stem/science/physics/electromagnetism/light/" . "")) 
+ ("/articles/stem/science/physics/electromagnetism/light/" . "")
+ ("/articles/life/recreation/travel/travelogues/"
+  . "Personal travel experiences")
+ ("/articles/life/recreation/travel/sales-pitches/"
+  . "Descriptions of awesome travel routes")
+ ("/articles/humanities/law/"
+  . "Created to house case texts, as they have fallen here before.")
+ ("/articles/stem/computer-technology/video-games/"
+  . "Design, mechanics, etc., of games.")
+ ("/articles/stem/computer-technology/video-games/design/"
+  . "Design of video game interaction, economy, etc.")
+ ("/utility/profit/stores/product-pages/clothing/" . "")) 

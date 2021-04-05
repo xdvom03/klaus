@@ -186,7 +186,8 @@
   "http://www.fsmitha.com/h3/china02.htm"
   "http://www.fsmitha.com/h3/europe-england1.htm"
   "http://www.fsmitha.com/h3/europe-vikings.htm"
-  "http://www.fsmitha.com/h3/eu05.htm" "http://www.fsmitha.com/h3/eu11.htm")
+  "http://www.fsmitha.com/h3/eu05.htm" "http://www.fsmitha.com/h3/eu11.htm"
+  "http://armchairgeneral.com/a-lingering-controversy-eisenhowers-broad-front-strategy.htm")
  ("/articles/humanities/history/war/crusades/"
   "http://www.fsmitha.com/h3/europe-muslims.htm"
   "http://www.fsmitha.com/h3/eu07.htm" "http://www.fsmitha.com/h3/eu09.htm")
@@ -222,14 +223,19 @@
   "http://www.garlikov.com/philosophy/KantMoralPhilosophy.html")
  ("/articles/life/"
   "https://tvtropes.org/pmwiki/pmwiki.php/UsefulNotes/InteractingWithPersonsDifferentThanYourself"
-  "https://waitbutwhy.com/2014/01/the-great-perils-of-social-interaction.html")
+  "https://waitbutwhy.com/2014/01/the-great-perils-of-social-interaction.html"
+  "https://www.junipurrstudio.com/cat-parent-academy/cat-emergency-kit")
  ("/articles/life/food/"
   "https://waitbutwhy.com/2016/06/everything-ate-last-week.html"
   "http://tailsteak.com/archive.php?num=522"
   "http://www.eattheweeds.com/tulips-famine-food-appetizer-assistant-2/"
   "https://fieryworld.com/2017/05/14/a-sauce-only-a-mother-could-love-just-kidding-everyone-will-love-tia-lupita/"
   "https://www.chilipeppermadness.com/chili-pepper-types/medium-hot-chili-peppers/thai-chili-peppers/"
-  "https://www.chilipeppermadness.com/chili-pepper-types/mexican-peppers/")
+  "https://www.chilipeppermadness.com/chili-pepper-types/mexican-peppers/"
+  "https://jewishfoodexperience.com/good-under-pressure/"
+  "https://jewishfoodexperience.com/essential-jewish-recipes-are-here/"
+  "https://jewishfoodexperience.com/is-the-presidents-bagel-order-turning-him-to-toast/"
+  "https://jewishfoodexperience.com/theres-a-new-kosher-food-truck-in-town/")
  ("/articles/life/food/alcohol/"
   "https://www.thespruceeats.com/washington-apple-shot-or-martini-761516"
   "https://www.thespruceeats.com/shot-recipes-4162697")
@@ -317,15 +323,7 @@
  ("/articles/life/recreation/games/d-and-d/"
   "http://tailsteak.com/archive.php?num=466"
   "http://tailsteak.com/archive.php?num=568")
- ("/articles/life/recreation/travel/"
-  "https://www.rapiroo.com/blog/travel/sensational-switzerland-in-your-motorhome/"
-  "https://waitbutwhy.com/2014/09/but-what-about-greenland.html"
-  "https://waitbutwhy.com/2013/07/12-types-of-people-youll-find-in-every.html"
-  "https://waitbutwhy.com/2013/09/20-things-i-learned-while-i-was-in.html"
-  "https://waitbutwhy.com/2014/07/russia-what-you-didnt-know.html"
-  "https://waitbutwhy.com/2014/07/japan-and-how-i-failed-to-figure-it-out.html"
-  "https://waitbutwhy.com/2014/07/odd-things-odd-places-intro.html"
-  "https://waitbutwhy.com/2014/08/19-things-learned-nigeria.html")
+ ("/articles/life/recreation/travel/")
  ("/articles/life/self-help/"
   "https://waitbutwhy.com/2016/09/marriage-decision.html"
   "https://waitbutwhy.com/2015/11/the-cook-and-the-chef-musks-secret-sauce.html"
@@ -369,7 +367,10 @@
   "http://www.archub.org/civicduty.txt")
  ("/articles/life/society/law-crime-order/"
   "http://tailsteak.com/archive.php?num=99"
-  "http://tailsteak.com/archive.php?num=487")
+  "http://tailsteak.com/archive.php?num=487"
+  "https://www.prisonpolicy.org/blog/2015/10/07/private_prisons_parasite/"
+  "https://www.prisonpolicy.org/blog/2015/12/08/who-is-in-jail-deep-dive/"
+  "https://www.prisonpolicy.org/blog/2015/08/14/jailsmatter/")
  ("/articles/life/society/politics/" "http://tailsteak.com/archive.php?num=111"
   "http://tailsteak.com/archive.php?num=228"
   "http://tailsteak.com/archive.php?num=273"
@@ -671,7 +672,7 @@
  ("/articles/stem/computer-technology/technology/machine-learning/"
   "http://www.genetic-programming.org/"
   "http://www0.cs.ucl.ac.uk/research/genprog/gp2faq/gp2faq2.html")
- ("/articles/stem/computer-technology/technology/video-games/")
+ ("/articles/stem/computer-technology/video-games/mechanics/")
  ("/articles/stem/computer-technology/technology/git/internals/"
   "https://git-scm.com/book/en/v2/Git-Internals-Plumbing-and-Porcelain"
   "https://git-scm.com/book/en/v2/Git-Internals-Git-Objects"
@@ -882,7 +883,8 @@
   "https://tubularinsights.com/cookie-policy/"
   "https://stripe.com/cookies-policy/legal"
   "https://www.coinbase.com/legal/cookie"
-  "https://www.bbc.co.uk/usingthebbc/cookies/what-do-i-need-to-know-about-cookies/")
+  "https://www.bbc.co.uk/usingthebbc/cookies/what-do-i-need-to-know-about-cookies/"
+  "https://www.linkedin.com/legal/cookie-policy")
  ("/legal/copyright/" "https://tvtropes.org/pmwiki/dmca.php"
   "https://creativecommons.org/dmca/" "https://www.fandom.com/licensing"
   "https://www.ecma-international.org/policies/by-ipr/code-of-conduct-in-patent-matters/"
@@ -1159,7 +1161,6 @@
   "https://www.scientificsales.com/8247-Weather-Balloon-3000-Grams-Natural-p/8247.htm"
   "https://www.kbb.com/cars-for-sale/all/acura/portland-or-97209"
   "https://www.microsoft.com/en-us/store/games/windows"
-  "https://selininy.com/ties/bow-ties/banded/"
   "http://www.boeing.com/commercial/"
   "https://www.storyblocks.com/audio/stock/yee-hllxxr03ipbk0wy66xe.html"
   "https://www.audible.com/pd/The-Other-Animals-Audiobook/B07WMRJVZL")
@@ -1207,7 +1208,9 @@
   "https://www.un.org/globalceasefire"
   "https://www.fbi.gov/investigate/terrorism"
   "https://www.fbi.gov/investigate/violent-crime/art-theft/national-stolen-art-file"
-  "http://www.fda.gov/" "https://www.iana.org/")
+  "http://www.fda.gov/" "https://www.iana.org/"
+  "https://www.usa.gov/become-us-citizen" "https://www.usa.gov/irs-scams"
+  "https://www.usa.gov/deportation")
  ("/utility/society/social-justice/" "https://www.policylink.org/"
   "https://nextcity.org/daily/entry/new-index-hopes-to-move-forward-more-conversations-on-racial-equity"
   "https://nationalequityatlas.org/"
@@ -1276,7 +1279,7 @@
   "https://www.aljazeera.com/news/2021/3/16/covid-forces-india-england-t20-cricket-matches-in-empty-stadium"
   "https://www.aljazeera.com/news/2021/3/14/boxing-legend-marvelous-marvin-hagler-dies-aged-66"
   "https://www.aljazeera.com/features/2021/3/14/south-african-ultramarathoner-on-the-road-to-overcome-rape")
- ("/articles/stem/computer-technology/technology/video-games/game-ai/"
+ ("/articles/stem/computer-technology/video-games/mechanics/game-ai/"
   "https://arcengames.com/designing-emergent-ai-part-1-an-introduction/"
   "https://arcengames.com/designing-emergent-ai-part-2-queries-and-code/"
   "https://arcengames.com/designing-emergent-ai-part-3-limitations/"
@@ -1339,4 +1342,27 @@
   "https://www.feynmanlectures.caltech.edu/I_30.html"
   "https://www.feynmanlectures.caltech.edu/I_31.html"
   "https://www.feynmanlectures.caltech.edu/I_32.html"
-  "https://www.feynmanlectures.caltech.edu/I_33.html")) 
+  "https://www.feynmanlectures.caltech.edu/I_33.html")
+ ("/articles/life/recreation/travel/travelogues/"
+  "https://waitbutwhy.com/2014/09/but-what-about-greenland.html"
+  "https://waitbutwhy.com/2013/07/12-types-of-people-youll-find-in-every.html"
+  "https://waitbutwhy.com/2013/09/20-things-i-learned-while-i-was-in.html"
+  "https://waitbutwhy.com/2014/07/russia-what-you-didnt-know.html"
+  "https://waitbutwhy.com/2014/07/japan-and-how-i-failed-to-figure-it-out.html"
+  "https://waitbutwhy.com/2014/07/odd-things-odd-places-intro.html"
+  "https://waitbutwhy.com/2014/08/19-things-learned-nigeria.html"
+  "http://www.lostincheeseland.com/2012/07/little-pleasures-in-paris-2-les-terrasses/")
+ ("/articles/life/recreation/travel/sales-pitches/"
+  "https://www.rapiroo.com/blog/travel/sensational-switzerland-in-your-motorhome/"
+  "https://flymetothemoontravel.com/scenic-driving-routes-greece/"
+  "https://flymetothemoontravel.com/the-isles-and-islets-of-greece/"
+  "https://flymetothemoontravel.com/active-volcanoes-in-greece/")
+ ("/articles/humanities/law/" "https://casetext.com/case/state-v-madsen-14"
+  "https://casetext.com/case/batterton-v-francis"
+  "https://casetext.com/case/fea-v-algonquin-sng-inc")
+ ("/articles/stem/computer-technology/video-games/")
+ ("/articles/stem/computer-technology/video-games/design/"
+  "https://applookin.com/support/types-of-game-currencies-in-mobile-free-to-play-gamasutra/")
+ ("/utility/profit/stores/product-pages/clothing/"
+  "https://outdoorceilingfanswithlights.com/tshirts/spengler-shirt/"
+  "https://selininy.com/ties/bow-ties/banded/")) 
