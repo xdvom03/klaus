@@ -25,11 +25,10 @@
     (setf (ltk:text b) txt)
     (setf (ltk:command b) (let ((on? nil))
                             (lambda ()
-                              (if (not on?)
-                                  (progn
-                                    (setf on? t)
-                                    (funcall command)
-                                    (ltk:after 10 #'(lambda () (setf on? nil))))))))
+                              (when (not on?)
+                                (setf on? t)
+                                (funcall command)
+                                (ltk:after 10 #'(lambda () (setf on? nil)))))))
     b))
 
 (defun button-column (window column page-length &optional (starting-row 0))
@@ -154,8 +153,7 @@
        (handler-case (progn
                        ,@body)
          (error (err-text)
-           (warning-box err-text ,title-var)
-           (abort))))))
+           (warning-box err-text ,title-var))))))
 
 ;;; VARIOUS UTILS
 ;;;----------------------------------------------------------------------------------------------

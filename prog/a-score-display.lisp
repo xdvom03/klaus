@@ -172,8 +172,7 @@
                                                                                                                 (tokens (url-text current-url)))))
                                                         (error (err-text)
                                                           (warning-box err-text "Website error")
-                                                          (back-to-main)
-                                                          (abort)))))
+                                                          (back-to-main)))))
                    (button 1 1 fr "Open database with text"
                            #'(lambda ()
                                (setf current-url (ltk:text e1))
