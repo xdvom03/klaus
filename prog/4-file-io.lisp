@@ -194,6 +194,7 @@
                      (gethash class url-tree))))
 
   (defun get-recursive-corpus (class)
+    ;; includes imports
     (gethash class recursive-corpus-tree))
 
   (defun get-file-count (class)

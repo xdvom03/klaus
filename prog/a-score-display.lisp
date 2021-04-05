@@ -131,7 +131,6 @@
                                (map-to-hash #'get-word-count subclasses))
                      (declare (ignore probsum))
                      (if (and (> (length subclasses) 1) explain?)
-                         ;; TBD: Instead of scores, provide more details!
                          (pair-scores-explainer 0 0 (window "HUJAJA") subclasses pair-scores pair-words pair-word-details))
                      (let ((counter 1)
                            (sorted-subclasses (sort (copy-seq subclasses) #'> :key #'(lambda (class) (fallback (gethash class scores) (/ (length subclasses)))))))
