@@ -154,8 +154,8 @@
               (setf current-url url)
               (push url visited))))
       (setf (ltk-mw:percent progress-bar)
-            (* 100 (print (/ (+ traversed-domains (/ (1+ i) (1+ count)))
-                             total-domains)))))
+            (* 100 (/ (+ traversed-domains (/ (1+ i) (1+ count)))
+                      total-domains))))
     (values (reverse visited) scores)))
 
 (defun zoombot (seed domains per-domain target progress-bar)
@@ -199,9 +199,9 @@
                                                #'> #'(lambda (url) (gethash url url-scores)))
                                  (error "Ran out of URLs in the queue"))))
           (push starting-url followed-urls)
-          (if (enter-new-domain starting-url i)
+          (if (enter-new-domain starting-url (1+ i))
               (incf i)))
-        (setf (ltk-mw:percent progress-bar) (* 100 (print (/ (1+ i) domains))))))
+        (setf (ltk-mw:percent progress-bar) (* 100 (/ (1+ i) domains)))))
     (show-time timer "Crawl complete.")
     (print (reverse visited-urls))))
 
