@@ -1,14 +1,17 @@
 (defun words-explainer (r c master class-1 class-2 words1 words2 word-details-1 word-details-2 page-length)
   ;; words still have the vocab format
-  (let ((f (frame r c master)))
+  (let ((f (frame r c master))
+        ;; The reversion stems from chosen-words adding words to the chosen acc from the strongest evidence to weakest, which causes strong evidence to end up at the end of the key list
+        (individual-words-1 (reverse (list-keys words1)))
+        (individual-words-2 (reverse (list-keys words2))))
     (button 0 0 f class-2 #'pass)
     (button 0 1 f class-1 #'pass)
     (scrollable-list 1 0 f page-length (mapcar #'list
-                                               (list-keys words1)
-                                               (mapcar #'(lambda (word) (gethash word word-details-1)) (list-keys words1))))
+                                               individual-words-1
+                                               (mapcar #'(lambda (word) (gethash word word-details-1)) individual-words-1)))
     (scrollable-list 1 1 f page-length (mapcar #'list
-                                               (list-keys words2)
-                                               (mapcar #'(lambda (word) (gethash word word-details-2)) (list-keys words2))))))
+                                               individual-words-2
+                                               (mapcar #'(lambda (word) (gethash word word-details-2)) individual-words-2)))))
 
 (defun pair-scores-explainer (r c master classes pair-scores pair-words pair-word-details)
   (let* ((f (frame r c master)))
@@ -120,7 +123,12 @@
                    (button 0 1 fr "Open database with URL" #'(lambda ()
                                                                (setf current-url (ltk:text e1))
                                                                (ltk:wm-title W current-url)
-                                                               (handler-case (change-screen (database-window 0 1 master (tokens (url-text current-url))))
+                                                               (handler-case (let* ((vocab (tokens (url-text current-url)))
+                                                                                    (word-count (word-count vocab)))
+                                                                               (if (< word-count
+                                                                                      *min-word-count*)
+                                                                                   (warning-box (concat "This file is very short. Word count: " word-count ". Does that seem right?") "Site text very short."))
+                                                                               (change-screen (database-window 0 1 master vocab)))
                                                                  (error (err-text)
                                                                    (warning-box err-text "Website error")
                                                                    (back-to-main)))))

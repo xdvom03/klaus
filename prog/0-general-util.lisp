@@ -48,6 +48,7 @@
 (defparameter *score-threshold* 1/5)
 (defparameter *word-group-size* 400)
 (defparameter *boilerplate-threshold* 4)
+(defparameter *confidence-threshold* 1/2)
 (defparameter *evidence-length* 6)
 (defparameter *smoothing-factor* 1)
 (defparameter *allowed-characters* (cl-strings:chars "0123456789 abcdefghijklmnopqrstuvwxyz'"))

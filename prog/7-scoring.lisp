@@ -6,7 +6,7 @@
   ;; Pageranking one or zero classes results in division 0/0
   (labels ((option-raw-score (option)
              (if (< (length options) 2)
-                 1
+                 0
                  (apply #'+ (mapcar #'(lambda (option2)
                                         (if (equal option option2)
                                             0
@@ -161,15 +161,21 @@
 (defun place-vocab (vocab &key (class "/") target)
   (let ((options (classifier-options class)))
     (if options
-        (let* ((scores (scores vocab
-                               options
-                               (map-to-hash #'get-recursive-corpus options)
-                               (map-to-hash #'get-word-count options)
-                               nil))
-               (best-path (best-key scores #'>)))
-          (if target
-              (if (equal 0 (search best-path target))
-                  (place-vocab vocab :class best-path :target target)
-                  class)
-              (place-vocab vocab :class best-path)))
+        (multiple-value-bind (scores probsum)
+            (scores vocab
+                    options
+                    (map-to-hash #'get-recursive-corpus options)
+                    (map-to-hash #'get-word-count options)
+                    nil)
+          (multiple-value-bind (best-path best-score)
+              (best-key scores #'>)
+            (if (>= (* best-score
+                       (exp probsum))
+                    *confidence-threshold*)
+                (if target
+                    (if (equal 0 (search best-path target))
+                        (place-vocab vocab :class best-path :target target)
+                        class)
+                    (place-vocab vocab :class best-path))
+                class)))
         class)))
