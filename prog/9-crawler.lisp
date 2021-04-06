@@ -154,7 +154,7 @@
               (setf current-url url)
               (push url visited))))
       (setf (ltk-mw:percent progress-bar)
-            (* 100 (print (/ (+ traversed-domains (/ (1+ i) count))
+            (* 100 (print (/ (+ traversed-domains (/ (1+ i) (1+ count)))
                              total-domains)))))
     (values (reverse visited) scores)))
 
@@ -175,7 +175,7 @@
                    (domain-links new-url target per-domain progress-bar domains traversed-domains)
                  (dolist (link domain-links)
                    (push link visited-urls)
-                   (append-to-file *stats-file* (cons link (place link))) ; TBD: Remove after getting stats!
+                   (append-to-file *stats-file* (cons link (ignore-errors (place link)))) ; TBD: Remove after getting stats!
                    (score-url link (gethash link domain-scores)))))
 
              (enter-new-domain (url traversed-domains)
@@ -193,7 +193,6 @@
           ((>= i domains))
         (gc :full t)
         (print "NEW DOMAIN. Options:")
-        (setf (ltk-mw:percent progress-bar) (* 100 (print (/ (1+ i) domains))))
         (let* ((options (print (set-difference visited-urls followed-urls)))
                (starting-url (if options
                                  (best-element options
@@ -201,7 +200,8 @@
                                  (error "Ran out of URLs in the queue"))))
           (push starting-url followed-urls)
           (if (enter-new-domain starting-url i)
-              (incf i)))))
+              (incf i)))
+        (setf (ltk-mw:percent progress-bar) (* 100 (print (/ (1+ i) domains))))))
     (show-time timer "Crawl complete.")
     (print (reverse visited-urls))))
 
