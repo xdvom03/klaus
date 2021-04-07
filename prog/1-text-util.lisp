@@ -21,7 +21,6 @@
 ;;; 
 
 (defun fast-substr-check (text key start)
-  ;; TBD: There is also safe-check-substr - namees should be united, maybe both should be joined
   ;; First checks whether the first character matches, eliminating most incorrect guesses
   (let ((key-len (length key))
         (text-len (length text)))
@@ -29,7 +28,7 @@
          (equal (char text start) (char key 0))
          (equal (subseq text start (+ start key-len)) key))))
 
-(defun safe-check-substr (str key &optional (start 0))
+(defun safe-check-starting (str key &optional (start 0))
   "Returns T if the string contains the key starting at start. If it is too short or doesn't contain the key, returns NIL."
   (let ((key-len (length key)))
     (and (>= (length str)
@@ -150,13 +149,12 @@
                                         (find-links html)))
                      :test #'equal))
 
-(defun find-domain (url)
-  (quri:uri-domain (quri:uri url)))
-
 ;;; 
 ;;;----------------------------------------------------------------------------------------------
-;;; ROBOTS.TXT
-;; TBD: Fails with wildcards?
+;;; URL UTILS
+
+(defun find-domain (url)
+  (quri:uri-domain (quri:uri url)))
 
 (defun remove-domain (url)
   (do ((i 0 (1+ i))
@@ -167,26 +165,24 @@
            (subseq url (1- i))
            (subseq url i)))))
 
-;; TBD: Introduce a settable cap on link count
-
-;;; ROBOTS.TXT
-;;;----------------------------------------------------------------------------------------------
-;;; URL UTILS
-
 (defun equivalent-urls (url1 url2)
   (equal (raw-url url1)
          (raw-url url2)))
 
+(defun downcase-url (url)
+  (let ((path (quri:uri-path (quri:uri url))))
+    (string-downcase url :end (search path url :test #'equal))))
+
 (defun raw-url (url)
-  (if (search "//" url)
-      (let* ((step1 (subseq url (+ 2 (search "//" url))))
-             (step2 (reverse (subseq (reverse step1)
-                                     (position-if #'(lambda (character) (not (equal character #\/)))
-                                                  (reverse step1))))))
-        (if (equal 0 (search "www." step2))
-            (subseq step2 4)
-            step2))
-      url))
+  (downcase-url (if (search "//" url)
+                    (let* ((step1 (subseq url (+ 2 (search "//" url))))
+                           (step2 (reverse (subseq (reverse step1)
+                                                   (position-if #'(lambda (character) (not (equal character #\/)))
+                                                                (reverse step1))))))
+                      (if (equal 0 (search "www." step2))
+                          (subseq step2 4)
+                          step2))
+                    url)))
 
 (defun prob (vocab class)
   (if (equal class "/")

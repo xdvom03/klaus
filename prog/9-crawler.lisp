@@ -65,7 +65,7 @@
                (terpri)
                (let* ((urls-1 (remove-duplicates urls :test #'equal))
                       (urls-2 (remove-if #'(lambda (url)
-                                             (or (not (valid-scheme? url))
+                                             (or (not (valid-scheme? url)) ; this will remove all URLs that could crash QURI
                                                  (member (extension url)
                                                          *forbidden-extensions*
                                                          :test #'equal)))

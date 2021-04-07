@@ -1,6 +1,6 @@
 ;; TBD: Add dollar signs, crawl delay, and asterisk wildcards.
 (defun matching-rule? (rule url)
-  (safe-check-substr (quri:url-decode (remove-domain url)) rule))
+  (safe-check-starting (quri:url-decode (remove-domain url)) rule))
 
 (defun rules (robots-txt agent-predicate)
   ;; agent-predicate is a function which determines if an agent string is considered relevant
@@ -16,10 +16,8 @@
   (let* ((robots-txt (robots-txt url))
          (specific-rules (rules robots-txt #'(lambda (agent) (search (string-downcase bot-name)
                                                                      (string-downcase agent)))))
-         (rules (fallback specific-rules (rules robots-txt #'(lambda (agents)
-                                                               (some #'(lambda (agent)
-                                                                         (equal "*" agent))
-                                                                     agents)))))
+         (rules (fallback specific-rules (rules robots-txt #'(lambda (agent)
+                                                               (equal "*" agent)))))
          ;; Default to allowed
          (result t))
     ;; The first rule takes precedence
@@ -44,9 +42,9 @@
                                 (accepting-new-agents? t)
                                 (acc nil))
                            (dolist (line (cl-strings:split file #\Newline))
-                             (let* ((agent? (safe-check-substr line "User-agent: "))
-                                    (allow? (safe-check-substr line "Allow: "))
-                                    (disallow? (safe-check-substr line "Disallow: "))
+                             (let* ((agent? (safe-check-starting line "User-agent: "))
+                                    (allow? (safe-check-starting line "Allow: "))
+                                    (disallow? (safe-check-starting line "Disallow: "))
                                     (line-body (subseq line (length (cond (agent? "User-agent: ")
                                                                           (allow? "Allow: ")
                                                                           (disallow? "Disallow: ")
