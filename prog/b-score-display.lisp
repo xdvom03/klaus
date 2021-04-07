@@ -48,7 +48,7 @@
                     (if (= i j)
                         #'pass
                         #'(lambda () (words-explainer 0 0
-                                                      (window "hujaja")
+                                                      (window "Words explainer")
                                                       (folder-name class)
                                                       (folder-name opponent)
                                                       chosen-words-1 chosen-words-2
@@ -87,7 +87,7 @@
                                (map-to-hash #'get-word-count subclasses))
                      (declare (ignore probsum))
                      (if (and (> (length subclasses) 1) explain?)
-                         (pair-scores-explainer 0 0 (window "HUJAJA") subclasses pair-scores pair-words pair-word-details))
+                         (pair-scores-explainer 0 0 (window "Table explainer") subclasses pair-scores pair-words pair-word-details))
                      (let ((counter 1)
                            (sorted-subclasses (sort (copy-seq subclasses) #'> :key #'(lambda (class) (fallback (gethash class scores) (/ (length subclasses)))))))
                        (dolist (i sorted-subclasses)
@@ -148,8 +148,8 @@
                (back-to-main ()
                  (change-screen (main-menu 0 1 W))))
         (let ((X (frame 2 1 W)))
-          (button 0 0 X "X" #'(lambda ()
-                                (back-to-main)))
+          (button 0 0 X "Back to classifier menu" #'(lambda ()
+                                                      (back-to-main)))
           (button 1 0 X "Go to database" #'(lambda ()
                                              (ltk:destroy W)
                                              (db-window)))

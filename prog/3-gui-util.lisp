@@ -128,7 +128,7 @@
                                (ltk:configure b :state (if (and disabled-lst
                                                                 (nth (+ start i) disabled-lst))
                                                            :disabled
-                                                           :active)))
+                                                           :normal)))
                              (progn
                                (ltk:grid-forget b)
                                (setf (ltk:text b) "")
