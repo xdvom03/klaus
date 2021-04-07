@@ -131,14 +131,12 @@
              class))
 
   (defun remove-class (path)
-    ;; class is the class path, while new-name is the new endpoint name
     (mapcar #'(lambda (subclass)
                 (remove-one-class subclass))
             (recursive-subclasses path))
     (build-subclasses))
   
   (defun move-class (old-path new-path)
-    ;; class is the class path, while new-name is the new endpoint name
     (dolist (subclass (recursive-subclasses old-path))
       (move-one-class subclass
                       (new-path old-path new-path subclass)))
@@ -146,10 +144,9 @@
 
   (defun rename-class (class new-name)
     ;; class is the class path, while new-name is the new endpoint name
-    ;; TBD: Rename all imports
     (if (find #\/ new-name)
         (error "Name contains slash.")
-        (move-class class (concat (parent-class class) new-name "/"))))
+        (move-class class (path-after-renaming class new-name))))
 
   (defun classes ()
     (remove-duplicates (append (list-keys url-tree)

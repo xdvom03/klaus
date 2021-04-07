@@ -16,7 +16,6 @@
             exists?)))
 
 ;;; BASIC I/O
-
 ;;;----------------------------------------------------------------------------------------------
 ;;; FOLDER NAVIGATION
 
@@ -26,6 +25,9 @@
 
 (defun folder-name (path)
   (second (reverse (cl-strings:split path #\/))))
+
+(defun path-after-renaming (class new-name)
+  (concat (parent-class class) new-name "/"))
 
 ;;; FOLDER NAVIGATION
 ;;;----------------------------------------------------------------------------------------------

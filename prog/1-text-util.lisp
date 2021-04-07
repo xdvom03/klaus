@@ -73,7 +73,6 @@
 
 (defun decode-xml-entities (txt)
   ;; plump may cause "junk in string". Cause unknown, happens rarely, so the decoding is skipped if the error occurs.
-  ;; BUG: Decodes apostrophe as RIGHT SINGLE QUOTATION MARK
   (fallback (ignore-errors (plump:decode-entities txt))
             txt))
 
@@ -93,7 +92,7 @@
   (extract-text (html url)))
 
 (defun simplify-chars (text)
-  ;; Additional character fixes on top of library (which does not know many Czech diacritics)
+  ;; Additional character fixes on top of library
   (map 'string #'(lambda (char) (if (equal char #\RIGHT_SINGLE_QUOTATION_MARK)
                                     #\'
                                     char))

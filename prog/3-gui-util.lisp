@@ -117,7 +117,6 @@
          (redraw #'(lambda ()
                      (dotimes (i page-length)
                        (let ((b (nth i buttonlist)))
-                         ;; TBD: This still looks ugly
                          (if (> (length lst) (+ start i) -1)
                              (progn
                                (ltk:grid b i 0 :sticky "nesw")

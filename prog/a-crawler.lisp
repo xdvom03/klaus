@@ -161,7 +161,6 @@
                    (domain-links new-url target per-domain progress-bar domains traversed-domains)
                  (dolist (link domain-links)
                    (push link visited-urls)
-                   (append-to-file *stats-file* (cons link (ignore-errors (place link)))) ; TBD: Remove after getting stats!
                    (score-url link (gethash link domain-scores)))))
 
              (enter-new-domain (url traversed-domains)

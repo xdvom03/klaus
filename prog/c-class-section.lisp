@@ -134,8 +134,7 @@
                                              (equal new-name (folder-name (get-current-class)))))
                                     (progn
                                       (rename-class (get-current-class) new-name)
-                                      ;; TBD: Duplication here and 4b renaming code
-                                      (set-current-class (concat (parent-class (get-current-class)) new-name "/"))))))))
+                                      (set-current-class (path-after-renaming (get-current-class) new-name) )))))))
 
                    (setf parent-button (button 0 0 class-frame ".." #'(lambda () (change-current-class (parent-class (get-current-class))))))
                    

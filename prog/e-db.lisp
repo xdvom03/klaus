@@ -1,8 +1,3 @@
-#|
-TBD: There are tons of built in useful sequence functions (positions, search, find...). Check if they could simplify!
-Naming convention: 'class' is simplified path, 'folder' is actual folder.
-|#
-
 (defun parent-button-state (class)
   (if (equal class
              "/")

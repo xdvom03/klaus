@@ -39,10 +39,11 @@
 
 (defparameter *crawl-data-folder* "../DATA/crawlers/")
 (defparameter *discovered-file* "../DATA/discovered")
-(defparameter *stats-file* "../DATA/stats")
 (defparameter *scores-file* "../DATA/scores")
 
 (defparameter *frame-colour* "#abcdef")
+
+(defparameter *ln+-maximum* (log most-positive-single-float))
 
 ;; core engine
 (defparameter *score-threshold* 1/5)
@@ -111,7 +112,6 @@
   (concatenate 'string list))
 
 (defun list-hashes (hashtable)
-  ;; TBD: Analogical to hashtable-to-assoc?
   (let ((acc nil))
     (maphash #'(lambda (a b) (push (cons a b) acc))
              hashtable)
@@ -137,7 +137,7 @@
 
 (defun ln-add (num)
   "Computes ln(1+exp(num)) for ln formulation purposes."
-  (if (> num 80) ; avoid floating point overflow (TBD: use constant?)
+  (if (> num *ln+-maximum*) ; avoid floating point overflow
       num
       (ln (1+ (exp num)))))
 
