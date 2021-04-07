@@ -16,12 +16,17 @@
     acc))
 
 (defun move-hash (hash-table original-key new-key)
-  ;; destructive
-  (let ((value (gethash original-key hash-table)))
-    (setf (gethash new-key hash-table)
-          value)
-    (remhash original-key hash-table)
-    hash-table))
+  ;; destructive (which is the point)
+  ;; hash tables have limited test options, all of which are commutative, so we need not worry about the order here
+  (multiple-value-bind (value exists?)
+      (gethash original-key hash-table)
+    (if (and exists?
+             (not (funcall (hash-table-test hash-table) original-key new-key)))
+        (progn
+          (setf (gethash new-key hash-table)
+                value)
+          (remhash original-key hash-table)
+          hash-table))))
 
 (defun new-path (old-path new-path subclass)
   ;; When the old path is moved to a new path, what is the new path of its subclass?
@@ -134,10 +139,9 @@
   
   (defun move-class (old-path new-path)
     ;; class is the class path, while new-name is the new endpoint name
-    (mapcar #'(lambda (subclass)
-                (move-one-class subclass
-                                (new-path old-path new-path subclass)))
-            (recursive-subclasses old-path))
+    (dolist (subclass (recursive-subclasses old-path))
+      (move-one-class subclass
+                      (new-path old-path new-path subclass)))
     (build-subclasses))
 
   (defun rename-class (class new-name)
