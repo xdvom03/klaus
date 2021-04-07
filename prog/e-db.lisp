@@ -33,7 +33,6 @@
       (refresh-classes #'pass)
       (current-class "/")
       (W nil))
-  ;; shared environment variables for parts of GUI
 
   (defun get-current-class ()
     current-class)
@@ -52,6 +51,7 @@
 
   (defun db-window ()
     (setf W (window "Klaus database"))
+    (set-current-class "/")
     (ltk:on-close W #'(lambda ()
                         (if (choice-box "Save before closing?" "Bye!")
                             (save-all))
@@ -96,5 +96,3 @@
   (ltk:with-ltk ()
     (ltk:withdraw ltk:*tk*)
     (crawl-results-window)))
-
-;; current class = possible problem

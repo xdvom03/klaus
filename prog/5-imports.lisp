@@ -71,3 +71,6 @@
     (remove-duplicates (reduce #'append (mapcar #'list-keys (list-values import-urls))
                                :initial-value nil)
                        :test #'equal)))
+
+(defun imported? (url)
+  (member url (reduce #'append (mapcar #'imported-urls (classes))) :test #'equal))

@@ -35,13 +35,17 @@
                (add-url-section 1 0 fr)
                (add-text-section 2 0 fr)
                #'(lambda ()
-                   (let ((urls (class-urls (get-current-class))))
+                   (let* ((editable (class-urls (get-current-class)))
+                          (imported (imported-urls (get-current-class)))
+                          (urls (append editable imported)))
                      (ltk:destroy file-list)
                      (setf file-list
                            (scrollable-list 0 0 fr *entries-per-page* urls
                                             (mapcar #'(lambda (url)
                                                         (lambda () (funcall add-to-bucket url (get-current-class))))
-                                                    urls))))))))
+                                                    urls)
+                                            (append (make-list (length editable) :initial-element nil)
+                                                    (make-list (length imported) :initial-element t)))))))))
 
     ;; Our ultimate output is merely a function returning the file section refresher & frame
     (defun file-frame (r c master)

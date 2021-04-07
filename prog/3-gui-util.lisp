@@ -104,8 +104,9 @@
     (ltk:configure pb :background bg-col)
     pb))
 
-(defun scrollable-list (r c master page-length lst &optional function-lst)
+(defun scrollable-list (r c master page-length lst &optional function-lst disabled-lst)
   ;; No function list will assume no button functions.
+  ;; No disabled list will assume all buttons enabled.
   ;; Returns the frame within which it exists
   (let* ((acc (frame r c master))
          (start 0)
@@ -122,7 +123,12 @@
                                (ltk:grid b i 0 :sticky "nesw")
                                (setf (ltk:text b) (nth (+ start i) lst))
                                (setf (ltk:command b) (if function-lst
-                                                         (nth (+ start i) function-lst))))
+                                                         (nth (+ start i) function-lst)
+                                                         #'pass))
+                               (ltk:configure b :state (if (and disabled-lst
+                                                                (nth (+ start i) disabled-lst))
+                                                           :disabled
+                                                           :active)))
                              (progn
                                (ltk:grid-forget b)
                                (setf (ltk:text b) "")
