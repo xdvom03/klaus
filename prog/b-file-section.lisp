@@ -26,10 +26,7 @@
                                                          (funcall refresh-files))
                                                        (setf (ltk:text tx) "")
                                                        (setf (ltk:text e) "")))
-               (button 3 0 fr "Load text from file" #'(lambda ()
-                                                        (setf (ltk:text tx)
-                                                              (cl-strings:join 
-                                                               (uiop:read-file-lines (choose-file)) :separator (make-string 1 :initial-element #\Newline)))))
+               (choose-file-button 3 0 fr "Load text from file" tx)
                fr))
 
            (file-section (r c master)
@@ -50,5 +47,8 @@
     (defun file-frame (r c master)
       (let ((fr (frame r c master)))
         (setf refresh-files (file-section 0 0 fr))
-        (setf add-to-bucket (bucket-section 0 1 fr #'action refresh-files modes-cycle #'cons))
+        (setf add-to-bucket (bucket-section 0 1 fr #'(lambda (url origin class mode)
+                                                       (action url origin class mode)
+                                                       (funcall refresh-files))
+                                            modes-cycle #'cons))
         (values refresh-files fr)))))

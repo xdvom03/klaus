@@ -96,18 +96,24 @@
                     parent-button ;; recursively dependent with refresh, so we have to set it later
                     (class-frame (frame 1 0 fr))
                     (refresh-class-data (class-data-frame 1 4 class-frame reduced?))
-                    (class-name (entry 0 0 fr (folder-name (get-current-class))))
-                    (modes-cycle (list 'move 'bucket))
+                    (current-class-frame (frame 0 0 fr))
+                    (class-loc (label 0 0 current-class-frame "/"))
+                    (class-name (entry 0 1 current-class-frame (folder-name (get-current-class))))
+                    (modes-cycle (list 'enter 'edit))
                     (mode (first modes-cycle)))
                
                (new-class-frame 2 0 fr)
                
-               (letrec ((b (button 0 1 fr mode #'(lambda () (setf (ltk:text b) (setf mode (next-mode mode modes-cycle)))))))
+               (letrec ((mode-frame (frame 100 0 fr))
+                        (b (button 0 1 mode-frame mode #'(lambda () (setf (ltk:text b) (setf mode (next-mode mode modes-cycle)))))))
+                 (label 0 0 mode-frame "On clicking a class button: ")
                  (labels ((refresh ()
                             (ltk:configure parent-button :state (parent-button-state (get-current-class)))
                             (destroy-widgets subclass-buttons)
                             (setf subclass-buttons nil)
                             (setf (ltk:text class-name) (folder-name (get-current-class)))
+                            (setf (ltk:text class-loc) (concat "Current class: " (fallback (parent-class (get-current-class)) "/")))
+                            
                             (let ((subclasses (subclasses (get-current-class)))
                                   (counter 0))
                               (dolist (subclass subclasses)
@@ -116,7 +122,7 @@
                                               class-frame
                                               (folder-name subclass)
                                               #'(lambda ()
-                                                  (if (equal mode 'move)
+                                                  (if (equal mode 'enter)
                                                       (change-current-class subclass)
                                                       (funcall add-to-bucket nil subclass))))
                                       subclass-buttons)))
@@ -137,32 +143,32 @@
 
     (defun class-section (r c master &optional reduced?)
       (let ((fr (frame r c master)))
-        (setf add-to-bucket (bucket-section 0 2 fr
-                                            #'(lambda (url origin current-class mode)
-                                                (declare (ignore url))
-                                                (case mode
-                                                  (move
-                                                   (if (equal 0 (search origin current-class))
-                                                       (warning-box "You are trying to move a class into itself." "Nope!")
-                                                       (progn
-                                                         (move-class origin (concat current-class (folder-name origin) "/"))
-                                                         (funcall refresh-classes))))
-                                                  (remove
-                                                   (remove-class origin)
-                                                   (funcall refresh-classes))
-                                                  (nothing nil)))
-                                            refresh-classes (list 'move 'remove 'nothing)
-                                            #'(lambda (url origin)
-                                                (declare (ignore url))
-                                                origin)))
         (multiple-value-bind (refresher updater)
-            (comment-frame 0 1 fr)
+            (comment-frame 0 2 fr)
           (setf refresh-config refresher)
           (setf save-description updater))
         (multiple-value-bind (refresher renamer)
             (class-frame 0 0 fr reduced?)
           (setf refresh-classes refresher)
           (setf rename renamer))
+        (setf add-to-bucket (bucket-section 0 1 fr
+                                            #'(lambda (url origin current-class mode)
+                                                (declare (ignore url))
+                                                (case mode
+                                                  (move
+                                                   (print (concat "Moving " origin " to " (concat current-class (folder-name origin) "/")))
+                                                   (if (equal 0 (search origin current-class))
+                                                       (warning-box "You are trying to move a class into itself." "Nope!")
+                                                       (progn
+                                                         (move-class origin (concat current-class (folder-name origin) "/")))))
+                                                  (remove
+                                                   (remove-class origin))
+                                                  (nothing nil))
+                                                (funcall refresh-classes))
+                                            (list 'move 'remove 'nothing)
+                                            #'(lambda (url origin)
+                                                (declare (ignore url))
+                                                origin)))
         
         (values #'(lambda ()
                     (funcall refresh-classes)

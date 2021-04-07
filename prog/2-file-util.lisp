@@ -112,3 +112,7 @@
         (overwrite-file (concat *html-folder* new-alias) content)
         (overwrite-file (concat *text-folder* new-alias) text)))
   (file-alias url))
+
+(defun choose-file-contents ()
+  (cl-strings:join 
+   (uiop:read-file-lines (choose-file)) :separator (make-string 1 :initial-element #\Newline)))

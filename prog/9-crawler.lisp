@@ -36,12 +36,15 @@
 
 (defun zoombot-vocab-value (vocab target)
   (let ((place (place-vocab vocab)))
-    (multiple-value-bind (base-score final-folder)
-        (zoombot-place-value place target)
-      (values (+ base-score
-                 (prob vocab
-                       final-folder))
-              place))))
+    ;; for an empty target, the thing serves as a linear random crawler
+    (if (equal target "/")
+        (values 0 place)
+        (multiple-value-bind (base-score final-folder)
+            (zoombot-place-value place target)
+          (values (+ base-score
+                     (prob vocab
+                           final-folder))
+                  place)))))
 
 (defun next-link (current-url visited-urls target same-domain?)
   ;; all scoring happens here
@@ -203,13 +206,14 @@
               (incf i)))
         (setf (ltk-mw:percent progress-bar) (* 100 (/ (1+ i) domains)))))
     (show-time timer "Crawl complete.")
-    (print (reverse visited-urls))))
+    (ltk:destroy ltk:*tk*)
+    (view-crawler-results)))
 
 (defun crawler-window (&optional (initial-target ""))
-  (let ((W (window "Botelaire welcomes you, human being!")))
+  (let ((W (window "Crawler")))
     (ltk:on-close W #'(lambda ()
                         (ltk:destroy ltk:*tk*)))
-    (let ((pb (progress-bar 3 0 W)))
+    (let ((pb (progress-bar 1 0 W)))
       (let* ((f (frame 0 0 W))
              (e1 (entry 0 1 f))
              (e2 (entry 1 1 f))
@@ -227,10 +231,10 @@
                                                    (read-from-string (ltk:text e3))
                                                    (ltk:text e4)
                                                    pb))))
-      (button 1 0 W "Go to classifier" #'(lambda ()
+      (button 2 0 W "Go to classifier" #'(lambda ()
                                            (ltk:destroy W)
                                            (classifier-window)))
-      (button 2 0 W "Go to database" #'(lambda ()
+      (button 3 0 W "Go to database" #'(lambda ()
                                          (ltk:destroy W)
                                          (db-window))))))
 

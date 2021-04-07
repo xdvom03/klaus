@@ -95,7 +95,8 @@
 (defun window (title)
   (let ((W (make-instance 'ltk:toplevel :title title)))
     (ltk:set-geometry-xy W 0 0)
-    W))
+    (ltk:configure W :background *frame-colour*)
+     W))
 
 (defun progress-bar (r c master &optional (bar-col "#692") (bg-col "#841"))
   (let ((pb (widget r c 'ltk-mw:progress master)))
@@ -170,14 +171,14 @@
   (fallback (second (member mode modes-cycle :test #'equal))
             (first modes-cycle)))
 
-(defun bucket-section (r c master button-action refresher modes-cycle data-fun)
+(defun bucket-section (r c master button-action modes-cycle data-fun)
   ;; data-fun is called as (data-fun url origin) to produce button labels
   (let* ((f (frame r c master))
-         (fr (frame 0 0 f))
+         (fr (frame 1 0 f))
          bucket-buttons
          bucket-data
          (mode (first modes-cycle)))
-                  
+    (label 0 0 f "On clicking an entry: ")
     (letrec ((b (button 0 1 f mode #'(lambda () (setf (ltk:text b) (setf mode (next-mode mode modes-cycle)))))))
       (labels ((new-bucket-button (url origin)
                  (let ((button-text (funcall data-fun url origin)))
@@ -191,8 +192,7 @@
                                                     #'(lambda ()
                                                         (funcall button-action url origin (get-current-class) mode)
                                                         (setf bucket-data (remove button-text bucket-data :test #'equal))
-                                                        (ltk:destroy new-button)
-                                                        (funcall refresher)))))
+                                                        (ltk:destroy new-button)))))
                          (push button-text bucket-data)
                          (push new-button bucket-buttons))))))
         #'new-bucket-button))))
@@ -206,3 +206,9 @@
   ;; this was a total shot in the dark, but somehow it actually works?
   (ltk:format-wish "senddatastring [tk_getOpenFile ~@[ -initialdir \"~a\"~]~@[ -parent ~a ~]~@[ -title {~a}~]~@[ -mustexist ~a~]]" (ltk::tkescape2 initialdir) (and parent (ltk:widget-path parent)) title (and mustexist 1))
   (ltk::read-data))
+
+(defmacro choose-file-button (r c master button-text load-target)
+  ;; must be a macro to refer to the target text variable
+  `(button ,r ,c ,master ,button-text #'(lambda ()
+                                          (setf (ltk:text ,load-target)
+                                                (choose-file-contents)))))
