@@ -179,15 +179,15 @@
     (string-downcase url :end (search path url :test #'equal))))
 
 (defun raw-url (url)
-  (downcase-url (if (search "//" url)
-                    (let* ((step1 (subseq url (+ 2 (search "//" url))))
-                           (step2 (reverse (subseq (reverse step1)
-                                                   (position-if #'(lambda (character) (not (equal character #\/)))
-                                                                (reverse step1))))))
-                      (if (equal 0 (search "www." step2))
-                          (subseq step2 4)
-                          step2))
-                    url)))
+  (downcase-url (let ((scheme-end-pos (search "//" url)))
+                  (if scheme-end-pos
+                      (let* ((no-scheme (subseq url (+ 2 scheme-end-pos)))
+                             (no-scheme-invert (reverse no-scheme)))
+                        ;; removes trailing slashes
+                        (reverse (subseq no-scheme-invert
+                                         (position-if #'(lambda (character) (not (equal character #\/)))
+                                                      no-scheme-invert))))
+                      url))))
 
 (defun prob (vocab class)
   (if (equal class "/")
