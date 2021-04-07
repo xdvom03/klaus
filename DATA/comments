@@ -12,25 +12,24 @@ This class itself serves files that are either multicategorical or don't have a 
 ")
  ("/articles/life/education/parenting/" . "")
  ("/articles/life/education/"
-  . "Considering the transfer of knowledge. Excludes self-learning. Excludes questions of memory, which have their own class.
-")
- ("/articles/humanities/fallacies/" . "")
+  . "Considering the transfer, acquisition, and retention of knowledge.")
+ ("/articles/humanities/fallacies/"
+  . "Formal argumentation and logical fallacies.")
  ("/articles/humanities/history/" . "Not limited to political history.
 
 Anything documenting events that are already complete (and cannot be affected anymore, though their consequences may continue into today) within their chronological context.
 
-We currently only have ancient history classed.
-
-http://www.fsmitha.com/h1/phil17.htm is the start if an infrastructure class... one day.")
+There is currently only ancient history classed, as the site I took data from turned out to be LONG.")
  ("/articles/humanities/history/economics/"
-  . "also general prosperity, growth, trade, exploration, and the resulting issues")
+  . "Also general prosperity, growth, trade, exploration, and the resulting issues.")
  ("/articles/humanities/history/empire/"
   . "The fall of empires (rise generally falls under economics or war), dark ages.")
  ("/articles/humanities/history/geological/"
-  . "History on the timescale of species, not civilisations, and longer.")
+  . "History on the timescale of species and longer. No human civilisations.")
  ("/articles/humanities/history/philosophy/"
   . "Philosophy is about what the world is or ought to be, I guess. For now, I apply the \"know it when you see it\" theory, since most of this cannot be reasonably classed anywhere else.")
- ("/articles/humanities/history/politics/" . "")
+ ("/articles/humanities/history/politics/"
+  . "State structure, democracy, fights for power.")
  ("/articles/humanities/history/religion/" . "")
  ("/articles/humanities/history/religion/china/" . "")
  ("/articles/humanities/history/religion/christianity/" . "")
@@ -38,12 +37,15 @@ http://www.fsmitha.com/h1/phil17.htm is the start if an infrastructure class... 
  ("/articles/humanities/history/religion/islam/" . "")
  ("/articles/humanities/history/religion/jewish/" . "")
  ("/articles/humanities/history/religion/rome/" . "")
- ("/articles/humanities/history/science/" . "")
+ ("/articles/humanities/history/science/"
+  . "History of cientific thought and individual discoveries.")
  ("/articles/humanities/history/society/"
   . "Closest to \"daily life\" - structure of society, who lived how, what people ate, how they made a living...")
- ("/articles/humanities/history/war/" . "wars")
- ("/articles/humanities/history/war/crusades/" . "Overlaps with religion")
- ("/articles/humanities/language/" . "")
+ ("/articles/humanities/history/war/"
+  . "Combat, tactics, who went to war with whom and how it turned out.")
+ ("/articles/humanities/history/war/crusades/" . "Overlaps with religion.")
+ ("/articles/humanities/language/"
+  . "Attempted linguistics, suffers from single-page sourcing.")
  ("/articles/humanities/philosophy/" . "Matters of existence, purpose, ethics.
 Probably much wider and narrower and confusing, but you know it when you see it and it doesn't fit neatly anywhere else.
 ")
@@ -55,16 +57,19 @@ Probably much wider and narrower and confusing, but you know it when you see it 
   . "Recipes, cooking tips, eating habits, anything to do with preparing and eating food.
 Excludes medical matters.
 ")
- ("/articles/life/food/alcohol/" . "") ("/articles/life/food/gardening/" . "")
- ("/articles/life/food/recipes/" . "")
+ ("/articles/life/food/alcohol/"
+  . "Specific resources. Not related to medical ramifications.")
+ ("/articles/life/food/gardening/" . "") ("/articles/life/food/recipes/" . "")
  ("/articles/life/food/safety/" . "Recommendations for safe food handling.")
  ("/articles/life/money/" . "Business, finance, economics.")
- ("/articles/life/recreation/" . "Sport!")
+ ("/articles/life/recreation/"
+  . "Free time, things done for fun/their own sake. Necessary other class: sport.")
  ("/articles/life/recreation/art/"
   . "This WILL require more subfolders with techniques, personal pages, discussion...
 
 I added a link (https://autotranslucence.wordpress.com/2018/03/30/becoming-a-magician/) that is somewhat more about \"outliers\", because while it would be awesome to have a class for them, there won't be much in it, and most of them are art-y anyway.")
- ("/articles/life/recreation/art/fiction/" . "")
+ ("/articles/life/recreation/art/fiction/"
+  . "Needs other genres per crawl results.")
  ("/articles/life/recreation/art/fiction/literature/"
   . "Anything considering the writing/reading process, existing works, literary science.
 ")
@@ -86,8 +91,6 @@ Includes nonfiction? Separated into a class in case it needs moving.")
   . "Traditional notion of art, as opposed to the more general creative work.
 
 Closer to \"non-textual\"")
- ("/articles/life/recreation/art/visual/artists/"
-  . "About the people behind art")
  ("/articles/life/recreation/art/visual/design/" . "")
  ("/articles/life/recreation/art/visual/general/"
   . "About general art, not particular styles or techniques")
@@ -96,7 +99,7 @@ Closer to \"non-textual\"")
   . "Dungeons and Dragons. Probably gets subclassed under games. I believe this has been included at some point in the past.")
  ("/articles/life/recreation/travel/" . "")
  ("/articles/life/self-help/"
-  . "If somebody else writes it for you, it's not self-help. But the term has caught on for \"how to live a better life\", which is quite a useful thing to exist.")
+  . "If somebody else writes it for you, it's not self-help. But the term has caught on for \"how to live a better life\", which is quite a useful thing.")
  ("/articles/life/self-help/motivation/"
   . "Often content-mill sites about success.")
  ("/articles/life/self-help/mystical/"
@@ -118,11 +121,11 @@ Additional topics: Computers (& associated technology) and weather, the ultimate
  ("/articles/stem/life/biology/" . "")
  ("/articles/stem/life/biology/evolution/" . "")
  ("/articles/stem/life/health/"
-  . "Originally created to house findings misclassed as dreams. Subclasses present here are most common in crawls.")
+  . "Subclasses present here are most common in crawls, but they are not in any way all there is to the topic.")
  ("/articles/stem/life/health/covid-19/"
   . "Not from a news perspective. Mostly sourced from Wikipedia article references.")
  ("/articles/stem/life/health/mental/"
-  . "Originally created to house findings misclassed as dreams. Subclasses present here are most common in crawls.")
+  . "Obviously a wider tpic, but I had trouble finding sources.")
  ("/articles/stem/life/health/mental/dreams/"
   . "Anything related to dream analysis, experience, scientific study, etc.
 Esoteric ideas excluded, to be placed under self-help.
@@ -186,7 +189,8 @@ http://blog.hostilefork.com/clocks-that-run-backwards/ should be split, as only 
   . "Prevention and damage control of natural disasters.
 
 Earthquakes and fire count as weather for these purposes :)")
- ("/articles/stem/technology/" . "")
+ ("/articles/stem/technology/"
+  . "A class for engineering and technical design of just about anything physical.")
  ("/articles/stem/technology/bionics/" . "Human-machine interfaces.")
  ("/articles/stem/computer-technology/technology/git/general/"
   . "About version control, history, and founding principles.")
@@ -218,9 +222,7 @@ Earthquakes and fire count as weather for these purposes :)")
  ("/articles/stem/computer-technology/technology/linux/"
   . "Linux in colloquial use, and by extension, GNU/Linux and associated.")
  ("/articles/stem/computer-technology/technology/programming/"
-  . "Programming style, languages, models, etc. Intended to be closer to practice than theory, with project management included.
-
-TBD: This may go against the general principle used in STEM.")
+  . "Programming style, languages, models, etc. Intended (but not yet implemented) to be closer to practice than theory, with project management included.")
  ("/articles/stem/computer-technology/technology/search/semantic/classification/automatic-classification/"
   . "Natural Language Processing or other ways of finding the meaning of sites to be found.")
  ("/articles/stem/computer-technology/technology/cryptocurrency/"
@@ -259,7 +261,7 @@ TBD: This may go against the general principle used in STEM.")
   . "Instructions on intellectual property, trademarks, and patents.")
  ("/legal/privacy/"
   . "Legal boilerplate concerning private data of users and ways it may become less private.")
- ("/legal/refunds/" . "To be labeled WIP.")
+ ("/legal/refunds/" . "")
  ("/legal/terms-of-use/"
   . "Also occasionally called (acceptable) use policies, agreements, etc. Anything that covers restrictions on user behaviour goes here.
 ")
@@ -268,7 +270,7 @@ TBD: This may go against the general principle used in STEM.")
  ("/news/news-reports/"
   . "Articles on news sites about events, as opposed to opinions or culture.
 
-The subclasses are not here for classification purposes, but instead to have roughly equal representation of various sources.")
+The subclasses are not here for classification purposes, but instead to have roughly equal representation of various sources. Classing by topic would only become possible once enough news went by.")
  ("/news/news-reports/aljazeera/" . "") ("/news/news-reports/bbc/" . "")
  ("/news/news-reports/guardian/" . "") ("/news/news-reports/la-times/" . "")
  ("/news/news-reports/reuters/" . "") ("/news/opinions/" . "Opinion columns.")
@@ -282,8 +284,7 @@ The subclasses are not here for classification purposes, but instead to have rou
  ("/utility/"
   . "Sites that have text, but it serves for navigation primarily. Sites related to an organisation, service, or store.")
  ("/utility/dictionaries/"
-  . "Dictionaries often turn up when one searches for phrases or unusual words. While useful for their stated purpose, once one does know what the word or phrase means, they make it useless for search.
-")
+  . "Dictionaries often turn up when one searches for phrases or unusual words. While useful for their stated purpose, once one does know what the word or phrase means, they make it useless for search.")
  ("/utility/profit/"
   . "For-profit services. Places where you can send them money.")
  ("/utility/profit/stores/"
@@ -292,12 +293,13 @@ The subclasses are not here for classification purposes, but instead to have rou
  ("/utility/profit/stores/product-pages/"
   . "For sites like Amazon, where lots of stuff is sold through fairly straightforward interfaces.
 
-Technically also includes similarly-structured royalty-free music.")
+Technically also includes similarly-structured royalty-free music and other product catalogs.")
  ("/utility/profit/stores/product-pages/books/" . "")
  ("/utility/profit/stores/product-pages/tech/" . "")
  ("/utility/profit/write-your-paper/"
   . "Services that offer to write academic text for you. This class is separate because the crawler found it several independent times. I do not condone these services.")
- ("/utility/science/" . "")
+ ("/utility/science/"
+  . "Vestige of old utility division, now a little unclear.")
  ("/utility/science/journals/"
   . "By extension, science funding & looking for researchers.")
  ("/utility/science/universities/" . "")
@@ -318,11 +320,12 @@ Technically also includes similarly-structured royalty-free music.")
  ("/articles/stem/computer-technology/video-games/mechanics/game-ai/"
   . "A specific application of AI: any NPC with nontrivial behaviour. Also AIs as the players.")
  ("/articles/life/money/economics/" . "")
- ("/articles/life/education/lessons/" . "pedagogy, college life")
+ ("/articles/life/education/lessons/" . "Pedagogy, college life")
  ("/articles/stem/nature/space/transportation/"
   . "The technology and theory behind rocket science.")
  ("/articles/stem/computer-technology/design/" . "")
- ("/articles/stem/computer-technology/technology/" . "")
+ ("/articles/stem/computer-technology/technology/"
+  . "The backbone of computers, disconnected from how there tools are wielded.")
  ("/articles/stem/computer-technology/design/interaction/"
   . "User experience, user interfaces")
  ("/articles/stem/science/physics/electromagnetism/" . "")
@@ -338,13 +341,14 @@ Technically also includes similarly-structured royalty-free music.")
  ("/articles/stem/science/physics/thermodynamics/" . "")
  ("/articles/stem/science/physics/electromagnetism/light/" . "")
  ("/articles/life/recreation/travel/travelogues/"
-  . "Personal travel experiences")
+  . "Personal travel experiences.")
  ("/articles/life/recreation/travel/sales-pitches/"
-  . "Descriptions of awesome travel routes")
+  . "Descriptions of awesome travel routes.")
  ("/articles/humanities/law/"
   . "Created to house case texts, as they have fallen here before.")
  ("/articles/stem/computer-technology/video-games/"
   . "Design, mechanics, etc., of games.")
  ("/articles/stem/computer-technology/video-games/design/"
   . "Design of video game interaction, economy, etc.")
- ("/utility/profit/stores/product-pages/clothing/" . "")) 
+ ("/utility/profit/stores/product-pages/clothing/" . "")
+ ("/articles/humanities/history/infrastructure/" . "")) 
