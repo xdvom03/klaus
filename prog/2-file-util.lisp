@@ -16,20 +16,7 @@
             exists?)))
 
 ;;; BASIC I/O
-;;;----------------------------------------------------------------------------------------------
-;;; READING FILES
 
-;; TBD: Abstractions! (TBD together with corpus export changes)
-(defun location (url &optional (class "/"))
-  ;; returns the class where the url is to be found
-  (if (member url (class-urls class) :test #'equal)
-      class
-      (let ((sub (find-if #'(lambda (subclass) (member url (class-urls subclass t) :test #'equal))
-                          (subclasses class))))
-        (if sub
-            (location url sub)))))
-
-;;; READING FILES
 ;;;----------------------------------------------------------------------------------------------
 ;;; FOLDER NAVIGATION
 
@@ -112,7 +99,3 @@
         (overwrite-file (concat *html-folder* new-alias) content)
         (overwrite-file (concat *text-folder* new-alias) text)))
   (file-alias url))
-
-(defun choose-file-contents ()
-  (cl-strings:join 
-   (uiop:read-file-lines (choose-file)) :separator (make-string 1 :initial-element #\Newline)))

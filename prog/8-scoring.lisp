@@ -179,3 +179,15 @@
                     (place-vocab vocab :class best-path))
                 class)))
         class)))
+
+(defun prob (vocab class)
+  (if (equal class "/")
+      1 ;; would crash otherwise, easiest to catch here
+      (let* ((sibling-classes (classifier-options (parent-class class)))
+             (path-scores (scores vocab
+                                  sibling-classes
+                                  (map-to-hash #'get-recursive-corpus sibling-classes)
+                                  (map-to-hash #'get-word-count sibling-classes)
+                                  nil)))
+        (fallback (gethash class path-scores)
+                  (error (concat "Class " class " does not exist."))))))

@@ -1,4 +1,20 @@
-;; TBD: Add dollar signs, crawl delay, and asterisk wildcards.
+(let ((discovered-urls (let ((acc (ht)))
+                         (apply-to-all-classes #'(lambda (class)
+                                                   (if (not (read-tentative class))
+                                                       (setf (gethash class acc)
+                                                             nil))))
+                         acc)))
+  (defun save-discovered ()
+    (overwrite-file *discovered-file* (hashtable-to-assoc discovered-urls)))
+  
+  (defun discover (url place)
+    (let ((existing-urls (gethash place discovered-urls)))
+      (if (not (member url existing-urls :test #'equal))
+          (setf (gethash place discovered-urls)
+                (append1 existing-urls
+                         url)))
+      place)))
+
 (defun matching-rule? (rule url)
   (safe-check-starting (quri:url-decode (remove-domain url)) rule))
 

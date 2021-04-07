@@ -26,83 +26,57 @@
 
 ;;; UTILS
 ;;;----------------------------------------------------------------------------------------------
-;;; IMPORT/EXPORT
+;;; BOILERPLATE
 
-(defun imports ()
-  (mapcar #'namestring (directory (concat *imports-folder* "*/"))))
+(defun overlap-length (txt1 txt2)
+  ;; in txt1, only looks for sequences beginning at 0
+  (let ((max-len (min (length txt1)
+                      (length txt2))))
+    (do ((len 0 (1+ len)))
+        ((or (equal len max-len)
+             (not (search (subseq txt1 0 (1+ len)) txt2 :test #'equal)))
+         len))))
 
-(defun process-imported-corpora (assoc-corpora)
-  ;; Reads it in assoc list format
-  (assoc-to-hashtable (mapcar #'(lambda (cons)
-                                  (cons (car cons)
-                                        (assoc-to-hashtable (cdr cons))))
-                              assoc-corpora)))
+(defun overlap (txt1 txt2)
+  (let ((len (min (length txt1) (length txt2)))
+        (acc nil))
+    (do ((pos 0))
+        ((>= pos (- len *boilerplate-threshold*)))
+      (if (search (subseq txt1 pos (+ pos *boilerplate-threshold*))
+                  txt2
+                  :test #'equal)
+          (let ((overlap (overlap-length (subseq txt1 pos) txt2)))
+            (push (subseq txt1 pos (+ pos overlap)) acc)
+            (incf pos overlap))
+          (incf pos)))
+    (reverse acc)))
 
-(defun saveable-corpora (hashtable-corpora)
-  (hashtable-to-assoc (map-to-hash (compose #'sort-corpus
-                                            #'hashtable-to-assoc
-                                            #'(lambda (class)
-                                                (gethash class hashtable-corpora)))
-                                   (list-keys hashtable-corpora))))
+(defun multi-overlap (texts txt2)
+  (apply #'append
+         (mapcar #'(lambda (txt1)
+                     (overlap txt1 txt2))
+                 texts)))
 
-(let ((import-corpora (ht))
-      (import-urls (ht)))
-  (defun ignore-imports ()
-    "Sets imports in memory to none, but keeps the files. Used for viewing crawler results wthout import contamination."
-    (setf import-urls (ht))
-    (setf import-corpora (ht)))
-  
-  (defun refresh-imports ()
-    (setf import-urls (map-to-hash #'(lambda (import-folder)
-                                       (assoc-to-hashtable (read-from-file (concat import-folder "urls"))))
-                                   (imports)))
-    (setf import-corpora (map-to-hash #'(lambda (import-folder)
-                                          (process-imported-corpora (read-from-file (concat import-folder "corpora"))))
-                                      (imports))))
+(defun boilerplate (domain)
+  ;; Works with words as strings, since this is still operating at the string level, to make the core string
+  (let ((urls (remove-if-not #'(lambda (url)
+                                 (equal (find-domain url)
+                                        domain))
+                             (class-urls "/" t))))
+    (if (cdr urls)
+        (reduce #'multi-overlap
+                (append (list (list (cl-strings:split (read-text (car urls))))) ;; remember: one level of append gets lost!
+                        (mapcar #'(lambda (url) (cl-strings:split (read-text url)))
+                                (cdr urls)))))))
 
-  (defun save-imports ()
-    ;; necessary because of file system editing
-    (dolist (import-folder (list-keys import-urls))
-      (let ((urls-file (concat import-folder "urls"))
-            (corpora-file (concat import-folder "corpora")))
-        (overwrite-file urls-file (hashtable-to-assoc (gethash import-folder import-urls)))
-        (overwrite-file corpora-file (saveable-corpora (gethash import-folder import-corpora))))))
+(defun remove-substr (text substr)
+  ;; TEMP: Obviously not optimal, should not happen! Probably an underlying bug.
+  (fallback (ignore-errors
+             (let ((index (search substr text :test #'equal)))
+               (concat (subseq text 0 index) (subseq text (+ index (length substr))))))
+            text))
 
-  (defun move-class-imports (old-path new-path)
-    (dolist (import-class (list-keys import-urls))
-      (move-hash (gethash import-class import-urls) old-path new-path)
-      (move-hash (gethash import-class import-corpora) old-path new-path)))
-  
-  (defun imported-corpus (class)
-    (reduce #'add-corpuses (mapcar #'(lambda (import)
-                                       (fallback (gethash class import)
-                                                 (ht)))
-                                   (list-values import-corpora))
-            :initial-value (ht)))
-  
-  (defun imported-file-count (class)
-    (reduce #'+ (mapcar #'(lambda (tree)
-                            (length (gethash class tree)))
-                        (list-values import-urls))
-            :initial-value 0))
-
-  (defun imported-urls (class)
-    (reduce #'append (mapcar #'(lambda (tree)
-                                 (gethash class tree))
-                             (list-values import-urls))
-            :initial-value nil))
-
-  (defun recursive-imported-urls (class)
-    (reduce #'append (append1 (mapcar #'recursive-imported-urls (subclasses class))
-                              (imported-urls class))
-            :initial-value nil))
-
-  (defun imported-classes ()
-    (remove-duplicates (reduce #'append (mapcar #'list-keys (list-values import-urls))
-                               :initial-value nil)
-                       :test #'equal)))
-
-;;; IMPORT/EXPORT
+;;; BOILERPLATE
 ;;;----------------------------------------------------------------------------------------------
 ;;; TEXT HELPER DATABASES
 

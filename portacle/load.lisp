@@ -1,4 +1,4 @@
 (load "./all/quicklisp/setup.lisp")
 (print "ql setup")
-(load "../prog/f-all.lisp")
+(load "../prog/g-all.lisp")
 (print "program loaded")
