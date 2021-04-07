@@ -134,7 +134,8 @@
                                                                    (warning-box err-text "Website error")
                                                                    (back-to-main)))))
                    (button 0 2 fr "Place URL" #'(lambda ()
-                                                  (info-box (place (ltk:text e1)) (ltk:text e1))))
+                                                  (warn-on-error ("Website error")
+                                                    (info-box (place (ltk:text e1)) (ltk:text e1)))))
                    (button 1 1 fr "Open database with text"
                            #'(lambda ()
                                (setf current-url (ltk:text e1))

@@ -26,6 +26,7 @@
   (rebuild-corpus)
   (save-corpora)
   (save-config)
+  (save-imports)
   (refresh-imports) ; loads any new import files
   )
 

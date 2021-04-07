@@ -30,7 +30,9 @@
 
 (defun new-path (old-path new-path subclass)
   ;; When the old path is moved to a new path, what is the new path of its subclass?
-  (concat new-path (subseq subclass (length old-path))))
+  (if (equal 0 (search old-path subclass))
+      (concat new-path (subseq subclass (length old-path)))
+      subclass))
 
 (let ((subclasses (ht))
       (url-tree (ht))

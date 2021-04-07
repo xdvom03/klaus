@@ -39,9 +39,9 @@
         (overwrite-file corpora-file (saveable-corpora (gethash import-folder import-corpora))))))
 
   (defun move-class-imports (old-path new-path)
-    (dolist (import-class (list-keys import-urls))
-      (move-hash (gethash import-class import-urls) old-path new-path)
-      (move-hash (gethash import-class import-corpora) old-path new-path)))
+    (dolist (import-folder (list-keys import-urls))
+      (move-hash (gethash import-folder import-urls) old-path new-path)
+      (move-hash (gethash import-folder import-corpora) old-path new-path)))
   
   (defun imported-corpus (class)
     (reduce #'add-corpuses (mapcar #'(lambda (import)

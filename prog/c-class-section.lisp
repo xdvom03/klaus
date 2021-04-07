@@ -10,8 +10,10 @@
 
            (change-current-class (new-class)
              (funcall save-description)
-             (funcall rename)
-             (set-current-class new-class)
+             
+             (let ((old-current-class (get-current-class)))
+               (funcall rename)
+               (set-current-class (new-path old-current-class (get-current-class) new-class)))
              (funcall refresh-classes)
              (funcall refresh-files)
              (funcall refresh-config))
@@ -134,7 +136,7 @@
                                              (equal new-name (folder-name (get-current-class)))))
                                     (progn
                                       (rename-class (get-current-class) new-name)
-                                      (set-current-class (path-after-renaming (get-current-class) new-name) )))))))
+                                      (set-current-class (path-after-renaming (get-current-class) new-name))))))))
 
                    (setf parent-button (button 0 0 class-frame ".." #'(lambda () (change-current-class (parent-class (get-current-class))))))
                    
