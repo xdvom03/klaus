@@ -130,7 +130,7 @@
 
 (defun find-links (text)
   ;; only looks for href
-  ;; does not consider tags (could theoretically find literal text, but that seems like a non-issue)
+  ;; does not strictly require that link be in an <a> tag
   (let ((no-resources (remove-enclosed text "<link" ">")))
     (append (find-enclosed-text no-resources "href=\"" "\"")
             (find-enclosed-text no-resources "href='" "'"))))
@@ -139,8 +139,13 @@
   (subseq url 0 (search (concat "#" (fallback (quri:uri-fragment (quri:uri url)) "")) url)))
 
 (defun follow-link (origin link)
+  ;; May call error, must be caught downstream
   ;; This program can treat fragments as entirely irrelevant in URLs
-  (remove-fragment (quri:render-uri (quri:merge-uris link origin))))
+  (if (safe-check-starting link "//")
+      (follow-link origin
+                   (concat (quri:uri-scheme (quri:uri origin)) ":"
+                           link))
+      (remove-fragment (quri:render-uri (quri:merge-uris link origin)))))
 
 (defun vetted-links (origin html)
   ;; links may contain invalid characters, removing anything with errors is the cheapest way of handling that
