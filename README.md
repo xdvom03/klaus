@@ -2,17 +2,21 @@
 
 # What is this?
 
-Klaus is a project for the "maturita" exam from IT at Gymnázium Jana Keplera concerning Bayesian text classification and semantic search.
+A text classification system that allows you to define a hierarchy of classes, classify text within it, and search the Internet for sites belonging to a given class.
+
+# Status
+
+Klaus was a project for the *maturita* exam from IT at Gymnázium Jana Keplera. It was finished on April 7th, 2021, and defended on April 21st, 2021. It may see some further changes; I would particularly like to translate the documentation to English and to make the code friendlier (better tests & documentation). I also hope to find the project useful in practice, in which case it will get periodically updated as I build a web directory.
 
 # Dependencies
 
-SBCL, wish. Both available through APT.
+SBCL, wish. Both available through APT. I recommend using Linux as the Windows install process is more convoluted and fragile.
 
 # How to use?
 
-Download files. Extract a release (preferrably 7-4-2021) and run the executable. For building from source, see the documentation.
+Download files. Extract a release (preferrably the latest one going by the release name (DD-MM-YYYY)) and run the executable. For building from source, see the documentation.
 
 # Caveat emptor
-There is no guarantee of a working state. There are known missing features in the code. The graphical library means that the interface can be idiosyncratic. The program *should not* crash, but errors might pop up. Usually, they can be dismissed. Don't panic. Refer to issues, but also beware of *unknown* bugs. The system has only been fully tested on Ubuntu. On Windows, building from source is necessary, which can be problematic because the compilers are fragile.
+There is no guarantee of a working state. There are known missing features in the code. The graphical interface can be... idiosyncratic. The program *should not* crash except in documented cases (trying to load a non-text file). Don't panic. Refer to issues, but also beware of *unknown* bugs.
 
-Data provided may not be sufficient for well-defined classes, nor may the class system be entirely sound.
+The attached class hierarchy is WIP: incomplete, at times strangely subclassed.
